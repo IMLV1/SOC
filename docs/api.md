@@ -4,6 +4,8 @@
 
 อ่านร่วมกับ [Architecture](architecture.md) และ [Development plan](development-plan.md) ขั้นถัดไปคือแปลงเป็น `docs/openapi.yaml` ใน Phase 0 และใช้ contract tests ตรวจ implementation
 
+การจัดเก็บข้อมูลและ transaction ของแต่ละ endpoint อยู่ใน [Database design](database.md); checks และการนำ API ขึ้นระบบอยู่ใน [CI/CD design](ci-cd.md)
+
 ## 1. ข้อตกลงทั่วไป
 
 - Base path: `/api/v1`; JSON request/response ใช้ `snake_case`
@@ -68,6 +70,8 @@ List ส่ง `data: []` และ `meta: {request_id, next_cursor}` โดย 
 | Worker | internal services ตาม DB role | events/detections/analyses/evaluations; ไม่มี browser endpoint สำหรับเขียนข้อมูลเหล่านี้ |
 
 Instructor ใช้ endpoint ปกติเพื่อฝึกในรอบของตนได้ แต่สิทธิ์ Instructor ไม่ทำให้ใช้ route ของ Analyst เขียน assessment ของผู้อื่นได้ หากกำกับรอบผู้อื่นต้องใช้ `/admin/*`
+
+รอบที่กำกับหมายถึงรอบของสมาชิกที่มี `instructor_assignments` ให้ Instructor คนนั้นตาม [Database design](database.md) การมอบหมายทำผ่าน server provisioning ใน MVP; ไม่มี assignment ให้ปฏิเสธการอ่าน/แก้ resource ของสมาชิกคนนั้นตามกติกา 404 ไม่เปิดสิทธิ์ทุกบัญชีจาก role เพียงอย่างเดียว
 
 `completing/completed/failed` เป็น read-only สำหรับ ticket/note/assessment และ controls นอกเหนือจากการเริ่มรอบใหม่; Instructor เพิ่ม comment ได้จนถึง retention expiry แต่แก้ severity/status ได้เฉพาะก่อน completing
 

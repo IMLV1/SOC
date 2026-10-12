@@ -4,9 +4,11 @@
 
 เอกสารประกอบ: [Architecture](architecture.md) · [API](api.md) · [Product scope](soc-simulation.md) · [Prototype](../prototype/README.md)
 
+แบบออกแบบสำหรับลงมือพัฒนา: [Database](database.md) และ [CI/CD](ci-cd.md) ครอบคลุม schema, GitHub Actions, Docker artifacts, migration, deploy และ recovery
+
 ## 1. เป้าหมายและสมมติฐาน
 
-เปลี่ยน prototype ให้เป็นเว็บใช้งานจริงที่มีบัญชี ข้อมูลถาวร สิทธิ์ฝั่ง server, runner, detection, AI และผลประเมินที่ตรวจสอบได้ ใช้ prototype เป็น reference หน้าจอ ไม่ย้าย localStorage หรือรหัส demo1234 ไปเป็นกลไก production
+เปลี่ยน prototype ให้เป็นเว็บใช้งานจริงที่มีบัญชี ข้อมูลถาวร สิทธิ์ฝั่ง server, runner, detection, AI และผลประเมินที่ตรวจสอบได้ ใช้ prototype เป็น reference หน้าจอ ไม่ย้าย localStorage หรือรหัสบัญชีเดโมไปเป็นกลไก production
 
 ประมาณการสำหรับผู้พัฒนา 2 คนที่ทำงานต่อเนื่อง: 7–9 สัปดาห์ เป็นกรอบวางแผน ไม่ใช่กำหนดส่งที่ยืนยัน หากทำคนเดียวหรือยังไม่คุ้น stack ต้องเผื่อเวลาเพิ่ม ผู้ใช้ยังไม่ได้ระบุทีม งบ AI หรือวันส่ง จึงระบุผู้รับผิดชอบเป็นบทบาทแทนชื่อ
 
@@ -70,6 +72,19 @@ Frontend และ backend พัฒนาร่วมกันโดยอิ�
 5. ทดสอบผู้ใช้ A/B และ worker restart ให้ผ่านก่อนขยาย ticket, AI และ evaluation
 
 ไม่เริ่มด้วยการทำ dashboard ตัวเลขครบทุกช่องก่อนมีแหล่งข้อมูลจริง และไม่คัดลอกเฉลยจาก prototype ไปไว้ frontend ใหม่
+
+### งาน Database และ CI/CD ที่ผูกกับ backlog
+
+| งานเดิม | สิ่งที่ต้องเพิ่มจากแบบออกแบบ | หลักฐานเสร็จ |
+|---|---|---|
+| SOC-001 | แปลง data dictionary เป็น migrations; ยืนยัน Instructor scope, schema/contract และ runtime versions | ER/DDL/OpenAPI สอดคล้องกัน |
+| SOC-002 | เริ่ม prototype CI; เพิ่ม production lint/typecheck/unit/contract/build และ required ci-gate เมื่อมีแอปจริง | PR ที่ fail ถูกกัน merge; clean checkout ตรวจผ่าน |
+| SOC-003/006/010 | DB roles, idempotency, quota/lease locks, revisions และ composite FKs | integration tests กับ PostgreSQL จริงผ่าน race/cross-run/retry cases |
+| SOC-012/014 | reservations, provider attempts, frozen evaluations และ isolated experiment outputs | retry ไม่ทำ logical usage ซ้ำและเฉลยไม่หลุด detector |
+| SOC-016 | Dockerfiles, registry, staging/production environments, deploy/migrate/smoke/rollback adapters | staging deploy อัตโนมัติ; production promote digest เดิมตาม policy |
+| SOC-017 | ทดลอง migration failure, rollback และ restore/PITR | มีรายงานผลจริงพร้อม RPO/RTO ที่วัดได้ |
+
+ไม่เปิด deploy job จน hosting, credentials และ scripts พร้อม; Docker และ workflow files ยังไม่ได้ถูกสร้างจากการเพิ่มเอกสารนี้
 
 ## 5. แผนเปลี่ยนจาก prototype
 

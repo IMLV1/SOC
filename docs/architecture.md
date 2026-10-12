@@ -4,6 +4,8 @@
 
 อ่านร่วมกับ [ขอบเขตโครงการ](soc-simulation.md), [API contract](api.md) และ [แผนพัฒนา](development-plan.md)
 
+แบบออกแบบเพิ่มเติม: [Database](database.md) ลงรายละเอียดตาราง/constraints/transactions และ [CI/CD](ci-cd.md) ระบุ checks, build, deployment, migration และ recovery ทั้งสองเป็นแผน ยังไม่ได้ติดตั้งจริง
+
 ## 1. สถานะและแนวทาง
 
 ปัจจุบัน `prototype/` เป็นเว็บต้นแบบ HTML/CSS/JavaScript ใช้ localStorage และ AI fixture ส่วน `frontend/` และ `backend/` ยังไม่มีแอปจริง นำรูปแบบหน้าจอและ flow มาใช้ต่อได้ แต่ต้องย้ายสิทธิ์ ข้อมูล นาฬิกา การตรวจจับ และเฉลยไปฝั่ง server
@@ -144,7 +146,7 @@ erDiagram
     RUNS ||--o{ EVALUATIONS : evaluates
 ```
 
-ER นี้แสดงความสัมพันธ์หลัก ตารางเชื่อมและ constraints ฉบับเต็มต้องทำเป็น migrations และ schema ใน SRS ก่อนเริ่ม CRUD
+ER นี้แสดงความสัมพันธ์หลัก ดูตารางเชื่อมและ constraints เพิ่มเติมใน [Database design](database.md) แล้วแปลงเป็น migrations และ schema ใน SRS ก่อนเริ่ม CRUD รวมตารางสนับสนุน idempotency, quota reservations, pre-auth CSRF และ Instructor assignments ที่ใช้รองรับ API
 
 Constraints ที่ต้องมี:
 
