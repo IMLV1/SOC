@@ -9,6 +9,39 @@
   ];
   const clone = value => JSON.parse(JSON.stringify(value));
   const getScenario = id => scenarios.find(s => s.id === id);
+  const levels = [
+    { id: 'beginner', title: 'เริ่มต้น', description: 'อ่าน request และ response ให้เป็น แยกความพยายามออกจากผลกระทบ', scenarioIds: ['S01', 'S03'] },
+    { id: 'intermediate', title: 'ระดับกลาง', description: 'ใช้บริบทแยกกิจกรรมที่อนุญาต และเชื่อมหลายเหตุการณ์เพื่อหาผลกระทบ', scenarioIds: ['S04', 'S02'] },
+    { id: 'advanced', title: 'ชำนาญ', description: 'ตรวจพฤติกรรมที่ไม่ตรงกฎเดิมด้วย baseline และหลักฐานหลายแหล่ง', scenarioIds: ['S05'] }
+  ];
+  const guides = {
+    S01: { focus: 'ดูผลตอบกลับของการ login ทุกครั้ง แล้วถามว่าเห็น session ที่สำเร็จหรือยัง', source: 'คู่มือฝึก: HTTP 401 คือการยืนยันตัวตนไม่สำเร็จ; การลองหลายครั้งยังไม่พิสูจน์ว่าบัญชีถูกยึด', risk: 'ต้องตรวจเพราะมีการลองรหัสผ่านซ้ำ แต่หากไม่พบ session สำเร็จ ผลกระทบยังจำกัด', keyStep: 3 },
+    S03: { focus: 'เปิด request และ response ของเว็บ ถ้าถูกปฏิเสธ ให้แยกการพยายามออกจากผลกระทบ', source: 'คู่มือฝึก: HTTP 403 คือเซิร์ฟเวอร์ปฏิเสธคำขอ ต้องมีหลักฐานอื่นก่อนสรุปว่าเข้าถึงข้อมูลได้', risk: 'ต้องตรวจรูปแบบ request แต่การถูกปฏิเสธทุกครั้งทำให้ยังไม่มีหลักฐานว่าข้อมูลรั่ว', keyStep: 1 },
+    S04: { focus: 'ตรวจ IP เวลา เป้าหมาย และ change ticket ว่าตรงขอบเขตที่อนุญาตทั้งหมดหรือไม่', source: 'คู่มือฝึก: ปริมาณ request สูงไม่ยืนยันว่าเป็นภัย ถ้ามีการอนุมัติที่ตรงขอบเขต', risk: 'จำนวน request มากทำให้ควรตรวจ แต่ change ticket ที่ตรงทุกเงื่อนไขอาจทำให้สรุปว่าเป็นกิจกรรมที่อนุญาต', keyStep: 3 },
+    S02: { focus: 'เชื่อม login สำเร็จกับ session และการอ่านข้อมูล อย่าหยุดแค่ login ผิดหลายครั้ง', source: 'คู่มือฝึก: ผลกระทบต้องอ้างเหตุการณ์หลังเข้าสู่ระบบ เช่นการเข้าถึงไฟล์สำคัญ', risk: 'เป็นเคสสำคัญเพราะพบการเข้าใช้สำเร็จและอ่านข้อมูลการเงินจริง ต้องตรวจขอบเขตและผู้ใช้ session', keyStep: 3 },
+    S05: { focus: 'เทียบจำนวนการอ่านไฟล์กับ baseline แล้วหาหลักฐานยืนยันว่าไม่ได้รับอนุญาต', source: 'คู่มือฝึก: Anomaly คือความผิดจากพฤติกรรมปกติ ไม่ใช่คำยืนยันว่าพบภัยชนิดใหม่', risk: 'ควรตรวจด่วนเมื่อปริมาณอ่านไฟล์สูงกว่าปกติมากและเจ้าของ session ปฏิเสธกิจกรรม แม้ไม่ตรงกฎเดิม', keyStep: 1 }
+  };
+  const levelForScenario = id => levels.find(level => level.scenarioIds.includes(id));
+  function learningProgress(runs, owner) {
+    const passed = new Set(runs.filter(run => run.owner === owner).flatMap(run => run.tickets.filter(ticket =>
+      !ticket.deleted && ticket.coachReviews?.some(review => review.passed)).map(ticket => ticket.scenarioId)).filter(Boolean));
+    const unlocked = levels.findIndex(level => !level.scenarioIds.every(id => passed.has(id)));
+    return { passed: [...passed], unlockedIndex: unlocked < 0 ? levels.length - 1 : unlocked, completed: unlocked < 0 };
+  }
+  function reviewLesson(run, ticket, evidenceId) {
+    const scenario = getScenario(ticket.scenarioId);
+    if (!scenario) throw Error('เคสที่สร้างเองไม่ใช่บทเรียนสำหรับปลดล็อกระดับ');
+    const events = run.events.filter(event => event.scenarioId === scenario.id);
+    const guide = guides[scenario.id];
+    const keyEvidence = `${scenario.id}-EV-${String(guide.keyStep + 1).padStart(3, '0')}`;
+    const checks = [
+      { label: 'อ่านหลักฐานครบก่อนตอบ', passed: events.length === scenario.steps.length, hint: 'รอเหตุการณ์ของเคสนี้ให้ครบ แล้วเปิด timeline อีกครั้ง' },
+      { label: 'เลือกหลักฐานที่ชี้ขาด', passed: evidenceId === keyEvidence && events.some(event => event.id === evidenceId), hint: guide.focus },
+      { label: 'จัดประเภทตรงกับหลักฐาน', passed: ticket.disposition === scenario.truth, hint: 'เทียบผลที่เกิดขึ้นจริงกับบริบท เช่นถูกปฏิเสธหรือได้รับอนุญาต' },
+      { label: 'ประเมินความรุนแรงและอธิบายเหตุผล', passed: ticket.severity === scenario.severity && ticket.reason.trim().length >= 20, hint: 'ระบุผลกระทบที่ยืนยันแล้ว และเหตุผลของระดับความรุนแรงอย่างน้อยหนึ่งประโยค' }
+    ];
+    return { passed: checks.every(check => check.passed), checks, evidenceId, source: guide.source, reviewedAt: new Date().toISOString(), mode: 'mock-rubric' };
+  }
   function makeRun(ids, demo = false) {
     return { id: demo ? 'DEMO-024' : 'RUN-' + Date.now().toString(36).toUpperCase(), scenarioIds: [...ids], state: demo ? 'Completed' : 'Running', elapsed: demo ? 75 : 0, duration: 75, events: [], alerts: [], tickets: [], audit: [], ai: 'ready', demo, version: 1, lastClockAt: Date.now(), startedAt: new Date().toISOString() };
   }
@@ -22,15 +55,15 @@
         if (at > run.elapsed || run.events.some(e => e.id === eventId)) return;
         run.events.push({ id: eventId, scenarioId: id, time: at, source: s.category === 'IDENTITY' ? 'Auth gateway' : s.category === 'ANOMALY' ? 'File audit' : 'Web gateway', asset: s.asset, user: s.user, ip: s.ip, message: step[0], request: step[1], response: step[2] });
         if (i === 1) {
-          const alert = { id: 'ALT-' + id.slice(1), scenarioId: id, title: s.title, detector: s.detector, severity: s.id === 'S02' ? 'Medium' : s.severity, time: at };
+          const alert = { id: 'ALT-' + id.slice(1), scenarioId: id, title: run.mode === 'exam' ? 'Unclassified activity' : s.title, detector: s.detector, severity: run.mode === 'exam' ? 'Unrated' : s.id === 'S02' ? 'Medium' : s.severity, time: at };
           run.alerts.push(alert);
-          run.tickets.push({ id: 'TKT-' + (1040 + Number(id.slice(1))), scenarioId: id, title: s.title, severity: alert.severity, status: 'Open', disposition: '', reason: '', notes: [], assessments: [], version: 1, deleted: false, created: at, evidenceIds: run.events.filter(e => e.scenarioId === id).map(e => e.id) });
+          run.tickets.push({ id: 'TKT-' + (1040 + Number(id.slice(1))), scenarioId: id, title: alert.title, severity: alert.severity, status: 'Open', disposition: '', reason: '', notes: [], assessments: [], version: 1, deleted: false, created: at, evidenceIds: run.events.filter(e => e.scenarioId === id).map(e => e.id) });
           audit(run, 'Detection engine', 'Ticket created', alert.id, s.detector + ' detection · fixture v1');
         }
         const ticket = run.tickets.find(t => t.scenarioId === id);
         if (ticket) {
           if (!ticket.evidenceIds.includes(eventId)) { ticket.evidenceIds.push(eventId); ticket.version = (ticket.version || 1) + 1; }
-          if (id === 'S02' && i === 3 && !ticket.humanSeverity) ticket.severity = 'High';
+          if (id === 'S02' && i === 3 && !ticket.humanSeverity && run.mode !== 'exam') ticket.severity = 'High';
         }
       });
     }
@@ -123,7 +156,7 @@
     return { rows, correct: rows.filter(r => r.correct).length, pending: rows.filter(r => r.answer === 'Undetermined').length, total: rows.length };
   }
   function evaluate(run) { if (run.state !== 'Completed') throw Error('EVALUATION_LOCKED: จบรอบก่อนดูผล'); return clone(run.evaluationSnapshot || computeEvaluation(run)); }
-  const api = { scenarios, clone, getScenario, makeRun, release, tick, demoRun, analysis, updateTicket, audit, evaluate, statuses, dispositions, isMutable, assertMutable, assertVersion, syncClock, pauseRun, resumeRun, finishRun, dailyRunCount, eventDate, filterEvents };
+  const api = { scenarios, levels, guides, levelForScenario, learningProgress, reviewLesson, clone, getScenario, makeRun, release, tick, demoRun, analysis, updateTicket, audit, evaluate, statuses, dispositions, isMutable, assertMutable, assertVersion, syncClock, pauseRun, resumeRun, finishRun, dailyRunCount, eventDate, filterEvents };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   global.SOC = api;
 })(typeof window !== 'undefined' ? window : globalThis);

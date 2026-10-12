@@ -12,7 +12,7 @@
 
 RAG ช่วยเพิ่มข้อมูลอ้างอิง แต่ไม่รับประกันว่าคำตอบถูกต้อง การเปิด ticket ยังเป็นหน้าที่ rules/anomaly และคะแนนยังมาจาก evaluator AI ไม่แก้ disposition, ปิด ticket หรือดำเนินการตอบสนองภัยแทนผู้ใช้
 
-MVP รองรับสอง use cases:
+MVP ฐานรองรับสอง use cases; การประเมินข้อสอบเลื่อนระดับเป็นงานเพิ่มตาม [Learning path](learning-path.md) ไม่ถือว่าได้มาอัตโนมัติจากการทำ Ask AI:
 
 | Use case | Input | Output |
 |---|---|---|
@@ -251,3 +251,13 @@ Ingestion/reindex ไม่รันใน API startup หรือ migration; r
 | RAG-005: evaluation + deploy | benchmark เทียบ no-RAG, CI gates, pgvector backup และ release runbook |
 
 ประมาณเพิ่ม 6–10 วันทำงานหลัง core AI/worker พร้อม สำหรับทีมที่คุ้น stack; ต้องปรับ roadmap เดิมและงบ embedding ก่อนยืนยันวันส่ง นิยามเสร็จคือใช้งานผ่าน API จริงพร้อม citation/สิทธิ์/benchmark ตามเกณฑ์ ไม่ใช่แค่เพิ่ม LangChain dependency
+
+## 12. Learning coach และการประเมินเหตุผลหลังสอบ (งานเพิ่ม)
+
+ช่วงเรียนค้นได้เฉพาะคู่มือที่อนุมัติแล้วเกี่ยวกับวิธีอ่าน Method, Path, status, request/response และการเชื่อม event; ตัวอย่างฝึกต้องแยกจาก exam bank อย่างชัดเจน ระหว่าง exam **ห้ามเรียก triage/Ask AI ที่แสดงคำใบ้ของ attempt นั้น** และห้ามส่ง private answer key เข้า retrieval index ที่ learner role ค้นได้
+
+หลัง submit ให้ deterministic evaluator ตรวจว่าหลักฐานครบ, evidence refs อยู่ใน frozen snapshot, disposition/severity ถูกเกณฑ์ แล้วค่อยใช้ RAG ช่วยอธิบายว่าข้อความเหตุผลเชื่อม event กับคู่มืออย่างไร ผลลัพธ์ต้องแยก `criterion`, `finding`, `evidence_refs`, `knowledge_refs`, `uncertainty` และ version ของ rubric/model/release Cite คู่มือเพื่ออธิบายหลักการ ไม่ใช้คู่มือเป็นหลักฐานว่าการโจมตีในรอบนี้สำเร็จ ความยาวข้อความเพียงอย่างเดียวไม่ใช่เกณฑ์ผ่าน
+
+Worker ต้อง validate refs ทั้งสองชุดก่อนบันทึก grade; no-match/provider outage/invalid citation หรือความเห็น AI ขัดกับ deterministic result ให้ `needs_review` และส่ง Instructor ไม่ auto-pass หรือ auto-fail โดยโมเดลล้วน ๆ Benchmark เพิ่มชุดคำตอบผู้เรียนที่มนุษย์ให้คะแนนไว้ล่วงหน้า วัด agreement แยกตามระดับ ภาษาไทย/อังกฤษ ความกำกวม false pass และ false fail รวมถึงทดสอบ prompt injection ใน log/คำตอบ/เอกสารที่ค้นได้ ข้อมูลคำตอบผู้เรียนต้องผ่าน redaction และ retention ตามนโยบายเดียวกับ evidence
+
+งานนี้ต้องมี issue และ estimate แยกจาก RAG-001–005 เดิม เพราะ retrieval ที่อ้างแหล่งได้ยังไม่ได้หมายความว่าประเมินคำตอบอย่างยุติธรรมและเชื่อถือได้

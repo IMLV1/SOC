@@ -2,7 +2,7 @@
 
 วันที่ปรับปรุง: 12 ตุลาคม 2026 · สถานะ: ข้อเสนอสำหรับพัฒนา ยังไม่ใช่ระบบที่ติดตั้งแล้ว
 
-อ่านร่วมกับ [ขอบเขตโครงการ](soc-simulation.md), [API contract](api.md) และ [แผนพัฒนา](development-plan.md)
+อ่านร่วมกับ [ขอบเขตโครงการ](soc-simulation.md), [Learning path](learning-path.md), [API contract](api.md) และ [แผนพัฒนา](development-plan.md)
 
 แบบออกแบบเพิ่มเติม: [Database](database.md) ลงรายละเอียดตาราง/constraints/transactions และ [CI/CD](ci-cd.md) ระบุ checks, build, deployment, migration และ recovery ทั้งสองเป็นแผน ยังไม่ได้ติดตั้งจริง
 
@@ -10,7 +10,7 @@
 
 ปัจจุบัน `prototype/` เป็นเว็บต้นแบบ HTML/CSS/JavaScript ใช้ localStorage และ AI fixture ส่วน `frontend/` และ `backend/` ยังไม่มีแอปจริง นำรูปแบบหน้าจอและ flow มาใช้ต่อได้ แต่ต้องย้ายสิทธิ์ ข้อมูล นาฬิกา การตรวจจับ และเฉลยไปฝั่ง server
 
-เอกสารนี้เติมรายละเอียดทางเทคนิคจาก `soc-simulation.md` โดยไม่ขยายไปสู่การโจมตีจริง คำว่า README ที่ปรากฏภายในเอกสารเดิมหมายถึงเนื้อหาขอบเขตในไฟล์นั้น; README ที่ root ปัจจุบันยังไม่มีรายละเอียดดังกล่าว
+เอกสารนี้เติมรายละเอียดทางเทคนิคจาก `soc-simulation.md` โดยไม่ขยายไปสู่การโจมตีจริง README ที่ root เป็นทางเข้าและวิธีเปิดต้นแบบ ส่วนข้อกำหนดระบบเต็มอยู่ใน docs
 
 เสนอ **modular monolith**: backend codebase เดียว แบ่งโมดูลตามหน้าที่ รันเป็น API process และ worker process แยกกัน ใช้ PostgreSQL ร่วมกัน เริ่มจาก REST และ polling ก่อน ไม่จำเป็นต้องเพิ่ม microservices, Redis, Elasticsearch หรือ WebSocket ใน MVP
 
@@ -66,6 +66,8 @@ Frontend เรียกเฉพาะ API ของแอป ไม่เร�
 | โมดูล | รับผิดชอบ | ห้ามทำ |
 |---|---|---|
 | auth | register, session, login, logout, CSRF, account status | รับ role สูงจาก registration payload |
+| learning | บทเรียน versioned, ความคืบหน้า, gate ของระดับ และคำแนะนำหลัง login | เชื่อ completion/level unlock ที่ client ส่งมาโดยไม่ตรวจ server |
+| exams | เลือกข้อสอบแยกจาก demo, สร้าง attempt/run, freeze คำตอบและประเมินผล | ส่งเฉลย, severity ตั้งต้นหรือ AI brief ที่ใบ้ผลก่อน submit |
 | runs | เจ้าของรอบ เวอร์ชัน scenario นาฬิกา โควตา และสถานะ | รับเวลาจำลองหรือ owner จาก client |
 | ingestion | ตรวจ fixture และบันทึก event ที่ถึงเวลาปล่อย | รับ URL เป้าหมายให้ยิง request จริง |
 | detection | rule/anomaly และ correlation พร้อม evidence | อ่าน ground truth หรือเหตุการณ์ที่ยังไม่ปล่อย |
@@ -76,6 +78,8 @@ Frontend เรียกเฉพาะ API ของแอป ไม่เร�
 | audit | append-only change history | เปิด public mutation endpoint |
 
 Middleware ตรวจ session → account status → role → run ownership ก่อนส่งเข้า service ตรวจซ้ำใน service สำหรับ worker/internal calls ที่ไม่มี HTTP middleware
+
+Learning และ exam ใช้ runner/evidence เดิมได้ แต่ต้องมี **exam serializer/policy** ทุก endpoint ที่อ่าน run: ก่อนส่งคำตอบไม่ให้คืนข้อมูลช่วยตอบ, private label หรือเฉลย แม้ผู้ใช้เรียก API ตรง Demo/ตัวอย่างฝึกต้องใช้ fixture คนละชุดกับข้อสอบ การตัดสินผ่านและปลดล็อกเป็น transaction ฝั่ง server จากผลประเมินที่ versioned; AI+RAG เป็นผู้ให้เหตุผลประกอบพร้อม citation และส่ง `needs_review` เมื่อไม่มั่นใจ ไม่ให้โมเดลเปลี่ยน ground truth หรือปลดล็อกโดยตรง
 
 ## 5. โครงสร้าง repository ที่จะพัฒนา
 

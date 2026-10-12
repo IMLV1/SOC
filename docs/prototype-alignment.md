@@ -29,6 +29,8 @@
 | Delete/restore | restore ไม่มีเหตุผล | confirm + reason + version check สำหรับ ticket/note | DELETE และ POST restore |
 | Note edit | ไม่ระบุเหตุผล | บังคับ reason เก็บ version เดิมและ audit | PATCH notes/{id} |
 | AI retry | Guest/รอบจบกดเปลี่ยน mock ได้ | จำกัดเฉพาะเจ้าของรอบที่ยังแก้ไขได้ | POST analyses/{id}/retry |
+| เส้นทางเรียนรู้ | เข้า dashboard แล้วเลือกเคสได้ทันที | หน้าแรกเป็น 3 ระดับ; login แล้วสอนการใช้งาน; บทเรียนอ่าน request/response แบบกด 5 จุดก่อนเปิดเคสทดสอบ | [Learning path](learning-path.md) LEARN-01–03 |
+| ข้อสอบเลื่อนระดับ | Ticket/AI brief บอกผลและ severity ตั้งต้น | รอบสอบซ่อนชื่อที่ใบ้ผล, initial severity, คำใบ้และ AI brief; ส่งคำตอบแล้วจึงได้ feedback และผ่านทุกเคสจึงเปิดระดับใหม่ | [Learning path](learning-path.md) LEARN-04–07 |
 
 ชื่อสถานะใน UI เช่น `Investigating` เป็น display label ไม่ใช่ wire enum ใน API; backend client ใน Phase 0–3 ต้อง map เป็น `investigating` และใช้ UUID ไม่ใช้รหัสแสดงผล `TKT-1042` แทน UUID
 
@@ -45,6 +47,8 @@
 | Completing | รอ mock timer ไม่ได้ drain worker jobs 60 วินาที | SOC-006, SOC-014 |
 | AI | ผลจาก fixture และ fault toggle; ยังไม่มี analysis jobs/retry revisions/global token budget/provider | SOC-011, SOC-012 |
 | Ground truth | ซ่อนใน UI จนจบ แต่ยังอยู่ใน JavaScript ฝั่ง client ไม่ป้องกันเปิด source | SOC-005, SOC-014 |
+| Exam security | บทเรียน/ผลสอบอยู่ localStorage, demo กับข้อสอบยังใช้ fixture ชุดเดียวกันและคำตอบอยู่ฝั่ง browser; ห้ามถือว่าเป็นข้อสอบที่กันโกงได้ | LEARN-02/03; server-side gate, private exam bank/answer key, blind serializer |
+| AI/RAG grading | ตรวจ 4 ข้อด้วย mock rubric; เหตุผลตรวจเพียงความยาว ไม่เข้าใจความหมายและไม่ค้น knowledge จริง | LEARN-03 และ [RAG §12](rag-langchain.md#12-learning-coach-และการประเมินเหตุผลหลังสอบ) |
 | Security/ownership | ตรวจ flow ฝั่ง client เท่านั้น localStorage แก้ได้ | SOC-003, SOC-010 |
 | Retention/audit | ไม่มี purge ตาม expires_at; audit ไม่ใช่ server append-only | SOC-010, SOC-016 |
 | Experiment | แสดง Not measured; ยังไม่มี A/B/C experiment execution หรือ provider usage จริง | SOC-014 |
@@ -54,12 +58,10 @@
 
 ## วิธีตรวจ flow ใหม่
 
-1. Login Analyst → เริ่ม S02 → อย่า logout เพื่อพักรอบ ต้องใช้ปุ่มพักโดยตรง
-2. เปิด Event explorer กรอง asset/IP/from/to แล้วลองช่วงเวลาที่ from >= to ต้องถูกปฏิเสธ
-3. เปิด Ticket ตอนยังมี event ใหม่กำลังเข้ามา กรอก draft แล้วรอหลักฐานเพิ่ม บันทึกด้วย version เก่าต้องพบ VERSION_CONFLICT; กดอัปเดตหลักฐาน draft ยังอยู่
-4. บันทึก assessment, แก้ Note โดยใส่เหตุผล, ลบ/กู้คืนแล้วตรวจ audit และประวัติคำตอบ
-5. กด Export ก่อนจบรอบต้องไม่ดาวน์โหลด
-6. Finish → เห็น Completing → Completed; เปิด Ticket แล้วแก้/ลบ/กู้คืนไม่ได้ แต่ดูหลักฐานและผลประเมินได้
-7. Instructor เพิ่ม comment ในรอบจบได้ แต่ปรับ status/severity ไม่ได้
+1. Login Analyst ใหม่ → เห็นคำแนะนำ → เข้า “เรียนวิธีอ่าน request” ก่อน; ปุ่มเคสทดสอบยังล็อก
+2. กด Method, Path, Response, บัญชี/IP, เหตุการณ์ต่อเนื่องทีละขั้น → จบบทเรียนแล้วเคสระดับเริ่มต้นเปิด
+3. เริ่มสอบหนึ่งเคส → Event explorer เปิด request/response ได้ แต่ Ticket ไม่มี AI brief/คำใบ้และ severity เป็น Unrated ก่อนตอบ
+4. ส่งคำตอบหลังหลักฐานครบ → เห็น rubric หลังส่ง; ไม่ผ่านแล้วกลับไปเริ่ม attempt ใหม่ได้ ผ่านทั้งสองเคสจึงเปิดบทเรียนระดับกลาง
+5. ตรวจ flow เดิม: pause/clock, filters, version conflict, CRUD note/ticket, export lock, Completing/Completed และ Instructor comments ตามตารางด้านบน
 
 การทดสอบอัตโนมัติอยู่ใน `prototype/tests/model.test.cjs` ผลตรวจ browser และข้อจำกัดการตรวจอัปเดตใน [Prototype QA](../prototype/QA.md)

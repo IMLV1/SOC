@@ -63,13 +63,13 @@ Production approval เป็นนโยบายเริ่มต้นขอ
 |---|---|---|
 | prototype | `node --check` สำหรับ app.js/model.js/server.cjs และ `npm test` | ทุกคำสั่งสำเร็จ; model lifecycle tests ผ่าน |
 | quality | frontend ESLint/TypeScript; backend Ruff/mypy; format และ Markdown links | ไม่มี error; scripts ที่บังคับต้องมีจริง |
-| unit | clock/state transitions, detection, correlation, metrics, AI schema | ทดสอบ deterministic โดยไม่เรียก provider จริง |
+| unit | clock/state transitions, detection, correlation, metrics, AI schema, lesson/level gate และ rubric | ทดสอบ deterministic โดยไม่เรียก provider จริง |
 | contract | OpenAPI valid, generated client ไม่ drift, request/response/error shapes | API implementation ตรง contract รวมสิทธิ์และ pagination |
-| integration | PostgreSQL จริงที่ล้างทิ้งได้, roles จริง, migrations, transactions | ข้ามบัญชี/ข้ามรอบไม่ได้, version race สำเร็จหนึ่งคำขอ, quota ไม่เกิน |
+| integration | PostgreSQL จริงที่ล้างทิ้งได้, roles จริง, migrations, transactions | ข้ามบัญชี/ข้ามรอบหรือข้ามระดับไม่ได้, version race สำเร็จหนึ่งคำขอ, quota ไม่เกิน, submit ซ้ำไม่ให้ผลสองครั้ง |
 | recovery | worker crash/retry, pause-release race, finish cutoff | events/jobs/tickets ไม่ซ้ำ, ไม่ปล่อย future events หลัง pause |
 | build | Next.js standalone output, Python package/import checks, Docker build | สร้างจาก clean checkout และ lockfiles ได้; Uvicorn/worker เริ่มได้ |
-| E2E | login → run → evidence → ticket/note → finish → evaluation/export | รวม Guest, Instructor, error paths, ขนาดหน้าจอ 375/768/1440 |
-| security | dependency/image scan, secret scan, fixture leakage check | ไม่มี secret; ช่องโหว่ critical/high ที่ใช้โจมตี runtime ได้ต้องแก้หรือมีข้อยกเว้นพร้อมเจ้าของและวันหมดอายุ |
+| E2E | login → บทเรียนอ่าน request → exam ที่ปลดล็อก → evidence → submit → feedback/retake → ระดับถัดไป และ ticket/note/evaluation/export เดิม | รวม Guest, Instructor, error paths, ขนาดหน้าจอ 375/768/1440 |
+| security | dependency/image scan, secret scan, fixture/answer-key leakage check ทุก exam endpoint | ไม่มี secret/เฉลยข้อสอบใน client bundle หรือ response ก่อน submit; ช่องโหว่ critical/high ที่ใช้โจมตี runtime ได้ต้องแก้หรือมีข้อยกเว้นพร้อมเจ้าของและวันหมดอายุ |
 | ci-gate | รวมผลทุก required job | fail/cancelled/missing job ต้องไม่กลายเป็น success |
 
 CI ใช้ mock AI เท่านั้น การทดสอบ real provider แยกเป็น manual job บน trusted branch มีงบจำกัดและป้ายผลจริง ไม่ให้ PR จาก fork ใช้ provider key หรือ production data

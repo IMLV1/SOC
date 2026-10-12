@@ -349,7 +349,7 @@ Human score และ detector metrics ใช้คนละแหล่งข�
 
 1. เปิดหน้า: GET `/auth/session`; ถ้า 401 ใช้ `/demo/*` และ public catalog
 2. ก่อน auth mutation: GET `/auth/csrf`; login แล้วใช้ csrf_token ใหม่
-3. เริ่มรอบ: GET `/me/quota` เพื่อช่วยแสดง UI แต่ POST `/runs` ต้องตรวจ quota ซ้ำฝั่ง server
+3. ผู้เรียน: GET `/me/learning-path` และบทเรียนก่อน; สร้าง exam attempt ได้เมื่อ server ยืนยัน gate แล้ว ส่วนรอบฝึกทั่วไปยังใช้ GET `/me/quota` และ POST `/runs` ตามเดิม
 4. Poll run/overview ทุก 2 วินาทีขณะ running และใช้ events after_seq ดึง incremental; backoff เมื่อ network error และหยุด polling ที่ไม่จำเป็นเมื่อ tab ซ่อน
 5. paused หยุด event polling ได้ แต่ analysis ที่เริ่มแล้วอาจเสร็จจึงยัง refresh analysis ได้; reviewing สืบสวนต่อโดยยังไม่ดึงเฉลย
 6. ทุก mutation ใช้ version ล่าสุดและรักษา draft เมื่อเจอ 409 ให้ผู้ใช้โหลดข้อมูลใหม่ก่อนยืนยันอีกครั้ง
@@ -382,3 +382,25 @@ Retry เดิมคง question, evidence และ retrieval snapshot (หา
 เมื่อ source ถูกถอน Citation GET คืน 410 KNOWLEDGE_REVOKED ส่วน Analysis GET คืน 200 metadata ประวัติเดิม, result=null และ response_visibility=withdrawn ใช้การซ่อนผลแบบเดียวกันใน ticket detail, export และ Instructor review รวมถึง historical snapshot ที่เผยให้ผู้ใช้ ห้ามดึงข้อความเก่าจาก cache มาแสดงใหม่
 
 ไม่พบ context ให้ question result เป็น insufficient_context และ retrieval=no_match โดยไม่เรียก chat model ไม่แสดงว่าเป็นคำตอบจากโมเดล หาก embedding/retrieval ล้มเหลว question เป็น failed ส่วน triage อาจทำ evidence-only ตาม policy พร้อม retrieval=unavailable ซึ่งไม่ถือว่าผ่าน RAG benchmark
+
+## 16. Learning path และ promotion exam (ร่างเพิ่ม)
+
+อ่าน [Learning path requirements](learning-path.md) ก่อน implement ส่วนนี้ยังไม่มี endpoint ใช้งานจริง รูปแบบ envelope, UUID, CSRF, ownership, version และ idempotency ใช้กติกา §1–2
+
+| Method | Endpoint | ผลสำเร็จ / เงื่อนไข |
+|---|---|---|
+| GET | `/learning-path` | public level/lesson metadata เท่านั้น ไม่ส่ง exam bank หรือ answer key |
+| GET | `/me/learning-path` | 200 บทเรียนที่เรียนจบ, เคสที่ผ่าน, ระดับที่เปิด และ next action ของบัญชี |
+| GET | `/lessons/{lesson_id}` | 200 ตัวอย่างฝึก versioned 5 ขั้น และคำอธิบาย; ไม่มี fixture ข้อสอบ |
+| POST | `/lessons/{lesson_id}/steps/{step_id}/complete` | บันทึกการทำขั้นของเจ้าของ session; 200 progress/version; ตรวจ step ที่มีอยู่และลำดับ |
+| POST | `/lessons/{lesson_id}/complete` | 200 เมื่อครบทุกขั้น; idempotent; ไม่รับ `user_id`/`passed` จาก client |
+| POST | `/levels/{level_id}/attempts` | 201 attempt + run_id ของ exam case ที่ server เลือก/อนุญาต; ตรวจ lesson, level, quota และหนึ่ง active exam ต่อบัญชี; ใช้ Idempotency-Key |
+| GET | `/attempts/{attempt_id}` | 200 เฉพาะเจ้าของหรือ Instructor ที่กำกับ; ก่อน submit ไม่มี answer key, score หรือ feedback |
+| POST | `/attempts/{attempt_id}/submit` | `expected_version`, evidence_event_ids, severity, disposition, reason; 202 grading pending หรือ 200 result ที่เสร็จแล้ว; freeze คำตอบทันทีและใช้ Idempotency-Key |
+| GET | `/attempts/{attempt_id}/result` | ก่อน submit คืน 409 RESULT_LOCKED; หลัง submit คืน pending/passed/failed/needs_review และ rubric รายข้อพร้อม evidence/knowledge citations ที่เปิดเผยได้ |
+| GET | `/admin/attempts/{attempt_id}` | Instructor ใน assignment scope อ่าน submission/grading หลัง submit พร้อม access audit |
+| POST | `/admin/attempts/{attempt_id}/review` | rubric revision, decision=pass/fail/needs_review, reason, expected_version; audit และ unlock update ใน transaction เดียว |
+
+ข้อสอบใช้ชื่อ/initial severity ที่เป็นกลางและไม่ reuse demo fixture ข้อมูล `attempt_id` ชี้ `run_id` ฝั่ง server แต่ endpoint `/runs/{run_id}` ของ attempt ต้องใช้ serializer แบบ exam: ส่งเฉพาะ released evidence และสถานะที่ไม่ใบ้คำตอบ; `/demo/*`, `/scenarios`, analysis, overview, alerts, tickets และ export ต้องไม่เปิด answer key ก่อน submit/finish รวมถึงชื่อไฟล์, metadata และ error text `GET /runs/{run_id}/ground-truth` ยังล็อกตาม §10 แต่สำหรับ exam ให้เปิดเฉพาะหลัง final result ตาม policy
+
+การให้คะแนนเชิงเหตุผลเป็นงาน background ที่ผูก evidence snapshot/rubric/model/knowledge release ที่ตรึงไว้ ไม่รับคะแนนหรือ `passed` จาก client กฎตรวจหลักฐานและ classification ฝั่ง server เป็นตัวคุมผล หาก AI/RAG ล้มเหลวหรือไม่มั่นใจ ให้ `needs_review` และ Instructor พิจารณา ไม่ auto-pass; result ต้องระบุ source ของคำแนะนำ (`deterministic|ai_rag|instructor`) และ citation ที่ตรวจสิทธิ์แล้ว

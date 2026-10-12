@@ -12,6 +12,17 @@ test('a fresh run exposes no future events or tickets', () => {
   assert.equal(r.tickets.length, 0);
 });
 
+test('exam run keeps detector titles neutral while preserving evidence', () => {
+  const r = M.makeRun(['S04']);
+  r.mode = 'exam';
+  M.tick(r, 75);
+  assert.equal(r.alerts[0].title, 'Unclassified activity');
+  assert.equal(r.tickets[0].title, 'Unclassified activity');
+  assert.equal(r.alerts[0].severity, 'Unrated');
+  assert.equal(r.tickets[0].severity, 'Unrated');
+  assert.equal(r.events.length, M.getScenario('S04').steps.length);
+});
+
 test('pause freezes simulation and releasing repeatedly never duplicates evidence', () => {
   const r = M.makeRun(['S02']);
   M.tick(r, 17);
@@ -157,4 +168,33 @@ test('event filtering uses inclusive from and exclusive to with asset and user',
   assert.ok(e.length > 0); assert.ok(e.every(x=>x.time>=5 && x.time<17));
   assert.throws(()=>M.filterEvents(r,{from:'bad date'}),/ช่วงเวลา/);
   assert.throws(()=>M.filterEvents(r,{from:'2026-10-12T00:01:00Z',to:'2026-10-12T00:00:00Z'}),/ช่วงเวลา/);
+});
+
+test('learning path unlocks a level only after every case in the current level passes', () => {
+  const owner = 'learner@demo.test';
+  const runs = ['S01', 'S03', 'S04', 'S02', 'S05'].map(id => {
+    const run = M.makeRun([id]); run.owner = owner; M.tick(run, 75);
+    run.tickets[0].coachReviews = [{ passed: true }];
+    return run;
+  });
+  assert.equal(M.learningProgress([], owner).unlockedIndex, 0);
+  assert.equal(M.learningProgress(runs.slice(0, 1), owner).unlockedIndex, 0);
+  assert.equal(M.learningProgress(runs.slice(0, 2), owner).unlockedIndex, 1);
+  assert.equal(M.learningProgress(runs.slice(0, 4), owner).unlockedIndex, 2);
+  assert.equal(M.learningProgress(runs, owner).completed, true);
+  assert.equal(M.learningProgress(runs, 'another@demo.test').unlockedIndex, 0);
+});
+
+test('lesson review requires complete evidence, decisive reference, classification and reason', () => {
+  const run = M.makeRun(['S01']); M.tick(run, 17);
+  const ticket = run.tickets[0];
+  ticket.disposition = 'True Positive'; ticket.reason = 'มีความพยายามเข้าสู่ระบบ แต่ยังไม่มี session ที่สำเร็จ';
+  assert.equal(M.reviewLesson(run, ticket, 'S01-EV-004').passed, false);
+  M.tick(run, 75);
+  assert.equal(M.reviewLesson(run, ticket, 'S01-EV-001').passed, false);
+  const review = M.reviewLesson(run, ticket, 'S01-EV-004');
+  assert.equal(review.passed, true);
+  assert.equal(review.mode, 'mock-rubric');
+  ticket.disposition = 'False Positive';
+  assert.equal(M.reviewLesson(run, ticket, 'S01-EV-004').passed, false);
 });

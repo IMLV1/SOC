@@ -34,6 +34,16 @@ Constraints/FKs ใช้คุ้มครองความสัมพัน�
 erDiagram
     USERS ||--o{ AUTH_SESSIONS : owns
     USERS ||--o{ RUNS : starts
+    USERS ||--o{ USER_LESSON_PROGRESS : learns
+    USERS ||--o{ EXAM_ATTEMPTS : submits
+    LEARNING_LEVELS ||--o{ LESSONS : teaches
+    LEARNING_LEVELS ||--o{ EXAM_CASES : tests
+    LESSONS ||--o{ USER_LESSON_PROGRESS : records
+    EXAM_CASES ||--o{ EXAM_ATTEMPTS : assigned
+    RUNS ||--o| EXAM_ATTEMPTS : backs
+    EXAM_ATTEMPTS ||--o| EXAM_ANSWERS : freezes
+    EXAM_ATTEMPTS ||--o{ GRADING_REVISIONS : scores
+    USERS ||--o{ LEVEL_UNLOCKS : earns
     USERS ||--|| USER_QUOTAS : limits
     RUNS ||--|| RUN_VERSIONS : pins
     RUNS ||--|{ SCENARIO_INSTANCES : contains
@@ -314,3 +324,21 @@ analyses เพิ่ม kind/question/ticket/release/config/visibility; run_ver
 Alembic revision 007 จัด schema/grants/extension เมื่อ hosting รองรับ ส่วน ingest/embed/reindex เป็น jobs หลัง deploy ไม่ทำใน migration หรือ API startup Migration ต้องเพิ่ม FK/indexes ของ question ticket, citation snapshot และ release membership; runtime ไม่มีสิทธิ์สร้างตาราง vector เอง
 
 retrieval snapshots เป็นข้อมูลลูกของ run ตาม retention เดิม KB chunks ที่มี citation อ้างยังไม่ purge; source revocation ต้องตัดการอ่าน response/citation ทันทีทุก projection โดยไม่เปลี่ยนคะแนนใน evaluation snapshot ทดสอบ restore ทั้ง extension, embeddings, release manifests และ references
+
+## 14. Learning path / exam schema extension (เสนอ)
+
+เพิ่มตารางต่อไปนี้ตาม [Learning path](learning-path.md) โดยไม่มีตารางใดรับ `passed` หรือ `unlocked` จาก payload client เป็นผลลัพธ์ที่เชื่อถือได้:
+
+| ตาราง | คอลัมน์หลัก | ข้อบังคับ |
+|---|---|---|
+| learning_levels | id, ordinal, title, enabled, version | UNIQUE(ordinal,version); level เปิดตามลำดับ |
+| lessons | id, level_id FK, version, content_json, content_hash, published_at | ตัวอย่างฝึกเท่านั้น ไม่มี private answer key |
+| user_lesson_progress | user_id FK, lesson_id FK, completed_steps jsonb, completed_at?, version | UNIQUE(user_id,lesson_id); server ตรวจ step ID และลำดับก่อน complete |
+| exam_cases | id, level_id FK, scenario_id FK, version, enabled, private_key_ref | แยกจาก demo/catalog; private_key_ref ไม่ serialize ไป client |
+| exam_attempts | id, user_id FK, exam_case_id FK, run_id FK UNIQUE, state, started_at, submitted_at?, rubric_version, evidence_snapshot_hash?, version | 1 active attempt ต่อ user; ตรวจ gate/quota ใน transaction |
+| exam_answers | attempt_id PK/FK, evidence_event_ids, severity, disposition, reason, frozen_at, content_hash | เขียนครั้งเดียว; refs ต้องอยู่ใน released snapshot ของ run เดียวกัน |
+| grading_revisions | id, attempt_id FK, revision, source, status, criterion_results jsonb, rubric_version, model_id?, knowledge_release_id?, reviewer_id?, reason?, created_at | UNIQUE(attempt_id,revision); pass/fail/needs_review มี audit และเวอร์ชัน |
+| grading_citations | grading_revision_id FK, source_type, evidence_event_id?, retrieval_item_id? | ref ต้องอยู่ใน frozen evidence/retrieval ของ attempt เดียวกัน |
+| level_unlocks | user_id FK, level_id FK, earned_from_revision_id FK, unlocked_at | UNIQUE(user_id,level_id); เพิ่มพร้อมผลผ่านครบทุกเคสใน transaction เดียว |
+
+Grade worker อ่าน private key ด้วย role แยกจาก learner API/detector/triage AI; exam serializers ไม่ส่งชื่อเคสที่ใบ้ผล, initial severity, rubric หรือคำอธิบายก่อน submit ใช้ transaction lock attempt + run และ idempotency record ตอน submit เพื่อไม่เกิดสองคำตอบจากหลายแท็บ Instructor override สร้าง `grading_revisions` ใหม่ ไม่เขียนทับแถวเดิม และ recompute unlock ตาม policy ที่ประกาศต่อผู้เรียน

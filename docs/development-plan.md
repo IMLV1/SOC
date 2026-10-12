@@ -2,11 +2,11 @@
 
 วันที่: 12 ตุลาคม 2026 · สถานะ: แผนเสนอ ยังไม่ได้เริ่ม implementation ตามแผนนี้
 
-เอกสารประกอบ: [Architecture](architecture.md) · [API](api.md) · [Product scope](soc-simulation.md) · [Prototype](../prototype/README.md)
+เอกสารประกอบ: [Architecture](architecture.md) · [API](api.md) · [Product scope](soc-simulation.md) · [Learning path](learning-path.md) · [Prototype](../prototype/README.md)
 
 แบบออกแบบสำหรับลงมือพัฒนา: [Database](database.md) และ [CI/CD](ci-cd.md) ครอบคลุม schema, GitHub Actions, Docker artifacts, migration, deploy และ recovery
 
-เพิ่ม [LangChain RAG](rag-langchain.md) หลัง core AI พร้อม: approved knowledge → pgvector retrieval → cited triage/Ask AI → quality benchmark ตาม RAG-001–005 คาดเพิ่ม 6–10 วันทำงานจากแผนฐาน 31–40 วัน เป็นรวมประมาณ 37–50 วันทำงานหากทำต่อเนื่อง ยังไม่รวมเวลารอ provider/งบและไม่ใช่กำหนดส่งยืนยัน
+เพิ่ม [LangChain RAG](rag-langchain.md) หลัง core AI พร้อม: approved knowledge → pgvector retrieval → cited triage/Ask AI → quality benchmark ตาม RAG-001–005 คาดเพิ่ม 6–10 วันทำงานจากแผนฐาน 31–40 วัน ส่วน learning path และข้อสอบเลื่อนระดับพร้อม AI/RAG grading เป็นงานใหม่ประมาณ 8–12 วันทำงานอีกก้อน กรอบรวมเบื้องต้นจึงเป็น **45–62 วันทำงาน** หากทำทั้งหมดต่อเนื่อง ยังไม่รวมเวลารอ provider/งบและไม่ใช่กำหนดส่งยืนยัน ต้องประเมินใหม่หลังทำ SRS และกำหนด rubric/ข้อสอบจริง
 
 Stack ที่เลือก: **Next.js App Router + TypeScript** สำหรับ frontend และ **Python + FastAPI** สำหรับ backend; worker ใช้ Python codebase เดียวกัน ฐานข้อมูล PostgreSQL ผ่าน SQLAlchemy/asyncpg และ Alembic เครื่องมือประกอบยังต้องติดตั้งและ pin versions ใน Phase 0
 
@@ -14,7 +14,7 @@ Stack ที่เลือก: **Next.js App Router + TypeScript** สำหร
 
 เปลี่ยน prototype ให้เป็นเว็บใช้งานจริงที่มีบัญชี ข้อมูลถาวร สิทธิ์ฝั่ง server, runner, detection, AI และผลประเมินที่ตรวจสอบได้ ใช้ prototype เป็น reference หน้าจอ ไม่ย้าย localStorage หรือรหัสบัญชีเดโมไปเป็นกลไก production
 
-ประมาณการสำหรับผู้พัฒนา 2 คนที่ทำงานต่อเนื่อง: 7–9 สัปดาห์ เป็นกรอบวางแผน ไม่ใช่กำหนดส่งที่ยืนยัน หากทำคนเดียวหรือยังไม่คุ้น stack ต้องเผื่อเวลาเพิ่ม ผู้ใช้ยังไม่ได้ระบุทีม งบ AI หรือวันส่ง จึงระบุผู้รับผิดชอบเป็นบทบาทแทนชื่อ
+ประมาณการสำหรับผู้พัฒนา 2 คนที่ทำงานต่อเนื่อง: แผนฐานเดิม 7–9 สัปดาห์; เมื่อรวม RAG และ learning/exam ต้องเผื่อเพิ่มตามกรอบข้างต้น เป็นกรอบวางแผน ไม่ใช่กำหนดส่งที่ยืนยัน หากทำคนเดียวหรือยังไม่คุ้น stack ต้องเผื่อเวลาเพิ่ม ผู้ใช้ยังไม่ได้ระบุทีม งบ AI หรือวันส่ง จึงระบุผู้รับผิดชอบเป็นบทบาทแทนชื่อ
 
 ## 2. ลำดับส่งมอบ
 
@@ -26,9 +26,10 @@ Stack ที่เลือก: **Next.js App Router + TypeScript** สำหร
 | 3 — Detection & investigation | 6–7 วัน | rules/anomaly/correlation, alerts, ticket/note CRUD, audit, revisions | 5 scenarios และ normal traffic ผ่าน; S05 เข้าทาง anomaly; validation และ restore ทำงานจริง |
 | 4 — AI integration | 4–6 วัน | mock adapter, schema validation, real provider, budget, retry | mock/real ติดป้าย; refs ไม่หลุด snapshot; AI ล่มหรือ quota เต็มยังสืบสวนต่อได้ |
 | 5 — Evaluation & instructor | 5–6 วัน | snapshot, ground truth, A/B/C jobs, account quota, comments, export | มีผลทดลองจริง; ไม่มีเฉลยก่อนจบ; Instructor ไม่แก้ note/assessment ผู้เรียน |
+| 5a — Learning & promotion exam (เพิ่ม) | 8–12 วันเบื้องต้น | onboarding, lesson progress, exam bank แยก demo, server-side gate, grading/feedback, retake, Instructor review | ผู้เริ่มต้นเรียนอ่าน request ได้; เรียก API ข้าม gate ไม่ได้; ก่อน submit ไม่มีเฉลย; ผล AI/RAG ผิด/ล่มไป needs_review |
 | 6 — Deployment & acceptance | 4–6 วัน | staging/public HTTPS, restore drill, load test, accessibility, docs/video | flow ผ่าน URL จริง; restart ข้อมูลอยู่; ส่ง URL, SRS, repo และวิดีโอที่เปิดดูได้ |
 
-เวลารวมประมาณ 31–40 วันทำงาน รวมเผื่อแก้ integration บางส่วน แต่ยังไม่รวมเวลารออนุมัติงบ/บัญชี hosting
+เวลา 31–40 วันทำงานข้างต้นเป็นแผนฐานเดิม; Phase 5a และ RAG เป็นงานเพิ่มตามกรอบ 45–62 วันทำงาน ยังไม่รวมเวลารออนุมัติงบ/บัญชี hosting
 
 ```mermaid
 flowchart LR
@@ -37,8 +38,9 @@ flowchart LR
     P2 --> P3[3 Detection and tickets]
     P3 --> P4[4 AI]
     P3 --> P5[5 Evaluation and instructor]
-    P4 --> P6[6 Deploy and acceptance]
-    P5 --> P6
+    P5 --> P5A[5a Learning and exams]
+    P4 --> P5A
+    P5A --> P6[6 Deploy and acceptance]
 ```
 
 Frontend และ backend พัฒนาร่วมกันโดยอิง OpenAPI; mock API ใช้เฉพาะ development และต้องแสดงสถานะ ไม่มีการอ้างว่า mock ผ่านเท่ากับ endpoint จริงผ่าน
@@ -64,6 +66,9 @@ Frontend และ backend พัฒนาร่วมกันโดยอิ�
 | SOC-015 | Instructor + export | ทั้งทีม | 003, 010, 014 | disable account, quota, comments, evidence review และ report download |
 | SOC-016 | Hosting + backup/restore + observability | Backend | 006, 012 | staging restart/restore ผ่าน; readiness ตรวจ DB; queue failure สังเกตได้ |
 | SOC-017 | End-to-end acceptance + delivery | ทั้งทีม | 013–016 | flow บน public URL ผ่าน; เอกสารและวิดีโอเปิดได้จากผู้ตรวจ |
+| LEARN-01 | Learning UI, progress และ level gate | ทั้งทีม | SOC-003/004/005 | บทเรียน 5 ขั้น/ระดับและ server gate ผ่าน; refresh แล้วกลับมาได้ |
+| LEARN-02 | Exam bank, attempt และ blind serializer | Backend | SOC-005/006/014 | แยก demo กับข้อสอบ; API ทุกทางไม่ส่ง key/AI hint/severity ก่อน submit |
+| LEARN-03 | Grading, RAG feedback และ Instructor review | ทั้งทีม | LEARN-02, SOC-012/015, RAG-001–005 | rubric versioned, citations validated, needs_review/retake/override audited |
 
 งาน RAG ใช้ dependencies SOC-006/010/011/012: เตรียม corpus/storage ด้วย mock ได้ก่อน provider พร้อม แต่ benchmark จริงต้องเลือก embedding/chat models แล้ว SOC-014 เพิ่ม config เปรียบเทียบ C no-RAG กับ C RAG; SOC-016/017 เพิ่ม pgvector deploy/restore, citation leakage/revocation และ question flow ตาม RAG design ไม่เปลี่ยน detector policy
 
@@ -128,7 +133,7 @@ Frontend และ backend พัฒนาร่วมกันโดยอิ�
 
 ### E2E
 
-Guest → register/login → choose scenarios → run → evidence → ticket → note CRUD → disposition → finish → debrief → export พร้อม error paths ของ AI, quota, session, access denied และ validation บน 375/768/1440px
+Guest → register/login → guided request lesson → exam ที่เปิด → run → evidence → ticket → submit → feedback → retake หรือปลดล็อกระดับถัดไป รวม flow note CRUD, debrief/export และ error paths ของ AI, quota, session, access denied, validation, grading needs_review บน 375/768/1440px
 
 ### ก่อน public deployment
 

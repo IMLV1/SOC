@@ -1,5 +1,14 @@
 # Prototype verification
 
+## Learning path / promotion exam regression — 12 ตุลาคม 2026
+
+- Automated model tests ผ่าน **18/18** รวมการปลดล็อกระดับเมื่อผ่านทุกเคส, rubric จำลอง 4 ข้อ และ exam run ที่ใช้ชื่อ/initial severity เป็นกลาง; `node --check app.js`, `node --check model.js` และ `git diff --check` ผ่าน
+- Browser: ผู้เรียนใหม่ login แล้วเห็น onboarding; ก่อนเรียนปุ่มข้อสอบปิดอยู่ บทเรียน 5 ขั้นต้องกด Method → Path → Response → บัญชี/IP → เหตุการณ์ต่อเนื่อง จึงจบบทและเปิดข้อสอบได้
+- Browser: เริ่มข้อสอบแล้ว Event explorer แสดงเฉพาะหลักฐาน ไม่มีคำใบ้; Ticket ใช้ชื่อ `Unclassified activity`, severity `Unrated` และไม่แสดง mock AI brief ระหว่างตอบ เมื่อส่งคำตอบผิดหลังหลักฐานครบ แสดง feedback หลัง submit และล็อกรอบเพื่อให้สอบใหม่
+- ใช้ `http://localhost:4174/` สำหรับรอบทดสอบแยกจาก localStorage ของ `127.0.0.1` ที่ผู้ใช้เปิดอยู่; ผลนี้ยังไม่ใช่ security/anti-cheat test เพราะ fixture และ rubric อยู่ใน JavaScript ฝั่ง browser
+
+---
+
 ## Alignment regression — 12 ตุลาคม 2026
 
 อัปเดตตาม `docs/prototype-alignment.md` ผล QA เดิมด้านล่างเป็นประวัติของเวอร์ชันวันที่ 5 ตุลาคม ไม่ใช่หลักฐานยืนยัน backend/API จริง
