@@ -42,7 +42,7 @@ test('all five scenarios generate one correlated ticket each, and stop in Review
   const r = M.makeRun(M.scenarios.map(s => s.id));
   M.tick(r, 999);
   assert.equal(r.elapsed, 75);
-  assert.equal(r.state, 'Review');
+  assert.equal(r.state, 'Reviewing');
   assert.equal(r.events.length, 21);
   assert.equal(r.alerts.length, 5);
   assert.equal(r.tickets.length, 5);
@@ -53,17 +53,17 @@ test('all five scenarios generate one correlated ticket each, and stop in Review
 });
 
 test('invalid transitions and missing closing assessments are rejected without mutation', () => {
-  const r = M.demoRun(); const t = r.tickets[0];
+  const r = M.makeRun(M.scenarios.map(s => s.id)); M.tick(r, 75); const t = r.tickets[0];
   const changes = { title: t.title, severity: t.severity, status: 'Closed', reason: 'ตรวจหลักฐานครบแล้ว', disposition: 'True Positive' };
-  assert.throws(() => M.updateTicket(r, t.id, changes, 'analyst'), /ตามลำดับ/);
+  assert.throws(() => M.updateTicket(r, t.id, { ...changes, expected_version: t.version }, 'analyst'), /ตามลำดับ/);
   assert.equal(t.status, 'Open');
-  M.updateTicket(r, t.id, { ...changes, status: 'Investigating' }, 'analyst');
-  assert.throws(() => M.updateTicket(r, t.id, { ...changes, status: 'Resolved', disposition: '' }, 'analyst'), /เลือกข้อสรุป/);
-  assert.throws(() => M.updateTicket(r, t.id, { ...changes, status: 'Resolved', reason: ' ' }, 'analyst'), /เหตุผล/);
-  M.updateTicket(r, t.id, { ...changes, status: 'Resolved' }, 'analyst');
-  M.updateTicket(r, t.id, changes, 'analyst');
+  M.updateTicket(r, t.id, { ...changes, expected_version: t.version, status: 'Investigating' }, 'analyst');
+  assert.throws(() => M.updateTicket(r, t.id, { ...changes, expected_version: t.version, status: 'Resolved', disposition: '' }, 'analyst'), /เลือกข้อสรุป/);
+  assert.throws(() => M.updateTicket(r, t.id, { ...changes, expected_version: t.version, status: 'Resolved', reason: ' ' }, 'analyst'), /เหตุผล/);
+  M.updateTicket(r, t.id, { ...changes, expected_version: t.version, status: 'Resolved' }, 'analyst');
+  M.updateTicket(r, t.id, { ...changes, expected_version: t.version }, 'analyst');
   assert.equal(t.status, 'Closed');
-  M.updateTicket(r, t.id, { ...changes, status: 'Investigating', reason: 'พบหลักฐานใหม่' }, 'analyst');
+  M.updateTicket(r, t.id, { ...changes, expected_version: t.version, status: 'Investigating', reason: 'พบหลักฐานใหม่' }, 'analyst');
   assert.equal(t.status, 'Investigating');
   assert.match(r.audit[0].reason, /พบหลักฐานใหม่/);
 });
@@ -77,7 +77,7 @@ test('soft deletion does not improve results by removing unresolved scenarios', 
   assert.equal(e.correct, 1);
   assert.equal(e.pending, 4);
   assert.equal(e.rows[0].deleted, true);
-  assert.throws(() => M.updateTicket(r, r.tickets[0].id, {}, 'analyst'), /ไม่พบ ticket/);
+  assert.throws(() => M.updateTicket(r, r.tickets[0].id, {}, 'analyst'), /RUN_READ_ONLY/);
 });
 
 test('run data is isolated and incomplete evidence remains explicit in evaluation', () => {
@@ -96,4 +96,65 @@ test('manual tickets get no invented automated analysis', () => {
   const a = M.analysis(r, { scenarioId: null, evidenceIds: [r.events[0].id] });
   assert.equal(a.confidence, 'ยังไม่ประเมิน');
   assert.equal(a.evidence.length, 1);
+});
+
+test('finish locks mutations immediately and evaluation is a stable snapshot', () => {
+  const r = M.makeRun(['S02']); M.tick(r, 30); r.lastClockAt = 1000;
+  r.tickets[0].disposition = 'Undetermined';
+  M.finishRun(r, 1000);
+  assert.equal(r.state, 'Completing');
+  assert.throws(() => M.evaluate(r), /EVALUATION_LOCKED/);
+  assert.throws(() => M.updateTicket(r, r.tickets[0].id, {}, 'analyst'), /RUN_READ_ONLY/);
+  const count = r.events.length;
+  M.syncClock(r, 2500);
+  assert.equal(r.state, 'Completed');
+  assert.equal(r.events.length, count);
+  r.tickets[0].disposition = 'True Positive';
+  assert.equal(M.evaluate(r).pending, 1);
+  assert.equal(M.evaluate(r).truncated, true);
+  const result = M.evaluate(r); result.rows[0].truth = 'altered';
+  assert.notEqual(M.evaluate(r).rows[0].truth, 'altered');
+});
+
+test('clock catches up without login and paused time stays frozen', () => {
+  const r = M.makeRun(['S02']); r.lastClockAt = 1000;
+  M.syncClock(r, 18000); assert.equal(r.elapsed, 17);
+  M.pauseRun(r, 18000); M.syncClock(r, 50000); assert.equal(r.elapsed, 17);
+  M.resumeRun(r, [r], 50000); M.syncClock(r, 62000); assert.equal(r.elapsed, 29);
+  assert.equal(r.events.length, 3);
+});
+
+test('resume refuses a second active run belonging to the same owner', () => {
+  const a = M.makeRun(['S02']), b = M.makeRun(['S01']);
+  a.id = 'a'; b.id = 'b'; a.owner = b.owner = 'analyst'; a.state = 'Paused';
+  assert.throws(() => M.resumeRun(a, [a,b]), /มีรอบ/);
+});
+
+test('stale ticket version rejects the draft without changing assessment', () => {
+  const r = M.makeRun(['S02']); M.tick(r, 17); const t = r.tickets[0]; const old = t.version;
+  M.tick(r, 12);
+  const change = { expected_version: old, title:t.title, severity:'Medium', status:'Investigating', reason:'investigating', disposition:'' };
+  assert.throws(() => M.updateTicket(r,t.id,change,'analyst'), /VERSION_CONFLICT/);
+  assert.equal(t.status,'Open');
+  M.updateTicket(r,t.id,{...change,expected_version:t.version},'analyst');
+  assert.equal(t.assessments.length,1);
+});
+
+test('instructor status review never overwrites a learner assessment', () => {
+  const r = M.makeRun(['S02']); M.tick(r, 17); const t = r.tickets[0]; t.reason = 'learner reason';
+  M.updateTicket(r,t.id,{expected_version:t.version,title:t.title,severity:'High',status:'Investigating',disposition:'',reason:'instructor review'},'instructor',true);
+  assert.equal(t.reason,'learner reason'); assert.equal(t.assessments.length,0);
+});
+
+test('daily quota resets at UTC midnight and remains scoped to the account', () => {
+  const runs = [{owner:'a',startedAt:'2026-10-11T23:59:59Z'},{owner:'a',startedAt:'2026-10-12T00:00:00Z'},{owner:'b',startedAt:'2026-10-12T00:00:01Z'}];
+  assert.equal(M.dailyRunCount(runs,'a',new Date('2026-10-12T03:00:00Z')),1);
+});
+
+test('event filtering uses inclusive from and exclusive to with asset and user', () => {
+  const r = M.demoRun(); r.startedAt='2026-10-12T00:00:00Z';
+  const e = M.filterEvents(r,{from:'2026-10-12T00:00:05Z',to:'2026-10-12T00:00:17Z',asset:'AUTH-01',user:'finance',ip:'198.51.100.20'});
+  assert.ok(e.length > 0); assert.ok(e.every(x=>x.time>=5 && x.time<17));
+  assert.throws(()=>M.filterEvents(r,{from:'bad date'}),/ช่วงเวลา/);
+  assert.throws(()=>M.filterEvents(r,{from:'2026-10-12T00:01:00Z',to:'2026-10-12T00:00:00Z'}),/ช่วงเวลา/);
 });

@@ -1,0 +1,258 @@
+# SOC Platform — Architecture
+
+วันที่ปรับปรุง: 12 ตุลาคม 2026 · สถานะ: ข้อเสนอสำหรับพัฒนา ยังไม่ใช่ระบบที่ติดตั้งแล้ว
+
+อ่านร่วมกับ [ขอบเขตโครงการ](soc-simulation.md), [API contract](api.md) และ [แผนพัฒนา](development-plan.md)
+
+## 1. สถานะและแนวทาง
+
+ปัจจุบัน `prototype/` เป็นเว็บต้นแบบ HTML/CSS/JavaScript ใช้ localStorage และ AI fixture ส่วน `frontend/` และ `backend/` ยังไม่มีแอปจริง นำรูปแบบหน้าจอและ flow มาใช้ต่อได้ แต่ต้องย้ายสิทธิ์ ข้อมูล นาฬิกา การตรวจจับ และเฉลยไปฝั่ง server
+
+เอกสารนี้เติมรายละเอียดทางเทคนิคจาก `soc-simulation.md` โดยไม่ขยายไปสู่การโจมตีจริง คำว่า README ที่ปรากฏภายในเอกสารเดิมหมายถึงเนื้อหาขอบเขตในไฟล์นั้น; README ที่ root ปัจจุบันยังไม่มีรายละเอียดดังกล่าว
+
+เสนอ **modular monolith**: backend codebase เดียว แบ่งโมดูลตามหน้าที่ รันเป็น API process และ worker process แยกกัน ใช้ PostgreSQL ร่วมกัน เริ่มจาก REST และ polling ก่อน ไม่จำเป็นต้องเพิ่ม microservices, Redis, Elasticsearch หรือ WebSocket ใน MVP
+
+## 2. เทคโนโลยีที่เสนอ
+
+| ส่วน | แนวทางเริ่มต้น | เหตุผล / ขอบเขต |
+|---|---|---|
+| Frontend | React + TypeScript + Vite | แยก page, form และ API client จาก prototype |
+| API | Node.js + TypeScript + Fastify | ใช้ request/response schema ชุดเดียวเป็นฐานของ validation และ OpenAPI |
+| Database | PostgreSQL + SQL migrations | transaction, constraints และการค้นข้อมูลรอบฝึก |
+| Data access | `pg` และ parameterized SQL | เห็น transaction และ query ที่ใช้จริงชัดเจน |
+| Queue | ตาราง jobs ใน PostgreSQL | ลดจำนวนบริการที่ต้องดูแลในช่วงเริ่มต้น |
+| Worker | Node.js process จาก backend codebase | runner, detection, AI, evaluation และ retention |
+| AI | Adapter รองรับ mock และ provider จริงหนึ่งราย | provider/model ยังรอเลือกจากผลทดสอบ ราคา และงบที่ทีมกำหนด |
+| Tests | Node test runner สำหรับ backend; Playwright สำหรับ E2E | ทดสอบสิทธิ์ ข้อมูล และ flow ผ่าน browser |
+| Deploy | HTTPS reverse proxy + API + worker + managed PostgreSQL | API และ worker restart แยกกันได้ |
+
+ทั้งหมดเป็นข้อเสนอ ไม่ใช่ dependency ที่ติดตั้งแล้ว เลือกเวอร์ชันที่เข้ากันและยังได้รับการสนับสนุนตอนเริ่ม Phase 0 บันทึกเวอร์ชัน runtime และ lockfile ใน repository
+
+Vite มี template สำหรับ React/TypeScript ให้ใช้เป็นจุดเริ่มต้น ส่วน schema ของ Fastify ต้องเป็นโค้ดที่ทีมกำหนด ไม่รับ schema จากผู้ใช้: [Vite guide](https://vite.dev/guide/), [Fastify validation](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/)
+
+## 3. ภาพรวมระบบ
+
+```mermaid
+flowchart LR
+    B[Browser: Guest / Analyst / Instructor] --> P[HTTPS reverse proxy]
+    P --> UI[Frontend static assets]
+    P --> API[Backend REST API]
+    API --> DB[(PostgreSQL: app data + jobs)]
+    W[Worker process] --> DB
+    F[Versioned fixtures: server only] --> W
+    W --> R[Runner and event ingestion]
+    R --> D[Rules + anomaly + correlation]
+    D --> T[Ticket policy]
+    D --> A[AI adapter]
+    A --> EXT[External AI provider or mock]
+    T --> DB
+    A --> DB
+    E[Evaluation service] --> DB
+    G[(Private ground truth)] --> E
+    W --> E
+```
+
+Frontend เรียกเฉพาะ API ของแอป ไม่เรียก AI provider โดยตรง และไม่รับ event อนาคตหรือ ground truth ใน bundle Guest อ่านข้อมูลตัวอย่างผ่าน `/demo/*` ซึ่งไม่มี endpoint เขียน
+
+## 4. โมดูลและขอบเขตความรับผิดชอบ
+
+| โมดูล | รับผิดชอบ | ห้ามทำ |
+|---|---|---|
+| auth | register, session, login, logout, CSRF, account status | รับ role สูงจาก registration payload |
+| runs | เจ้าของรอบ เวอร์ชัน scenario นาฬิกา โควตา และสถานะ | รับเวลาจำลองหรือ owner จาก client |
+| ingestion | ตรวจ fixture และบันทึก event ที่ถึงเวลาปล่อย | รับ URL เป้าหมายให้ยิง request จริง |
+| detection | rule/anomaly และ correlation พร้อม evidence | อ่าน ground truth หรือเหตุการณ์ที่ยังไม่ปล่อย |
+| analysis | redact, snapshot หลักฐาน, adapter, validate output | ใช้ AI สั่ง block/disable หรือแก้หลักฐาน |
+| tickets | CRUD, assessment, notes, versions, soft delete | แก้ log ดิบหรือเขียนทับผล AI เดิม |
+| evaluation | เฉลย, matching, metrics, blind assessment snapshot | ส่งเฉลยให้ Analyst ก่อน completed |
+| administration | ปิดบัญชี โควตา instructor review | เขียนทับ assessment/note ของผู้เรียน |
+| audit | append-only change history | เปิด public mutation endpoint |
+
+Middleware ตรวจ session → account status → role → run ownership ก่อนส่งเข้า service ตรวจซ้ำใน service สำหรับ worker/internal calls ที่ไม่มี HTTP middleware
+
+## 5. โครงสร้าง repository ที่จะพัฒนา
+
+```text
+frontend/
+  src/app/                 routes, session, layouts
+  src/features/            dashboard, runs, events, tickets, evaluation, admin
+  src/components/          table, form, dialog, status, evidence viewer
+  src/api/                 generated client types + request wrapper
+backend/
+  src/api/                 server, routes, schemas, authentication hooks
+  src/modules/             auth, runs, detection, analysis, tickets, evaluation
+  src/worker/              entrypoint, job handlers, scheduler
+  src/db/                  repositories, transactions, migrations
+  src/adapters/ai/          provider interface, mock, real adapter
+  fixtures/events/         versioned release schedule; never served statically
+  fixtures/ground-truth/   evaluator-only seed input
+  tests/                   unit, integration, contract
+docs/
+  architecture.md
+  api.md
+  development-plan.md
+  openapi.yaml             สร้างใน Phase 0; ยังไม่มีในปัจจุบัน
+prototype/                 เก็บเป็น reference และงานนำเสนอเดิม
+```
+
+## 6. แบบจำลองข้อมูล
+
+ทุก primary key ใช้ UUID เวลาใช้ UTC `timestamptz`; JSON API ใช้ ISO 8601 ส่วน simulation time ใช้ integer milliseconds แยกจากเวลาจริง ตารางที่แก้ได้มี `version` สำหรับ optimistic concurrency
+
+| ตาราง | ฟิลด์ / ข้อกำหนดสำคัญ |
+|---|---|
+| users | id, normalized_email UNIQUE, display_name, password_hash, role, status, created_at |
+| auth_sessions | id, user_id, token_hash UNIQUE, csrf_hash, expires_at, revoked_at; ไม่เก็บ token ดิบ |
+| scenarios | id, stable_key, version, public_title, difficulty, duration_ms; UNIQUE(stable_key, version) |
+| scenario_instances | id, run_id, scenario_id, ordinal; เก็บหลายสถานการณ์ในรอบเดียว |
+| runs | id, owner_user_id, status, seed, elapsed_ms, resumed_at, release_cursor, version, expires_at, completed_at |
+| run_versions | run_id, rule_version, baseline_version, correlation_version, ticket_policy_version, prompt_version, model_id, fixture_hash |
+| events | id, run_id, scenario_instance_id, fixture_event_key, release_seq, event_time, ingested_at, source, asset_id, username, src_ip, request_json, response_json, log_json |
+| detections | id, run_id, detector_type, detector_version, correlation_key, evidence_snapshot_hash, severity, explanation |
+| detection_evidence | run_id, detection_id, event_id; composite FK ต้องอยู่ในรอบเดียวกัน |
+| alerts | id, run_id, detection_id, severity, created_at; ไม่ใช่ข้อยืนยันผลกระทบ |
+| analyses | id, run_id, correlation_key, evidence_hash, attempt_group, mode, model_id, prompt_version, status, result_json, error_code, usage_json, latency_ms |
+| analysis_evidence | run_id, analysis_id, event_id; snapshot คงที่สำหรับแต่ละ analysis |
+| tickets | id, run_id, origin, correlation_key NULL สำหรับ manual, title, severity, status, version, deleted_at, deleted_by, delete_reason |
+| ticket_events / ticket_alerts / ticket_analyses | ตารางเชื่อมแยกชนิด พร้อม composite FK ของ run_id; ไม่ใช้ FK แบบ polymorphic ที่ตรวจไม่ได้ |
+| assessments | id, ticket_id, run_id, author_user_id, disposition, reason, created_at; append-only revisions |
+| notes / note_versions | note owner, body, evidence refs, version, deleted_at; เก็บเนื้อหาเก่าก่อนแก้ |
+| instructor_comments | run_id, instructor_user_id, body, created_at; แยกจาก note ของผู้เรียน |
+| audit_logs | run_id nullable, actor_user_id nullable, actor_role, action, entity_id, before_json, after_json, reason, request_id |
+| jobs | id, type, dedupe_key UNIQUE, payload, status, attempts, available_at, lease_expires_at, locked_by, last_error |
+| quota_ledgers | user_id/system scope, period_start, reserved_tokens, consumed_tokens, run_count; atomic update |
+| evaluations | id, run_id, revision, release_cutoff, assessment_cutoff, ground_truth_version, status, metrics_json |
+| experiment_batches / experiment_arms | immutable event dataset, A/B/C configs, job status, outputs, metric snapshots |
+| private.ground_truth | scenario version, incident key, threat label, expected evidence; ให้ evaluator อ่านเท่านั้น |
+
+```mermaid
+erDiagram
+    USERS ||--o{ AUTH_SESSIONS : owns
+    USERS ||--o{ RUNS : owns
+    RUNS ||--|{ SCENARIO_INSTANCES : contains
+    SCENARIOS ||--o{ SCENARIO_INSTANCES : selected
+    RUNS ||--o{ EVENTS : releases
+    RUNS ||--o{ DETECTIONS : produces
+    DETECTIONS ||--o{ DETECTION_EVIDENCE : cites
+    EVENTS ||--o{ DETECTION_EVIDENCE : supports
+    DETECTIONS ||--o{ ALERTS : raises
+    RUNS ||--o{ TICKETS : contains
+    TICKETS ||--o{ ASSESSMENTS : records
+    TICKETS ||--o{ NOTES : contains
+    NOTES ||--o{ NOTE_VERSIONS : retains
+    RUNS ||--o{ ANALYSES : contains
+    RUNS ||--o{ EVALUATIONS : evaluates
+```
+
+ER นี้แสดงความสัมพันธ์หลัก ตารางเชื่อมและ constraints ฉบับเต็มต้องทำเป็น migrations และ schema ใน SRS ก่อนเริ่ม CRUD
+
+Constraints ที่ต้องมี:
+
+- UNIQUE(run_id, scenario_instance_id, fixture_event_key) ป้องกัน event ซ้ำ
+- UNIQUE(run_id, correlation_key) เฉพาะ ticket ที่ origin=automatic **รวมรายการที่ soft delete**; หลักฐานใหม่ยังผูกเคสเดิมและไม่คืนรายการโดยพลการ
+- UNIQUE(run_id, detector_type, detector_version, correlation_key, evidence_snapshot_hash) ป้องกันผลตรวจเดิมซ้ำ
+- UNIQUE(run_id, correlation_key, evidence_hash, model_id, prompt_version, attempt_group) สำหรับงาน AI หนึ่ง logical request; retry ของ worker ใช้ logical request เดิม
+- ทุกตารางที่ใช้ composite FK ต้องมี UNIQUE(run_id, id) ที่ parent เพื่อป้องกันผูกหลักฐานข้ามรอบ
+- Index events(run_id, event_time, id), events(run_id, release_seq), tickets(run_id, deleted_at, status, severity, id), runs(owner_user_id, created_at, id), jobs(status, available_at)
+
+## 7. นาฬิกาและสถานะรอบ
+
+```text
+created → running ↔ paused
+running → reviewing                 เมื่อปล่อย fixture ครบ
+created/running/paused/reviewing → completing → completed
+created/running/paused/reviewing/completing → failed
+```
+
+`reviewing` หมายถึงปล่อยครบแล้วแต่ยังไม่เปิดเฉลย `completing` หยุด event ใหม่และล็อก assessment snapshot ขณะรอ pipeline ปิดงาน ส่วน `completed` เปิดเฉลยและผลที่ผูกกับ snapshot นั้น
+
+- เวลา effective = elapsed_ms + ช่วงตั้งแต่ resumed_at เฉพาะ running; คำนวณด้วยเวลาฐานข้อมูล
+- Runner จับ lock ของ run อ่าน effective time แล้ว insert event, detection job และขยับ cursor ใน transaction เดียว
+- Pause/finish จับ lock เดียวกัน: หลัง API ตอบสำเร็จ runner ปล่อย event เพิ่มไม่ได้ งาน AI ของ evidence ที่มีอยู่แล้วทำต่อได้
+- Browser ปิดหรือ logout ไม่หยุด runner; ผู้ใช้กลับเข้ามาเห็นเวลาฝั่ง server เดิม ซึ่งต่างจาก prototype
+- Restart worker แล้ว catch up เฉพาะ event ที่ถึงเวลาตาม server clock ด้วย unique keys; ไม่เร่งข้าม schedule
+- Finish บันทึก release cutoff ทันที รอ detection/AI ที่เกี่ยวข้องไม่เกิน 60 วินาที จากนั้น evaluation ระบุ pending/failed ตรงจริง งาน AI ที่มาทีหลังไม่แก้ metric snapshot เดิม
+- เมื่อ completed ให้ round เป็น read-only ยกเว้น instructor comments; ถ้าจะฝึกใหม่สร้าง run ใหม่ ข้อเสนอนี้ป้องกันคำตอบหลังเห็นเฉลยปะปนผลฝึกก่อนเห็นเฉลย
+
+## 8. Detection, queue และความทนทาน
+
+Rule v1 เริ่มจาก login failed >=10 ครั้ง/5 นาที และ request ที่ตรง fixture policy; anomaly v1 ใช้ baseline ที่เตรียมจากข้อมูลปกติ เช่น file reads มากกว่า threshold ที่ระบุไว้ใน versioned config การพบ flag ในชื่อ scenario ไม่ถือเป็นการตรวจจับจริง
+
+Correlation ใช้ account/session + asset + time window; IP อย่างเดียวไม่เพียงพอ แสดงกฎการรวมและ evidence refs ทุกครั้ง Rule ที่พบการโจมตีถูกปฏิเสธสร้าง ticket ได้โดยไม่อ้างว่าถูกเจาะสำเร็จ
+
+เก็บ jobs ร่วม transaction ของข้อมูลต้นทาง ทำให้ API ไม่บันทึกข้อมูลแล้วลืม enqueue Worker claim งานด้วย row lock และ lease ที่หมดอายุได้ ใช้ `FOR UPDATE SKIP LOCKED` สำหรับคิวเท่านั้น ไม่ใช้เป็น query เพื่อคำนวณผลประเมินที่ต้องครบทุกแถว ดู [PostgreSQL SELECT](https://www.postgresql.org/docs/current/sql-select.html)
+
+ค่าเริ่มต้นที่เสนอ: lease 60 วินาที, heartbeat 15 วินาที, AI timeout 30 วินาที, retry สูงสุด 3 attempts พร้อม backoff+jitter แยก transient errors ออกจาก validation errors เมื่อครบ attempts ไป failed/dead-letter และแสดงให้ดูแลระบบทราบ
+
+ฐานข้อมูลรับประกันผลลัพธ์ฝั่งแอปไม่ซ้ำด้วย unique keys และ transaction; ไม่อ้าง exactly-once ของการเรียก provider ภายนอก หาก process ล่มหลัง provider รับงานแต่ก่อนบันทึกผล อาจมีค่าใช้จ่ายซ้ำได้ ต้องใช้ provider idempotency เมื่อรองรับและกำหนดเพดาน retry
+
+## 9. AI integration และ external API ที่ต้องใช้
+
+External API ที่จำเป็นมีเพียงบริการ AI หนึ่งรายในโหมดจริง ส่วนอีเมล reset password, threat intelligence, SIEM และ EDR ไม่อยู่ใน MVP ไม่ต้องเพิ่มบริการเหล่านั้นเพื่อให้ flow หลักทำงาน
+
+Interface ภายในที่เสนอ:
+
+```typescript
+interface AnalysisProvider {
+  analyze(input: {
+    requestId: string;
+    evidence: RedactedReleasedEvent[];
+    context: AssetAndBaselineContext;
+    promptVersion: string;
+    maxOutputTokens: number;
+  }, signal: AbortSignal): Promise<ProviderAnalysisResult>;
+}
+```
+
+ก่อนต่อ provider จริงต้องเลือก model, SDK/API path, ราคา และรูปแบบ structured output จากเอกสารของ provider แล้วเติมลง adapter ไม่ hardcode API key ใน frontend และไม่ใส่ endpoint ที่ยังไม่ได้เลือกไว้เหมือนใช้งานได้แล้ว
+
+1. เลือกเฉพาะ event ที่ปล่อยแล้ว สร้าง evidence hash และ redact secret
+2. Reserve โควตาบัญชีและระบบแบบ atomic ก่อน enqueue; งานที่ยังไม่ส่งให้ provider ยกเลิกแล้วคืน reservation ได้
+3. ส่ง log เป็นข้อมูลที่ไม่น่าเชื่อถือ ไม่ใช้เป็นคำสั่ง ไม่มี tools สำหรับปฏิบัติการภายนอก
+4. ตรวจ JSON schema, enum และ evidence refs ว่าเป็น subset ของ snapshot ของ request นี้
+5. เก็บผลและ usage จริง; cost ที่ provider ไม่รายงานให้เป็น null ไม่สมมติว่า 0
+6. แสดง mock, succeeded, failed, invalid_output, quota_exceeded หรือ timed_out แยกกัน
+
+Rule/anomaly policy เปิด ticket โดยไม่ต้องรอ AI ผล AI เป็นคำแนะนำและอาจชี้ให้ตรวจเพิ่ม แต่ไม่ปิด ticket หรือเปลี่ยน human assessment อัตโนมัติ หากหลักฐานเปลี่ยนสร้าง analysis revision ใหม่และเก็บของเดิม
+
+## 10. Authentication, deployment และการปฏิบัติการ
+
+- Deploy UI และ `/api/v1` ภายใต้ origin เดียว ใช้ HTTPS; local dev proxy ไป API
+- ใช้ opaque session token ใน cookie `HttpOnly; Secure; SameSite=Lax; Path=/` เก็บเฉพาะ hash ฝั่ง DB พร้อม rotation ตอน login และ session expiry
+- Hash password ด้วย Argon2id ผ่านไลบรารีที่ดูแลอยู่ ปรับพารามิเตอร์โดยวัดบนเครื่อง deploy ไม่เขียน hashing algorithm เอง
+- ทุกคำขอเปลี่ยนข้อมูลตรวจ CSRF token และ Origin รวม login/register; token อ่านได้จาก auth bootstrap endpoint
+- ตรวจ disabled account ทุก authenticated request; logout/revoke ลบสิทธิ์ session ทันทีแต่ไม่ลบประวัติรอบ
+- API schema ใช้ allowlist และ response projection; ไม่ serialize password_hash, token_hash, future events หรือ private.ground_truth
+- API/runner/detector ใช้ DB role ที่ไม่มี SELECT private schema; evaluator ใช้ credential แยกในโมดูลประเมินและ admin ground-truth handler เท่านั้น
+- runtime audit role มีสิทธิ์ INSERT แต่ไม่มี UPDATE/DELETE audit; retention role แยกต่างหาก
+- Production ต้องมี backup และทดสอบ restore, migration แบบ one-shot ก่อน rollout, แยก staging กับ production และ health checks
+
+ค่าด้านล่างเป็นเป้าหมายเริ่มต้นที่ปรับได้ ไม่ใช่ผลวัดหรือข้อจำกัดที่มีโค้ดรองรับแล้ว:
+
+| ค่า | ข้อเสนอ |
+|---|---|
+| Run quota | 10 รอบ/บัญชี/วัน UTC; concurrent running สูงสุด 1 รอบ |
+| AI budget | 20 logical requests/บัญชี/วัน และ global token cap ที่ตั้งก่อนเปิด public |
+| Retention | รอบฝึกและข้อมูลลูก 30 วัน; แจ้ง expires_at ใน UI; audit การจัดการบัญชี 90 วัน |
+| Session | absolute expiry 24 ชั่วโมง; เพิกถอนเมื่อ logout/disabled |
+| Input limits | JSON <=256 KB; note <=2,000 chars; title <=120 chars |
+| Performance target | API read p95 <500 ms ที่ 20 concurrent users และ 10,000 events/run โดยไม่รวม AI |
+| Recovery target | worker lease หมดแล้วหยิบงานคืนได้ภายใน 90 วินาที |
+
+Retention ใช้ job ลบตาม dependency ภายใต้ transaction/batch; ไม่ใช้ปุ่ม soft delete ของผู้เรียนเป็นการลบถาวร และไม่ purge รอบที่ยังมีงานทำอยู่ ให้หยุด/ยกเลิกงานก่อน
+
+ติดตาม request latency, error rate, queue age, worker heartbeat, duplicate conflicts, AI failures/usage และผล backup ผ่าน log ที่มี request_id/run_id โดยไม่มี password, cookie, API key หรือ raw secrets
+
+## 11. การประเมิน A/B/C
+
+บันทึก dataset hash และเวอร์ชันทั้งหมดก่อนรัน experiment จาก **ชุด event และ cutoff เดียวกัน** หน่วยนับเป็น incident/group ใน ground truth ไม่ใช่จำนวน request และ ground truth ใช้หลังตรวจจับเสร็จเท่านั้น
+
+- A: รัน rules จริง
+- B: รัน rules + anomaly จริง
+- C: รัน rules + anomaly เดียวกับ B แล้วเรียก AI จริงเพื่อสรุป/triage
+
+MVP ไม่ให้ AI เปลี่ยนการเปิด ticket อัตโนมัติ ดังนั้น detection precision/recall ของ C ควรเท่ากับ B เมื่อ configs เหมือนกัน ให้รายงานคุณภาพคำอธิบาย หลักฐานที่อ้างได้ เวลา review และค่าใช้จ่ายเพิ่ม แทนการอ้างว่า AI เพิ่ม detection recall ถ้าจะเปลี่ยนนโยบายภายหลังต้องทำ ticket policy version ใหม่และทดลองแยก
+
+สูตร precision=TP/(TP+FP), recall=TP/(TP+FN); ตัวหารศูนย์ส่ง null พร้อม reason กิจกรรมที่อนุญาตเป็น non-threat แม้ human label เป็น benign_positive ส่วน Undetermined รายงานแยก ไม่ทิ้งจาก denominator: candidate ที่ส่งให้คนตรวจนับเป็น detection-positive; ไม่มี candidate นับ negative
+
+เก็บ detector metrics แยก human classification score, manual ticket และ instructor comments ไม่นำการลบ ticket มาเปลี่ยน detector result ป้องกันการเลือกเฉพาะเหตุการณ์ที่ทำคะแนนดี หากจบรอบก่อนหลักฐานครบต้องระบุ truncated dataset และห้ามเปรียบเทียบกับรอบเต็มโดยไม่บอก

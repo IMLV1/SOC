@@ -10,7 +10,7 @@
   const clone = value => JSON.parse(JSON.stringify(value));
   const getScenario = id => scenarios.find(s => s.id === id);
   function makeRun(ids, demo = false) {
-    return { id: demo ? 'DEMO-024' : 'RUN-' + Date.now().toString(36).toUpperCase(), scenarioIds: [...ids], state: demo ? 'Completed' : 'Running', elapsed: demo ? 75 : 0, duration: 75, events: [], alerts: [], tickets: [], audit: [], ai: 'ready', demo, startedAt: new Date().toISOString() };
+    return { id: demo ? 'DEMO-024' : 'RUN-' + Date.now().toString(36).toUpperCase(), scenarioIds: [...ids], state: demo ? 'Completed' : 'Running', elapsed: demo ? 75 : 0, duration: 75, events: [], alerts: [], tickets: [], audit: [], ai: 'ready', demo, version: 1, lastClockAt: Date.now(), startedAt: new Date().toISOString() };
   }
   function audit(run, actor, action, entity, reason) { run.audit.unshift({ id: 'AUD-' + (run.audit.length + 1), time: run.elapsed, actor, action, entity, reason }); }
   function release(run) {
@@ -24,13 +24,13 @@
         if (i === 1) {
           const alert = { id: 'ALT-' + id.slice(1), scenarioId: id, title: s.title, detector: s.detector, severity: s.id === 'S02' ? 'Medium' : s.severity, time: at };
           run.alerts.push(alert);
-          run.tickets.push({ id: 'TKT-' + (1040 + Number(id.slice(1))), scenarioId: id, title: s.title, severity: alert.severity, status: 'Open', disposition: '', reason: '', notes: [], deleted: false, created: at, evidenceIds: run.events.filter(e => e.scenarioId === id).map(e => e.id) });
+          run.tickets.push({ id: 'TKT-' + (1040 + Number(id.slice(1))), scenarioId: id, title: s.title, severity: alert.severity, status: 'Open', disposition: '', reason: '', notes: [], assessments: [], version: 1, deleted: false, created: at, evidenceIds: run.events.filter(e => e.scenarioId === id).map(e => e.id) });
           audit(run, 'Detection engine', 'Ticket created', alert.id, s.detector + ' detection · fixture v1');
         }
         const ticket = run.tickets.find(t => t.scenarioId === id);
         if (ticket) {
-          if (!ticket.evidenceIds.includes(eventId)) ticket.evidenceIds.push(eventId);
-          if (id === 'S02' && i === 3 && !ticket.reason) ticket.severity = 'High';
+          if (!ticket.evidenceIds.includes(eventId)) { ticket.evidenceIds.push(eventId); ticket.version = (ticket.version || 1) + 1; }
+          if (id === 'S02' && i === 3 && !ticket.humanSeverity) ticket.severity = 'High';
         }
       });
     }
@@ -41,7 +41,7 @@
     if (run.state !== 'Running') return run;
     run.elapsed = Math.min(run.duration, run.elapsed + seconds);
     release(run);
-    if (run.elapsed >= run.duration) run.state = 'Review';
+    if (run.elapsed >= run.duration) { run.state = 'Reviewing'; run.version = (run.version || 1) + 1; }
     return run;
   }
   function demoRun() { const run = makeRun(scenarios.map(s => s.id), true); release(run); return run; }
@@ -54,9 +54,48 @@
   }
   const statuses = ['Open', 'Investigating', 'Resolved', 'Closed'];
   const dispositions = ['True Positive', 'Benign Positive', 'False Positive', 'Undetermined'];
-  function updateTicket(run, id, changes, actor) {
+  const mutableStates = ['Created', 'Running', 'Paused', 'Reviewing'];
+  function isMutable(run) { return !run.demo && mutableStates.includes(run.state); }
+  function assertMutable(run) { if (!isMutable(run)) throw Error('RUN_READ_ONLY: รอบนี้อ่านอย่างเดียว เริ่มรอบใหม่เพื่อฝึกต่อ'); }
+  function assertVersion(resource, expected) { if (Number(expected) !== (resource.version || 1)) throw Error('VERSION_CONFLICT: ข้อมูลเปลี่ยนแล้ว กรุณาอัปเดตหลักฐานก่อนบันทึกอีกครั้ง ข้อความที่กรอกยังอยู่'); }
+  function syncClock(run, now = Date.now()) {
+    if (run.state === 'Completing' && now >= run.completeAt) { run.state = 'Completed'; run.version++; run.completedAt = new Date(now).toISOString(); }
+    if (run.state !== 'Running') return run;
+    if (!Number.isFinite(run.lastClockAt)) run.lastClockAt = now;
+    const delta = Math.max(0, Math.floor((now - run.lastClockAt) / 1000));
+    if (delta) { tick(run, delta); run.lastClockAt += delta * 1000; }
+    return run;
+  }
+  function pauseRun(run, now = Date.now()) { assertMutable(run); syncClock(run, now); if (run.state !== 'Running') throw Error('INVALID_TRANSITION: พักได้เฉพาะรอบที่กำลังทำงาน'); run.state = 'Paused'; run.version++; }
+  function resumeRun(run, allRuns, now = Date.now()) { assertMutable(run); if (run.state !== 'Paused') throw Error('INVALID_TRANSITION'); if (allRuns.some(r => r.id !== run.id && r.owner === run.owner && r.state === 'Running')) throw Error('มีรอบกำลังทำงานอยู่แล้ว กรุณาพักหรือจบรอบนั้นก่อน'); run.state = 'Running'; run.lastClockAt = now; run.version++; }
+  function finishRun(run, now = Date.now()) {
+    if (['Completing', 'Completed'].includes(run.state)) return run;
+    assertMutable(run); syncClock(run, now);
+    run.evaluationSnapshot = computeEvaluation(run);
+    run.evaluationSnapshot.assessment_cutoff = new Date(now).toISOString();
+    run.evaluationSnapshot.release_cutoff = run.events.length;
+    run.evaluationSnapshot.truncated = run.elapsed < run.duration;
+    run.state = 'Completing'; run.completeAt = now + 1500; run.version++;
+    return run;
+  }
+  function dailyRunCount(runs, owner, now = new Date()) { const day = now.toISOString().slice(0, 10); return runs.filter(r => r.owner === owner && r.startedAt?.slice(0, 10) === day).length; }
+  function eventDate(run, e) { return new Date(new Date(run.startedAt).getTime() + e.time * 1000).toISOString(); }
+  function filterEvents(run, query = {}) {
+    for (const key of ['from', 'to']) if (query[key] && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/.test(query[key])) throw Error('ช่วงเวลาไม่ถูกต้อง: ใช้ ISO UTC เช่น 2026-10-12T10:00:00Z');
+    if ((query.q || '').length > 200) throw Error('คำค้นหายาวเกิน 200 ตัวอักษร');
+    const from = query.from ? Date.parse(query.from) : -Infinity;
+    const to = query.to ? Date.parse(query.to) : Infinity;
+    if (Number.isNaN(from) || Number.isNaN(to) || from >= to) throw Error('ช่วงเวลาไม่ถูกต้อง: ใช้ ISO UTC และ from ต้องน้อยกว่า to');
+    return run.events.filter(e => {
+      const at = Date.parse(eventDate(run, e));
+      return at >= from && at < to && (!query.source || query.source === 'All' || e.source === query.source) && (!query.asset || e.asset === query.asset) && (!query.user || e.user.toLowerCase().includes(query.user.toLowerCase())) && (!query.ip || e.ip === query.ip) && `${JSON.stringify(e)} ${eventDate(run, e)}`.toLowerCase().includes((query.q || '').toLowerCase());
+    });
+  }
+  function updateTicket(run, id, changes, actor, instructor = false) {
+    assertMutable(run);
     const t = run.tickets.find(t => t.id === id);
     if (!t || t.deleted) throw Error('ไม่พบ ticket ที่แก้ไขได้');
+    assertVersion(t, changes.expected_version);
     if (!changes.title?.trim() || changes.title.length > 120) throw Error('ระบุชื่อ ticket ความยาว 1–120 ตัวอักษร');
     if (!['Low', 'Medium', 'High', 'Critical'].includes(changes.severity)) throw Error('Severity ไม่ถูกต้อง');
     if (!statuses.includes(changes.status)) throw Error('สถานะไม่ถูกต้อง');
@@ -66,11 +105,16 @@
     if (changes.disposition && !dispositions.includes(changes.disposition)) throw Error('ข้อสรุปไม่ถูกต้อง');
     if (['Resolved', 'Closed'].includes(changes.status) && !changes.disposition) throw Error('ต้องเลือกข้อสรุปก่อน resolve หรือปิด ticket');
     const before = `${t.status} / ${t.severity} / ${t.disposition || 'Pending'}`;
-    Object.assign(t, { title: changes.title.trim(), severity: changes.severity, status: changes.status, disposition: changes.disposition || '', reason: changes.reason.trim() });
-    audit(run, actor, 'Ticket updated', id, `${before} → ${t.status} / ${t.severity} / ${t.disposition || 'Pending'} · ${t.reason}`);
+    if (!instructor) {
+      t.assessments ||= [];
+      t.assessments.push({ disposition: changes.disposition || '', reason: changes.reason.trim(), author: actor, time: run.elapsed });
+    }
+    t.humanSeverity = true;
+    Object.assign(t, { title: changes.title.trim(), severity: changes.severity, status: changes.status, disposition: changes.disposition || '', reason: instructor ? t.reason : changes.reason.trim(), version: (t.version || 1) + 1 });
+    audit(run, actor, instructor ? 'Instructor ticket review' : 'Ticket updated', id, `${before} → ${t.status} / ${t.severity} / ${t.disposition || 'Pending'} · ${changes.reason.trim()}`);
     return t;
   }
-  function evaluate(run) {
+  function computeEvaluation(run) {
     const rows = run.scenarioIds.map(id => {
       const s = getScenario(id);
       const t = run.tickets.find(t => t.scenarioId === id);
@@ -78,7 +122,8 @@
     });
     return { rows, correct: rows.filter(r => r.correct).length, pending: rows.filter(r => r.answer === 'Undetermined').length, total: rows.length };
   }
-  const api = { scenarios, clone, getScenario, makeRun, release, tick, demoRun, analysis, updateTicket, audit, evaluate, statuses, dispositions };
+  function evaluate(run) { if (run.state !== 'Completed') throw Error('EVALUATION_LOCKED: จบรอบก่อนดูผล'); return clone(run.evaluationSnapshot || computeEvaluation(run)); }
+  const api = { scenarios, clone, getScenario, makeRun, release, tick, demoRun, analysis, updateTicket, audit, evaluate, statuses, dispositions, isMutable, assertMutable, assertVersion, syncClock, pauseRun, resumeRun, finishRun, dailyRunCount, eventDate, filterEvents };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   global.SOC = api;
 })(typeof window !== 'undefined' ? window : globalThis);

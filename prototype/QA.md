@@ -1,5 +1,20 @@
 # Prototype verification
 
+## Alignment regression — 12 ตุลาคม 2026
+
+อัปเดตตาม `docs/prototype-alignment.md` ผล QA เดิมด้านล่างเป็นประวัติของเวอร์ชันวันที่ 5 ตุลาคม ไม่ใช่หลักฐานยืนยัน backend/API จริง
+
+- Automated model tests: ผ่าน 15/15 รวม Completing lock, immutable evaluation snapshot, clock catch-up, concurrency limit, expected_version conflict, Instructor ไม่เขียนทับ learner answer, UTC daily quota และ from/to filtering
+- Syntax check: app.js, model.js และ server.cjs ผ่าน
+- Browser บนพอร์ตทดสอบ 4174: กรอง AUTH-01 ได้ 9 events, export ก่อนจบรอบถูกปฏิเสธ, refresh/login กลับมาเห็น Reviewing ที่เวลา 01:15, บันทึก assessment และอ่านประวัติ revision ได้
+- Browser: แก้ note ต้องใส่เหตุผล, ลบ/กู้คืน Ticket พร้อมเหตุผลได้, finish แสดง Completing ก่อน Evaluation, Completed ทำให้ assessment disabled และไม่มีปุ่ม Delete
+- ตรวจ browser error log หลัง flow ข้างต้น: ไม่พบ error
+- ตรวจหน้า Ticket ที่ 375px และ 1440px: document ไม่กว้างเกิน viewport; ภาพหลังปรับ `screenshots/aligned-readonly.jpg`
+- Version conflict และ daily reset ตรวจด้วย model tests; ยังไม่ได้ทดสอบ conflict ข้ามหลาย browser เพราะเป็น local mock
+- การตรวจชุดนี้ไม่ใช่การรับรอง cursor API, CSRF, database transaction, real provider หรือ worker; ดูข้อจำกัดใน alignment document
+
+---
+
 ตรวจเมื่อ 5 ตุลาคม 2026 ผ่าน Node.js 24 และ Codex in-app browser ที่ `http://127.0.0.1:4173`
 
 ## Automated checks

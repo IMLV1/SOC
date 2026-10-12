@@ -2,6 +2,8 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = __dirname;
+const port = Number(process.argv[2] || 4173);
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Port must be an integer from 1024 to 65535');
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml' };
 http.createServer((req, res) => {
   let relative;
@@ -13,4 +15,4 @@ http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': types[path.extname(file)], 'Cache-Control': 'no-store' });
     res.end(data);
   });
-}).listen(4173, '127.0.0.1', () => console.log('SOC prototype: http://127.0.0.1:4173'));
+}).listen(port, '127.0.0.1', () => console.log(`SOC prototype: http://127.0.0.1:${port}`));

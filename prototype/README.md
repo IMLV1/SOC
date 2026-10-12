@@ -18,8 +18,8 @@ node server.cjs
 
 | บัญชี | บทบาท | รหัสเดโม |
 |---|---|---|
-| `analyst@demo.test` | Analyst | `demo1234` |
-| `instructor@demo.test` | Admin / Instructor | `demo1234` |
+| `analyst@demo.test` | Analyst | `DemoSOC1234!` |
+| `instructor@demo.test` | Admin / Instructor | `DemoSOC1234!` |
 
 ใช้ปุ่มเลือกบัญชีได้ทันที หรือกรอกฟอร์มเพื่อทดสอบ Login error สร้างบัญชี Analyst เพิ่มด้วยอีเมลลงท้าย `@demo.test` ได้ รหัสเดโมคงที่และไม่ถูกบันทึกใน storage อย่าใช้รหัสผ่านจริง
 
@@ -27,14 +27,14 @@ node server.cjs
 
 1. Guest ดูรอบตัวอย่างแบบอ่านอย่างเดียว มี 21 events และ 5 tickets
 2. Login เป็น Analyst → Simulation lab → เลือก 1–5 สถานการณ์ → รอบใหม่
-3. Events ทยอยเข้าตามนาฬิกา 75 วินาที พักและดำเนินต่อได้ เมื่อครบเวลาเปลี่ยนเป็น Review ให้สืบสวนต่อโดยยังไม่เปิดเฉลย
-4. Event explorer ค้นชื่อ IP บัญชี อุปกรณ์ รหัส event หรือเวลาที่แสดง เช่น `21:00:05` และกรองแหล่ง log (ต้นแบบยังไม่มีตัวเลือกช่วงเวลาจาก–ถึง)
+3. Events ทยอยเข้าตามนาฬิกา 75 วินาที พักและดำเนินต่อได้ เมื่อครบเวลาเปลี่ยนเป็น Reviewing ให้สืบสวนต่อโดยยังไม่เปิดเฉลย
+4. Event explorer ค้นข้อความ กรอง source/asset/user/IP และช่วงเวลา ISO UTC (from รวม, to ไม่รวม) ได้ มี pagination ครั้งละ 10 events
 5. Alert queue เชื่อม event กับ ticket เปิด request / response ได้
 6. Ticket มีคำวิเคราะห์ AI ตัวอย่างที่อ้างเฉพาะ event ที่ปล่อยแล้ว และ evidence timeline กด “อัปเดตหลักฐาน” เพื่อดึง event ล่าสุดโดยรักษาข้อความในแบบฟอร์มที่กำลังกรอก
 7. สร้าง/อ่าน/แก้/ลบแบบ soft delete/กู้คืน ticket และ note ได้ พร้อม audit และประวัติเวอร์ชัน note
 8. ประเมินตามลำดับ `Open → Investigating → Resolved → Closed` หรือเปิดกลับจาก Closed เป็น Investigating ต้องมีเหตุผล และต้องมี disposition ก่อน resolve/close
-9. จบรอบ → Evaluation แสดงเฉลยเทียบคำตอบของผู้ฝึก โดยไม่ตัด ticket ที่ลบออกจากผล
-10. Export เป็น JSON เพื่อเก็บหลักฐาน ticket และ audit ของรอบ
+9. จบรอบ → Completing (mock pending) → Completed ล็อกคำตอบและ snapshot ก่อนเปิดเฉลย รายการที่ลบยังอยู่ในการประเมิน หลังจบรอบแก้ไข/ลบ/กู้คืน ticket หรือ note ไม่ได้ แต่ Instructor เพิ่ม comment ได้
+10. Export เป็น JSON หลัง Completed เท่านั้น เก็บหลักฐาน ticket audit และ evaluation snapshot
 11. Instructor ปิด/เปิดบัญชีตัวอย่าง ปรับโควตา ตรวจรอบ เพิ่มความเห็น และปรับ severity/status พร้อมเหตุผล โดยไม่เขียนทับข้อสรุปของผู้เรียน
 
 ## สถานะพิเศษสำหรับสาธิต
@@ -54,13 +54,13 @@ Validation ทดลองได้ด้วยการ Login ผิด ข้�
 - ไม่มี backend API, ฐานข้อมูล, authentication จริง หรือ AI provider
 - Login และการแยกข้อมูลตามบัญชีเป็นการสาธิต UI เท่านั้น ผู้ที่เข้าถึง browser สามารถอ่านหรือแก้ข้อมูลทั้งหมดได้
 - เก็บรอบและชื่อบัญชีตัวอย่างใน localStorage ของ browser นี้ ไม่ซิงค์ข้ามเครื่องหรือ browser
-- Session อยู่ในหน่วยความจำ Refresh แล้วต้อง Login ใหม่ และรอบที่กำลังทำงานจะถูกพัก ไม่สร้างเหตุการณ์ย้อนหลังขณะปิดหน้า
+- Session อยู่ในหน่วยความจำ Refresh แล้วต้อง Login ใหม่ แต่ logout ไม่พักรอบ ใช้เวลาที่บันทึกไว้ทำ wall-clock catch-up เมื่อเปิดหน้าใหม่; เป็นการจำลองพฤติกรรม server clock เท่านั้น ไม่ใช่ worker จริง และยังไม่รองรับ multi-tab concurrency
 - กฎและ anomaly เป็นผลตรวจจับตาม fixture ไม่ใช่ engine สำหรับตรวจ log จริง
 - ไม่มีการวัด Precision/Recall หรือ A/B/C จริง หน้า Evaluation ระบุ Not measured เพื่อไม่สร้างผลทดลองเทียม
 - เฉลยอยู่ใน `model.js` ฝั่ง browser จึงป้องกันการอ่านล่วงหน้าทางเทคนิคไม่ได้ แม้ UI จะซ่อนก่อนจบรอบ
 - Audit เป็นข้อมูล local ที่แก้ไม่ได้ผ่าน UI แต่ไม่ได้ป้องกันการแก้จาก developer tools
 - ไม่มีการโจมตีจริงหรือ response action; ต้นแบบใช้ workflow ล่าสุดในเอกสารที่ไม่มี Contained
-- ยังไม่รองรับ retention policy, server-enforced quota, ส่งอีเมล หรือ public deployment
+- จำลองโควตารายวัน UTC และหนึ่ง running run ต่อบัญชีแล้ว แต่ยังไม่มี retention policy, server-enforced quota, อีเมล หรือ public deployment
 
 ## โครงสร้างไฟล์
 
@@ -82,3 +82,13 @@ node --test tests/*.test.cjs
 ```
 
 รองรับหน้าจอ 375px, 768px และ 1440px ตารางเลื่อนภายใน panel ได้ บนมือถือใช้เมนูพับและ layout คอลัมน์เดียว
+
+## Alignment update — 12 ตุลาคม 2026
+
+อ่าน [ตารางเทียบ prototype กับ architecture/API](../docs/prototype-alignment.md) สำหรับสิ่งที่ทำแล้วและขอบเขต mock ที่ยังไม่ใช่ backend จริง
+
+- สมัครบัญชีแล้วกลับหน้า Login ไม่เข้าสู่ระบบอัตโนมัติ
+- รหัสเดโมปัจจุบันคือ `DemoSOC1234!` (12 ตัวอักษร) ใช้เฉพาะการสาธิต ไม่เก็บ password และยังไม่ใช่ registration จริง
+- กู้คืน Ticket/Note และแก้ Note ต้องใส่เหตุผล มี version check และประวัติคำตอบของผู้ฝึก
+- assessment ที่ใช้ version เก่าถูกปฏิเสธ โดยเก็บ draft และกดอัปเดตหลักฐานเพื่อโหลด version ล่าสุด
+- เมื่อพอร์ตเดิมถูกใช้ เปิดพอร์ตอื่นได้ด้วย `node server.cjs 4174`
