@@ -17,7 +17,7 @@ Docker ไม่ใช่ข้อบังคับของ CI/CD แต่เ
 | ระยะ | ทำได้ / ต้องเพิ่ม | เงื่อนไข |
 |---|---|---|
 | ตอนนี้: prototype | ตรวจ syntax และ `npm test` ใน `prototype/`; ตรวจ Markdown links | ไม่มี dependency ภายนอกและไม่มี compile/build script จึงไม่อ้างว่าผ่าน production build |
-| Phase 0 | frontend/backend package manifests, lockfiles, lint/typecheck/test/build scripts, Dockerfiles, migration runner, OpenAPI validation | เพิ่ม production CI เมื่อมี implementation; ห้ามใช้ `--if-present` เพื่อซ่อน check ที่ขาด |
+| Phase 0 | frontend package.json/package-lock.json, backend pyproject.toml/uv.lock, lint/typecheck/test/build checks, Dockerfiles, Alembic, OpenAPI validation | เพิ่ม production CI เมื่อมี implementation; ห้ามใช้ optional checks เพื่อซ่อนเครื่องมือที่ขาด |
 | ก่อน staging | integration/E2E, registry, deploy adapter, environment config, health/worker heartbeat | ใช้ข้อมูลจำลองและ mock AI เป็นค่าเริ่มต้น |
 | ก่อน production | migration compatibility, backup/restore drill, secrets, release approval, rollback drill | ผ่านเกณฑ์ในเอกสารนี้และ SOC-016/017 |
 
@@ -62,12 +62,12 @@ Production approval เป็นนโยบายเริ่มต้นขอ
 | Check | สิ่งที่ตรวจ | เกณฑ์ผ่าน |
 |---|---|---|
 | prototype | `node --check` สำหรับ app.js/model.js/server.cjs และ `npm test` | ทุกคำสั่งสำเร็จ; model lifecycle tests ผ่าน |
-| quality | frontend/backend lint, TypeScript, format ที่ทีมกำหนด, Markdown links | ไม่มี error; scripts ที่บังคับต้องมีจริง |
+| quality | frontend ESLint/TypeScript; backend Ruff/mypy; format และ Markdown links | ไม่มี error; scripts ที่บังคับต้องมีจริง |
 | unit | clock/state transitions, detection, correlation, metrics, AI schema | ทดสอบ deterministic โดยไม่เรียก provider จริง |
 | contract | OpenAPI valid, generated client ไม่ drift, request/response/error shapes | API implementation ตรง contract รวมสิทธิ์และ pagination |
 | integration | PostgreSQL จริงที่ล้างทิ้งได้, roles จริง, migrations, transactions | ข้ามบัญชี/ข้ามรอบไม่ได้, version race สำเร็จหนึ่งคำขอ, quota ไม่เกิน |
 | recovery | worker crash/retry, pause-release race, finish cutoff | events/jobs/tickets ไม่ซ้ำ, ไม่ปล่อย future events หลัง pause |
-| build | frontend assets, API/worker compiled output, Docker build | สร้างจาก clean checkout และ lockfiles ได้; runtime เริ่มได้ |
+| build | Next.js standalone output, Python package/import checks, Docker build | สร้างจาก clean checkout และ lockfiles ได้; Uvicorn/worker เริ่มได้ |
 | E2E | login → run → evidence → ticket/note → finish → evaluation/export | รวม Guest, Instructor, error paths, ขนาดหน้าจอ 375/768/1440 |
 | security | dependency/image scan, secret scan, fixture leakage check | ไม่มี secret; ช่องโหว่ critical/high ที่ใช้โจมตี runtime ได้ต้องแก้หรือมีข้อยกเว้นพร้อมเจ้าของและวันหมดอายุ |
 | ci-gate | รวมผลทุก required job | fail/cancelled/missing job ต้องไม่กลายเป็น success |
@@ -87,14 +87,26 @@ node --check prototype/server.cjs
 npm --prefix prototype test
 ```
 
-คำสั่งเป้าหมาย Phase 0 ได้แก่ `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` ภายใน frontend/backend และ migration/integration/E2E scripts ที่ทีมเพิ่มภายหลัง ต้องบันทึก Node version ในไฟล์กลางและ pin package manager ด้วย ไม่กำหนดเวอร์ชันลอยว่า latest
+คำสั่งเป้าหมาย Phase 0 แยกตาม runtime ด้านล่าง ยังต้องสร้าง package scripts/config ก่อนใช้:
+
+| ส่วน / working directory | คำสั่งที่เสนอ |
+|---|---|
+| frontend/ | `npm ci`, `npm run lint` (ESLint), `npm run typecheck` (tsc --noEmit), `npm test` (Vitest run), `npm run build` (next build) |
+| backend/ dependencies | `uv sync --frozen` ใช้ pyproject.toml และ uv.lock |
+| backend/ quality | `uv run --frozen ruff check .`, `uv run --frozen ruff format --check .`, `uv run --frozen mypy app` |
+| backend/ tests | `uv run --frozen pytest`; HTTPX ทดสอบ FastAPI และ integration ใช้ PostgreSQL จริง |
+| backend/ migrations | `uv run --frozen alembic upgrade head` ผ่าน wrapper ที่ถือ advisory lock และตรวจ supplemental ledger |
+| backend/ build | ตรวจ import `app.main:app`, สร้าง runtime image และ smoke Uvicorn/worker; Python ไม่มี next build/TypeScript compile |
+| browser E2E | Playwright รันกับ Next.js + FastAPI + Python worker + PostgreSQL |
+
+Pin Node/Python/uv versions และ commit lockfiles ให้ CI ใช้ตรงกับ local/Docker; cache แยก runtime และ lockfile hash ไม่กำหนดเวอร์ชันลอยว่า latest ตรวจ generated OpenAPI จาก FastAPI เทียบ contract และ generate TypeScript client โดยไม่ต้องมี production credentials
 
 ## 6. Container และ artifact
 
 | Artifact | เนื้อหา | Runtime |
 |---|---|---|
-| `soc-web` | frontend build เท่านั้น + static server/reverse proxy | HTTPS ผ่าน hosting ingress; `/api/v1` และ `/health/*` ไป API |
-| `soc-backend` | compiled API/worker, runtime dependencies, migrations และ fixture ที่จำเป็น | API และ worker ใช้ image digest เดียวกันแต่คนละ command |
+| `soc-web` | Next.js standalone output, public และ .next/static | Node server (`node server.js` ที่ standalone root); ingress ส่ง API/health ไป FastAPI |
+| `soc-backend` | Python app, locked runtime dependencies, Alembic migrations และ server fixture | API: `uvicorn app.main:app --host 0.0.0.0 --port 8000`; worker: `python -m app.worker`; digest เดียวกัน |
 | release manifest | commit SHA, image digests, schema version, fixture/config hashes, test links | เก็บเป็นหลักฐานของ release และเลือก rollback |
 
 ใช้ multi-stage build, non-root runtime และ `.dockerignore` ไม่ส่ง `.git`, `.env`, credentials, node_modules ของเครื่องผู้พัฒนาเข้า build context ตรวจว่า web image ไม่มี backend fixtures/ground truth แม้ไฟล์เหล่านั้นอยู่ใน repository
@@ -103,7 +115,9 @@ Ground truth seed เป็น restricted artifact สำหรับ migration/
 
 สร้าง image เพียงครั้งเดียวจาก main SHA ที่ผ่าน CI ใช้ `sha-<commit>` เพื่อค้นหา แต่ rollout ด้วย `sha256:...` digest เสมอ Staging และ production ใช้ digest เดียวกัน ไม่ rebuild ตอน promote และไม่ใช้ `latest` เป็น release identity
 
-Frontend ใช้ relative `/api/v1` จึงไม่ต้องฝัง staging URL ลง build หากต้องมี runtime config ให้ allowlist เฉพาะ public settings ห้ามส่ง secret ผ่าน `VITE_*` หรือไฟล์ JavaScript
+Frontend ใช้ relative `/api/v1` จึงไม่ต้องฝัง staging URL ลง build หากต้องมี runtime config ให้ allowlist เฉพาะ public settings ห้ามส่ง secret ผ่าน `NEXT_PUBLIC_*` หรือไฟล์ JavaScript ค่าที่เป็น NEXT_PUBLIC ถูกฝังตอน build จึงต้องเหมือนกันระหว่าง environments เมื่อ promote digest เดิม ใช้ server-only runtime config หากต้องต่าง environment
+
+ตั้ง `output: 'standalone'` และ copy `public`/`.next/static` เข้า web image ตาม layout ของ standalone output; ไม่ deploy เป็น static-only hosting ในแผนนี้ ตรวจ asset loading และ Next.js readiness เพิ่มจาก FastAPI health ดู [Next.js standalone deployment](https://nextjs.org/docs/app/getting-started/deploying)
 
 ## 7. Environment และสิทธิ์
 
@@ -173,3 +187,11 @@ Application rollback ไม่ใช่ database rollback ไม่รัน des
 - migration runner/ledger, advisory locks, restore drill และ alerts ที่ส่งถึงผู้ดูแลที่กำหนด
 
 ถือว่างาน CI/CD เสร็จเมื่อ PR ที่ test fail ถูกกันไม่ให้ merge, merge ที่ผ่าน deploy staging ได้, production ใช้ digest เดียวกันหลัง approval, failure ไม่รายงาน success และทดลอง rollback/restore พร้อมหลักฐานจริงแล้ว เอกสารฉบับนี้ยังไม่ใช่หลักฐานว่าเงื่อนไขเหล่านั้นเกิดขึ้น
+
+## 11. RAG checks และ knowledge deployment
+
+เมื่อเริ่ม [LangChain RAG](rag-langchain.md) ให้ integration DB มี pgvector extension major/version ที่เข้ากับ production และ pin digest ตรวจ hosting support ก่อนเลือกบริการ เพิ่ม fake embeddings/model tests สำหรับ retrieval filters, snapshot refs, revocation, quota, retries และ migration 007 โดย PR ไม่เรียก provider จริง
+
+Real retrieval/answer benchmark ใช้ trusted manual job จำกัดงบและ corpus ที่อนุมัติ เก็บ model/profile/release/config hashes และรายงาน no-RAG เทียบ RAG พร้อม quality targets ตาม RAG design ห้าม gold answers/ground truth อยู่ใน knowledge artifact
+
+Deploy app/migrations → ingest knowledge draft → validate benchmark → publish immutable knowledge release → เปิด RAG สำหรับ run ใหม่ ทำ ingestion/reindex แยกจาก migration; knowledge rollback เปลี่ยน active pointer ส่วน run เก่ายังคง pinned release ที่ไม่ revoked เพิ่ม embedding provider key/ingestion budget ใน worker/publisher secret store ไม่ส่งให้เว็บ และทดสอบ backup/restore vector tables ด้วย

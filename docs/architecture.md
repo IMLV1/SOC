@@ -18,26 +18,31 @@
 
 | ส่วน | แนวทางเริ่มต้น | เหตุผล / ขอบเขต |
 |---|---|---|
-| Frontend | React + TypeScript + Vite | แยก page, form และ API client จาก prototype |
-| API | Node.js + TypeScript + Fastify | ใช้ request/response schema ชุดเดียวเป็นฐานของ validation และ OpenAPI |
-| Database | PostgreSQL + SQL migrations | transaction, constraints และการค้นข้อมูลรอบฝึก |
-| Data access | `pg` และ parameterized SQL | เห็น transaction และ query ที่ใช้จริงชัดเจน |
+| Frontend | Next.js App Router + React + TypeScript | แยก page, form และ API client จาก prototype |
+| API | Python + FastAPI + Pydantic + Uvicorn | request/response models เป็นฐานของ validation และ OpenAPI |
+| Database | PostgreSQL + Alembic migrations | transaction, constraints และการค้นข้อมูลรอบฝึก |
+| Data access | SQLAlchemy async + asyncpg | explicit transactions; ใช้ bound parameters สำหรับ SQL เฉพาะทาง |
 | Queue | ตาราง jobs ใน PostgreSQL | ลดจำนวนบริการที่ต้องดูแลในช่วงเริ่มต้น |
-| Worker | Node.js process จาก backend codebase | runner, detection, AI, evaluation และ retention |
+| Worker | Python process จาก backend codebase | runner, detection, AI, evaluation และ retention; แยกจาก Uvicorn |
 | AI | Adapter รองรับ mock และ provider จริงหนึ่งราย | provider/model ยังรอเลือกจากผลทดสอบ ราคา และงบที่ทีมกำหนด |
-| Tests | Node test runner สำหรับ backend; Playwright สำหรับ E2E | ทดสอบสิทธิ์ ข้อมูล และ flow ผ่าน browser |
+| RAG | LangChain Python + pgvector ใน PostgreSQL | ค้น approved knowledge ก่อนตอบ; แยก evidence กับ knowledge citations ตาม [RAG design](rag-langchain.md) |
+| Tests | pytest + HTTPX สำหรับ backend; Vitest/Testing Library สำหรับ frontend; Playwright สำหรับ E2E | prototype ยังใช้ Node test runner เดิม |
 | Deploy | HTTPS reverse proxy + API + worker + managed PostgreSQL | API และ worker restart แยกกันได้ |
 
-ทั้งหมดเป็นข้อเสนอ ไม่ใช่ dependency ที่ติดตั้งแล้ว เลือกเวอร์ชันที่เข้ากันและยังได้รับการสนับสนุนตอนเริ่ม Phase 0 บันทึกเวอร์ชัน runtime และ lockfile ใน repository
+Next.js และ FastAPI เป็น stack ที่ผู้ใช้เลือกแล้ว เครื่องมือประกอบเป็นข้อเสนอ ยังไม่ได้ติดตั้ง dependencies เลือกเวอร์ชันที่เข้ากันและยังได้รับการสนับสนุนตอนเริ่ม Phase 0 บันทึก Node/Python versions และ lockfiles ใน repository
 
-Vite มี template สำหรับ React/TypeScript ให้ใช้เป็นจุดเริ่มต้น ส่วน schema ของ Fastify ต้องเป็นโค้ดที่ทีมกำหนด ไม่รับ schema จากผู้ใช้: [Vite guide](https://vite.dev/guide/), [Fastify validation](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/)
+Deploy Next.js เป็น Node server ด้วย standalone output และ FastAPI เป็น Uvicorn container แยกกัน ดู [Next.js deployment](https://nextjs.org/docs/app/getting-started/deploying) และ [FastAPI containers](https://fastapi.tiangolo.com/deployment/docker/)
+
+Next.js รับผิดชอบ UI ส่วน FastAPI เป็นเจ้าของ authentication, authorization, domain logic และ `/api/v1` ทั้งหมด Reverse proxy ส่ง `/api/v1/*` และ `/health/*` ไป FastAPI ส่วนหน้าเว็บไป Next.js ภายใต้ origin เดียวกัน รวม local dev proxy ด้วย ไม่สร้าง API domain ชุดซ้ำใน Next.js Route Handlers/Server Actions
+
+หน้า investigation ใช้ Client Components เรียก API พร้อม session cookie ตาม contract; ถ้าใช้ Server Components อ่านข้อมูลสมาชิก ต้องส่งเฉพาะ cookie ที่จำเป็นไป trusted backend และปิด shared caching (`no-store`) ห้าม cache ข้อมูลสมาชิกข้าม session Worker ใช้ durable PostgreSQL jobs เดิม ไม่ใช้ FastAPI BackgroundTasks แทน queue และไม่เริ่ม runner ใน startup ของทุก Uvicorn worker
 
 ## 3. ภาพรวมระบบ
 
 ```mermaid
 flowchart LR
     B[Browser: Guest / Analyst / Instructor] --> P[HTTPS reverse proxy]
-    P --> UI[Frontend static assets]
+    P --> UI[Next.js Node server + static assets]
     P --> API[Backend REST API]
     API --> DB[(PostgreSQL: app data + jobs)]
     W[Worker process] --> DB
@@ -81,11 +86,15 @@ frontend/
   src/components/          table, form, dialog, status, evidence viewer
   src/api/                 generated client types + request wrapper
 backend/
-  src/api/                 server, routes, schemas, authentication hooks
-  src/modules/             auth, runs, detection, analysis, tickets, evaluation
-  src/worker/              entrypoint, job handlers, scheduler
-  src/db/                  repositories, transactions, migrations
-  src/adapters/ai/          provider interface, mock, real adapter
+  app/main.py              FastAPI application, exception handlers
+  app/api/                 routers, Pydantic schemas, auth dependencies
+  app/modules/             auth, runs, detection, analysis, tickets, evaluation
+  app/worker/              __main__.py, job handlers, scheduler
+  app/db/                  SQLAlchemy models, sessions, repositories
+  app/adapters/ai/          Python provider protocol, mock, real adapter
+  migrations/              Alembic env.py and versioned revisions
+  pyproject.toml           Python dependencies and tool configuration
+  uv.lock                  reproducible Python dependency resolution
   fixtures/events/         versioned release schedule; never served statically
   fixtures/ground-truth/   evaluator-only seed input
   tests/                   unit, integration, contract
@@ -190,21 +199,22 @@ Correlation ใช้ account/session + asset + time window; IP อย่าง�
 
 ## 9. AI integration และ external API ที่ต้องใช้
 
-External API ที่จำเป็นมีเพียงบริการ AI หนึ่งรายในโหมดจริง ส่วนอีเมล reset password, threat intelligence, SIEM และ EDR ไม่อยู่ใน MVP ไม่ต้องเพิ่มบริการเหล่านั้นเพื่อให้ flow หลักทำงาน
+External integrations ของ AI ประกอบด้วย chat model และ embedding model สำหรับ RAG เลือก provider เดียวกันได้ถ้ารองรับทั้งสองหน้าที่ แต่ยังต้องเลือก model/dimension/ราคา ส่วนอีเมล reset password, threat intelligence, SIEM และ EDR ไม่อยู่ใน MVP
+
+เพิ่ม LangChain 2-step RAG ตาม [แบบออกแบบ RAG](rag-langchain.md): worker ค้น approved learner knowledge จาก pgvector ก่อนประกอบ prompt กับ released evidence ใช้ custom SQL retriever เพื่อคุม release/สิทธิ์/revocation, structured output และ citation validation ไม่มี agent tools หรือการค้นเฉลย Knowledge release ถูก pin ต่อ run; คำถามและ triage ใช้ quota, jobs และ Analysis resource ร่วมกัน
 
 Interface ภายในที่เสนอ:
 
-```typescript
-interface AnalysisProvider {
-  analyze(input: {
-    requestId: string;
-    evidence: RedactedReleasedEvent[];
-    context: AssetAndBaselineContext;
-    promptVersion: string;
-    maxOutputTokens: number;
-  }, signal: AbortSignal): Promise<ProviderAnalysisResult>;
-}
+```python
+from typing import Protocol
+
+class AnalysisProvider(Protocol):
+    async def analyze(
+        self, input: "AnalysisInput"
+    ) -> "ProviderAnalysisResult": ...
 ```
+
+AnalysisInput/ProviderAnalysisResult เป็น Pydantic models ที่จะสร้างใน backend โดย input มี request_id, released/redacted evidence, asset/baseline context, prompt_version และ max_output_tokens รวม kind, question (เมื่อถาม), retrieved knowledge snapshot และ retrieval config ตาม RAG design; worker คุม timeout/cancellation ด้วย asyncio และ HTTP client timeout
 
 ก่อนต่อ provider จริงต้องเลือก model, SDK/API path, ราคา และรูปแบบ structured output จากเอกสารของ provider แล้วเติมลง adapter ไม่ hardcode API key ใน frontend และไม่ใส่ endpoint ที่ยังไม่ได้เลือกไว้เหมือนใช้งานได้แล้ว
 
@@ -246,6 +256,8 @@ Retention ใช้ job ลบตาม dependency ภายใต้ transactio
 ติดตาม request latency, error rate, queue age, worker heartbeat, duplicate conflicts, AI failures/usage และผล backup ผ่าน log ที่มี request_id/run_id โดยไม่มี password, cookie, API key หรือ raw secrets
 
 ## 11. การประเมิน A/B/C
+
+การทดลอง RAG เพิ่มเป็น configuration ของ AI ใน arm C (rag_enabled, knowledge release, embedding/retrieval versions) เพื่อเทียบ C no-RAG กับ C RAG โดยคง detector/dataset เดิม ไม่เพิ่ม mode ใหม่ใน enum A/B/C และไม่อ้างว่าการค้นคู่มือเพิ่ม detection recall เกณฑ์คุณภาพคำตอบอยู่ใน [RAG evaluation](rag-langchain.md#10-การทดสอบและวัดว่าแม่นขึ้นจริง)
 
 บันทึก dataset hash และเวอร์ชันทั้งหมดก่อนรัน experiment จาก **ชุด event และ cutoff เดียวกัน** หน่วยนับเป็น incident/group ใน ground truth ไม่ใช่จำนวน request และ ground truth ใช้หลังตรวจจับเสร็จเท่านั้น
 

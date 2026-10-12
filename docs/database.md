@@ -6,7 +6,9 @@
 
 ## 1. ฐานข้อมูลและขอบเขต
 
-เลือก PostgreSQL เป็นฐานข้อมูลหลัก เก็บบัญชี รอบฝึก หลักฐาน ผลตรวจ ticket ประวัติคำตอบ งานเบื้องหลังและโควตาใน transaction เดียวกันตาม modular monolith ใช้ `pg` กับ parameterized SQL และ versioned SQL migrations ไม่มี Redis/Elasticsearch ใน MVP
+เลือก PostgreSQL เป็นฐานข้อมูลหลัก เก็บบัญชี รอบฝึก หลักฐาน ผลตรวจ ticket ประวัติคำตอบ งานเบื้องหลังและโควตาใน transaction เดียวกันตาม modular monolith ใช้ SQLAlchemy async + asyncpg ใน Python/FastAPI และ Alembic migrations ไม่มี Redis/Elasticsearch ใน MVP
+
+ใช้ AsyncSession แยกต่อ request/job ไม่แชร์ session ระหว่าง concurrent tasks และปิด transaction ก่อนเรียก AI สำหรับ locking/queue ใช้ SQLAlchemy หรือ parameterized SQL ที่ให้ semantics เดิม ตัวอย่าง `$1` ในเอกสารเป็น PostgreSQL notation; เมื่อรันผ่าน SQLAlchemy text ให้ใช้ named bind parameters Alembic ใช้ async engine ผ่าน migration env ที่รองรับตาม [Alembic asyncio cookbook](https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic)
 
 Production ใช้ managed PostgreSQL ที่รองรับ backup/PITR; local/CI ใช้ container ที่ major version ตรงกัน Pin version/digest ตอน Phase 0 หลังเลือก hosting ไม่ใช้ image `latest` โครงสร้างด้านล่างเป็นข้อเสนอของโครงการ ไม่ใช่ schema ที่เครื่องมือได้สร้างแล้ว
 
@@ -149,7 +151,8 @@ Idempotency ตรวจ authorization ก่อนอ่าน cache ไม่�
 | experiment_arms | id, batch_id FK, mode, status, config_snapshot jsonb, outputs_json?, metrics_json?, error_code? | UNIQUE(batch_id,mode); mode A/B/C; C ไม่มี provider ให้ unavailable |
 | experiment_events | batch_id FK, event_id uuid, release_seq bigint, event_snapshot jsonb, content_hash | PK(batch_id,event_id); immutable released/redacted input copy; ไม่มี ground truth/assessment |
 | experiment_outputs | id, arm_id FK, output_kind, correlation_key, evidence_ids jsonb, result_json, content_hash | isolated detector/AI outputs; validate refs เป็น subset ของ experiment_events ของ batch เดียวกัน |
-| ops.schema_migrations | version text PK, checksum, applied_at, release_sha | เปลี่ยน migration ที่ใช้แล้วไม่ได้; ใช้ checksum ตรวจ drift |
+| ops.alembic_version | version_num PK | Alembic จัดการ current revision; ตั้ง version_table_schema=ops |
+| ops.schema_migrations | version text PK, checksum, applied_at, release_sha | supplemental deployment ledger; ไม่ใช้แทน Alembic revision state; migration runner บันทึก checksum/release หลังสำเร็จ |
 
 evaluation_items มีเฉลย จึงต้องจำกัดสิทธิ์การอ่านเช่นเดียวกับ evaluation snapshot แม้อยู่ app schema อ่านได้ผ่าน handler ที่ตรวจ completed/ownership หรือ Instructor scope เท่านั้น ห้ามนำไป join ใน event/ticket serializer
 
@@ -299,3 +302,15 @@ Restore drill ทุกเดือนและก่อน public launch: resto
 - Migrations และ restore ผ่านบน PostgreSQL version ที่เลือก พร้อมหลักฐานเวลา/ผลทดสอบและคู่มือ recovery
 
 Physical DDL, OpenAPI และ deployment scripts เป็นงาน Phase 0–6 ต่อจากเอกสารนี้ ต้องไม่ถือว่าตารางหรือ pipeline พร้อมใช้งานจากการมีแบบออกแบบเพียงอย่างเดียว
+
+## 13. LangChain RAG schema extension
+
+เพิ่ม PostgreSQL extension `vector` และ schema `kb` ตาม [RAG data dictionary](rag-langchain.md#7-database-additions): documents/versions/chunks, embedding profiles และ embeddings ที่ dimension คงที่, releases/membership/active pointer พร้อม app.retrievals/items และ analysis_knowledge_refs
+
+analyses เพิ่ม kind/question/ticket/release/config/visibility; run_versions เพิ่ม pinned knowledge release และ retrieval config ตารางเดิมยังทำงานได้เมื่อ RAG disabled โดย nullable fields ไม่สร้าง snapshot ย้อนหลัง การสร้าง question ใช้ Analysis + evidence + quota + job transaction เดิม ไม่มีฐานข้อมูลแชตแยก
+
+เพิ่ม quota component reservations/usage สำหรับ query embeddings และ generation; ingestion ใช้งบแยก รายละเอียด owner keys และ constraints อยู่ RAG §7 ต้องบันทึก usage แยก model/component ไม่บวก tokens ต่างราคาเป็น cost เดียว
+
+Alembic revision 007 จัด schema/grants/extension เมื่อ hosting รองรับ ส่วน ingest/embed/reindex เป็น jobs หลัง deploy ไม่ทำใน migration หรือ API startup Migration ต้องเพิ่ม FK/indexes ของ question ticket, citation snapshot และ release membership; runtime ไม่มีสิทธิ์สร้างตาราง vector เอง
+
+retrieval snapshots เป็นข้อมูลลูกของ run ตาม retention เดิม KB chunks ที่มี citation อ้างยังไม่ purge; source revocation ต้องตัดการอ่าน response/citation ทันทีทุก projection โดยไม่เปลี่ยนคะแนนใน evaluation snapshot ทดสอบ restore ทั้ง extension, embeddings, release manifests และ references

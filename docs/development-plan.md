@@ -6,6 +6,10 @@
 
 แบบออกแบบสำหรับลงมือพัฒนา: [Database](database.md) และ [CI/CD](ci-cd.md) ครอบคลุม schema, GitHub Actions, Docker artifacts, migration, deploy และ recovery
 
+เพิ่ม [LangChain RAG](rag-langchain.md) หลัง core AI พร้อม: approved knowledge → pgvector retrieval → cited triage/Ask AI → quality benchmark ตาม RAG-001–005 คาดเพิ่ม 6–10 วันทำงานจากแผนฐาน 31–40 วัน เป็นรวมประมาณ 37–50 วันทำงานหากทำต่อเนื่อง ยังไม่รวมเวลารอ provider/งบและไม่ใช่กำหนดส่งยืนยัน
+
+Stack ที่เลือก: **Next.js App Router + TypeScript** สำหรับ frontend และ **Python + FastAPI** สำหรับ backend; worker ใช้ Python codebase เดียวกัน ฐานข้อมูล PostgreSQL ผ่าน SQLAlchemy/asyncpg และ Alembic เครื่องมือประกอบยังต้องติดตั้งและ pin versions ใน Phase 0
+
 ## 1. เป้าหมายและสมมติฐาน
 
 เปลี่ยน prototype ให้เป็นเว็บใช้งานจริงที่มีบัญชี ข้อมูลถาวร สิทธิ์ฝั่ง server, runner, detection, AI และผลประเมินที่ตรวจสอบได้ ใช้ prototype เป็น reference หน้าจอ ไม่ย้าย localStorage หรือรหัสบัญชีเดโมไปเป็นกลไก production
@@ -61,13 +65,15 @@ Frontend และ backend พัฒนาร่วมกันโดยอิ�
 | SOC-016 | Hosting + backup/restore + observability | Backend | 006, 012 | staging restart/restore ผ่าน; readiness ตรวจ DB; queue failure สังเกตได้ |
 | SOC-017 | End-to-end acceptance + delivery | ทั้งทีม | 013–016 | flow บน public URL ผ่าน; เอกสารและวิดีโอเปิดได้จากผู้ตรวจ |
 
+งาน RAG ใช้ dependencies SOC-006/010/011/012: เตรียม corpus/storage ด้วย mock ได้ก่อน provider พร้อม แต่ benchmark จริงต้องเลือก embedding/chat models แล้ว SOC-014 เพิ่ม config เปรียบเทียบ C no-RAG กับ C RAG; SOC-016/017 เพิ่ม pgvector deploy/restore, citation leakage/revocation และ question flow ตาม RAG design ไม่เปลี่ยน detector policy
+
 ยังไม่ได้สร้าง Issue/PR จริง ตารางนี้เป็น backlog สำหรับทีม ห้ามนับเป็นหลักฐานการ review หรือการทำงานร่วมกันที่เกิดขึ้นแล้ว
 
 ## 4. งานเริ่มต้นที่ควรทำก่อน
 
 1. เลือกและ pin runtime/framework versions พร้อมตัดสินใจ provider/hosting budget; provider จริงต้องพร้อมก่อน SOC-012
 2. ทำ `docs/srs.md` และ `docs/openapi.yaml` จากเอกสารชุดนี้ก่อนเริ่ม screen integration
-3. สร้าง migration users, sessions, scenarios, runs, events, jobs และ audit
+3. สร้าง FastAPI/Pydantic schemas, SQLAlchemy models และ Alembic migrations สำหรับ users, sessions, scenarios, runs, events, jobs และ audit
 4. ทำ vertical slice เล็กที่สุด: login → start S02 → runner ปล่อย log → Event explorer อ่านผ่าน API
 5. ทดสอบผู้ใช้ A/B และ worker restart ให้ผ่านก่อนขยาย ticket, AI และ evaluation
 
@@ -90,7 +96,7 @@ Frontend และ backend พัฒนาร่วมกันโดยอิ�
 
 | ของเดิม | ของใหม่ |
 |---|---|
-| app.js รวมทุกหน้าจอ | แยก routes/features/components และ API client |
+| app.js รวมทุกหน้าจอ | Next.js App Router, features/components และ typed API client |
 | localStorage เป็นฐานข้อมูล | server-backed queries; เก็บเฉพาะ UI preferences ฝั่ง client |
 | บัญชีเดโมรหัสคงที่ | session cookie + password hash; seed demo ที่ไม่ใช้กับ public admin |
 | model.js ปล่อย event และมีเฉลย | server fixture loader + runner; ground truth เก็บ private |

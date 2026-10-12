@@ -6,6 +6,8 @@
 
 การจัดเก็บข้อมูลและ transaction ของแต่ละ endpoint อยู่ใน [Database design](database.md); checks และการนำ API ขึ้นระบบอยู่ใน [CI/CD design](ci-cd.md)
 
+Implementation ที่เลือกคือ FastAPI + Pydantic สำหรับ API และ Next.js + TypeScript สำหรับ client ใช้ Pydantic `extra='forbid'`, explicit response models และ exception handlers ให้ validation errors เป็น envelope ตามเอกสารนี้แทน default FastAPI detail; schema ของ UUID/UTC/enums และ 401/403/404/409 ต้องตรง contract Export OpenAPI จากแอปเพื่อตรวจ drift กับ docs/openapi.yaml และสร้าง client types ไม่เปลี่ยน endpoint หรือ cookie/CSRF policy ตาม framework
+
 ## 1. ข้อตกลงทั่วไป
 
 - Base path: `/api/v1`; JSON request/response ใช้ `snake_case`
@@ -356,6 +358,27 @@ Human score และ detector metrics ใช้คนละแหล่งข�
 
 ## 14. External integrations ที่ยังต้องเลือก
 
-Frontend ใช้ API ข้างต้นเท่านั้น ส่วน backend มี AI provider API เป็น external dependency ที่ต้องเพิ่มใน Phase 4 ต้องบันทึก provider URL/SDK/model, authentication header, structured-output schema, timeout และ usage mapping หลังตัดสินใจแล้ว
+Frontend ใช้ API ข้างต้นและส่วนขยาย RAG ใน §15 เท่านั้น ส่วน backend มี chat model และ embedding provider API เป็น external dependencies ใน Phase 4 อาจใช้ provider เดียวกัน ต้องบันทึก provider URL/SDK/model, dimension, authentication, structured-output schema, timeout และ usage mapping หลังตัดสินใจแล้ว
 
 Database เชื่อมผ่าน PostgreSQL driver ไม่ใช่ browser REST API; hosting health/backup ใช้ระบบของผู้ให้บริการที่เลือก ไม่ต้องเพิ่ม mail/SIEM/EDR API ใน MVP นี้
+
+## 15. LangChain RAG extension
+
+ส่วนขยายนี้เป็นแบบออกแบบที่ยังไม่ติดตั้ง ใช้ [RAG design](rag-langchain.md) เป็นรายละเอียดของ snapshot/citations/knowledge ingestion และเพิ่มใน OpenAPI ก่อนเริ่ม implementation ไม่ส่ง knowledge/embedding credential ให้ Next.js
+
+| Method | Endpoint | Contract เพิ่มเติม |
+|---|---|---|
+| POST | `/runs/{run_id}/tickets/{ticket_id}/questions` | question 1–2,000 chars, expected_version ของ ticket, Idempotency-Key และ CSRF; 202 analysis_id/kind=question/status=queued |
+| GET | `/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}` | citation excerpt/metadata เฉพาะ item ของ analysis นี้และ run ตนเอง |
+| GET | `/admin/runs/{run_id}/analyses/{analysis_id}` | Instructor อ่านผลเดิมใน assignment scope พร้อม access audit |
+| GET | `/admin/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}` | อ่าน citation ใน scope เดียวกัน; ไม่มีสิทธิ์ถาม/retry ของผู้อื่น |
+
+ถามได้เฉพาะ ticket ที่ไม่ถูกลบใน run ที่ยัง mutable ก่อน completing; lock run และ ticket ก่อนตรวจ snapshot/version ไม่เปลี่ยน human assessment หรือ ticket version จากการถาม ไม่รับ arbitrary model/prompt/release/filter และไม่มี multi-turn memory ใน MVP
+
+Analysis เพิ่ม kind=`triage|question`, retrieval metadata, knowledge citations และ response_visibility=`visible|withdrawn`; result เป็น discriminated schema ตาม kind ตาม [RAG §6](rag-langchain.md#6-ผลลัพธ์และ-citation-contract) List analyses เพิ่ม kind? filter และ ticket_id filter ต้องรวม direct question ticket reference ด้วย ทุก citation UUID ต้องเป็นของ frozen retrieval ของ analysis นี้
+
+Retry เดิมคง question, evidence และ retrieval snapshot (หาก retrieval เคยสำเร็จ) ของงานก่อนหน้า; ไม่มี snapshot ให้ค้นจาก pinned release เดิม ไม่ค้น release ใหม่โดยเงียบ ๆ Source revoked คืน 409 KNOWLEDGE_REVOKED; RAG ไม่พร้อมตอนสร้าง question คืน 503 KNOWLEDGE_UNAVAILABLE
+
+เมื่อ source ถูกถอน Citation GET คืน 410 KNOWLEDGE_REVOKED ส่วน Analysis GET คืน 200 metadata ประวัติเดิม, result=null และ response_visibility=withdrawn ใช้การซ่อนผลแบบเดียวกันใน ticket detail, export และ Instructor review รวมถึง historical snapshot ที่เผยให้ผู้ใช้ ห้ามดึงข้อความเก่าจาก cache มาแสดงใหม่
+
+ไม่พบ context ให้ question result เป็น insufficient_context และ retrieval=no_match โดยไม่เรียก chat model ไม่แสดงว่าเป็นคำตอบจากโมเดล หาก embedding/retrieval ล้มเหลว question เป็น failed ส่วน triage อาจทำ evidence-only ตาม policy พร้อม retrieval=unavailable ซึ่งไม่ถือว่าผ่าน RAG benchmark

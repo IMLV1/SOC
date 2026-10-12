@@ -8,7 +8,7 @@
 
 ต้นแบบเดิมสอดคล้องในหน้าจอและ flow หลัก แต่มีพฤติกรรมขัดกับแผนใหม่หลายจุด รอบนี้แก้ **พฤติกรรม frontend ในขอบเขต mock** ให้ใช้เป็น reference สำหรับพัฒนาได้ โดยยังไม่อ้างว่า prototype คือ React frontend หรือ backend production ตามแผน
 
-`prototype/` ยังคงเปิดด้วย static server ได้ ส่วน React/TypeScript/Vite และ API/worker/PostgreSQL อยู่ในงาน `frontend/` และ `backend/` ตาม phase ที่กำหนด ไม่ย้ายไฟล์ทับต้นแบบตาม development-plan §5
+`prototype/` ยังคงเปิดด้วย static server ได้ ส่วน Next.js/React/TypeScript และ FastAPI/Python worker/PostgreSQL อยู่ในงาน `frontend/` และ `backend/` ตาม phase ที่กำหนด ไม่ย้ายไฟล์ทับต้นแบบตาม development-plan §5
 
 ## สิ่งที่ปรับในต้นแบบ
 
