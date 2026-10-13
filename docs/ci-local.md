@@ -33,6 +33,9 @@ CI อัปเดตข้อ 04 เพิ่ม auth integration, generated Ty
 approved FastAPI contract เปรียบเทียบกับ OpenAPI แล้ว ส่วน domain schemas ยัง draft
 PostgreSQL 17.11 เป็น local baseline เดิม; production/pgvector compatibility รอยืนยันในงานภายหลัง
 เพิ่ม regression tests สำหรับ feature ใหม่ใน jobs เดิมต่อไป; exam/runner ยังไม่ implement หรืออ้างว่าทดสอบผ่าน
+ข้อ 05 เพิ่ม fixture/seed/private grants/cursor/exam default-deny tests, container asset isolation,
+browser catalog/error states และตรวจ browser bundle หลัง build; [ผล local](step-05-verification.md)
+ไม่ใช้ผล GitHub ข้อ 04 อ้างแทน CI ของ branch ข้อ 05
 
 ## รัน local
 

@@ -114,7 +114,7 @@ docs/
   architecture.md
   api.md
   development-plan.md
-  openapi.yaml             สร้างใน Phase 0; ยังไม่มีในปัจจุบัน
+  openapi.yaml             approved implemented routes + draft domain inventory
 prototype/                 เก็บเป็น reference และงานนำเสนอเดิม
 ```
 

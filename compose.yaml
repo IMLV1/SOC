@@ -53,6 +53,19 @@ services:
       bootstrap: {condition: service_completed_successfully}
     restart: "no"
 
+  seed:
+    image: soc-seed:local
+    build:
+      context: ./backend
+      target: seed
+    environment:
+      <<: *db-env
+      DB_PASSWORD_FILE: /run/secrets/migration_owner
+    secrets: [migration_owner]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: "no"
+
   api:
     <<: *backend
     environment:
@@ -63,7 +76,7 @@ services:
     secrets: [api_runtime]
     ports: ["127.0.0.1:${SOC_API_PORT:-8000}:8000"]
     depends_on:
-      migrate: {condition: service_completed_successfully}
+      seed: {condition: service_completed_successfully}
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=6)"]
       interval: 10s
@@ -71,7 +84,10 @@ services:
       retries: 5
 
   worker:
-    <<: *backend
+    image: soc-worker:local
+    build:
+      context: ./backend
+      target: runner
     restart: unless-stopped
     command: [python, -m, app.worker]
     environment:
@@ -79,7 +95,7 @@ services:
       DB_PASSWORD_FILE: /run/secrets/worker_runtime
     secrets: [worker_runtime]
     depends_on:
-      migrate: {condition: service_completed_successfully}
+      seed: {condition: service_completed_successfully}
     healthcheck:
       test: [CMD, python, -m, app.worker, --check]
       interval: 30s

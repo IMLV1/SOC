@@ -298,6 +298,9 @@ Ownership ของ MVP บังคับผ่าน service/repository predic
 ลำดับจริงต้องจัด forward references ให้ parent มีอยู่ก่อน เช่น ticket_analyses สร้างใน 005 ใช้ checksum ใน ledger และ migration advisory lock ชุดเดียว ไม่แก้ migration ที่ deploy แล้ว เขียน migration ใหม่เสมอ รวม transaction เมื่อ DDL รองรับ และแยก nontransactional operations พร้อม recovery instructions
 
 Seed แยก public catalog, synthetic demo และ private truth versioned; repeat ต้องไม่ duplicate ไม่ฝัง Instructor password ใน SQL มี provisioning command รับ secret จาก runtime input และไม่พิมพ์ลง log
+ลำดับ migration ที่ใช้งานจริงถึงข้อ 05 คือ 0001 auth foundation → 0002 auth rate limits →
+0003 training catalog/private truth; ตัวเลข 001–007 ในแผนด้านบนเป็นกลุ่มงาน ไม่ใช่ revision ที่ให้เรียกตรง
+ยังไม่มี runs/jobs/events/evaluation; ดู grants/seed/artifact isolation ใน [คู่มือข้อ 05](scenario-development.md)
 
 CI ต้องตรวจ fresh migration, upgrade จาก previous release, constraints ข้าม run, rollback application compatibility กับ expanded schema และ runtime role grants ดูลำดับ migration/rollout ใน [CI/CD design](ci-cd.md)
 

@@ -1,6 +1,6 @@
-# เริ่มงาน local — checklist 01–02
+# เริ่มงาน local — scaffold และข้อ 01–05
 
-มีเพียง Next.js landing page, FastAPI health และ Python worker entrypoint
+มี Next.js landing page, FastAPI health และ Python worker entrypoint ตั้งแต่ข้อ 01
 ข้อ 02 เพิ่ม DB/migrations/readiness แล้ว ดู [local database guide](local-development.md)
 ข้อ 04 มี auth และ Guest snapshot แล้ว ดู [คู่มือ auth](auth-development.md)
 ยังไม่มี runner, exam หรือ AI; ไม่ต้องใช้ provider account
@@ -74,12 +74,12 @@ Terminal 2 จาก `frontend/`:
 npm run dev
 ```
 
-เปิด [หน้าเริ่มต้น](http://127.0.0.1:3000), [API docs ที่มี health เท่านั้น](http://127.0.0.1:8000/docs)
+เปิด [หน้าเริ่มต้น](http://127.0.0.1:3000), [API docs ของ routes ที่ implement แล้ว](http://127.0.0.1:8000/docs)
 และ [health ผ่าน same-origin proxy](http://127.0.0.1:3000/health/live)
 `/health/live` ตอบ 200 พร้อม envelope/request ID;
 `/health/ready` ตอบ 503 เมื่อไม่มี DB config/DB/schema ไม่พร้อม
 เมื่อตั้ง DB ตามคู่มือข้อ 02 จะตรวจ runtime role, Alembic head และ checksum จริงก่อนตอบ 200
-`/api/v1/*` ยังตอบ 404; Swagger ไม่แสดง draft domain APIs ราวกับเรียกได้
+auth/me/Guest snapshot และ GET /api/v1/scenarios เปิดแล้ว; route อื่นที่ยัง draft ตอบ 404 และไม่อยู่ใน Swagger
 
 Frontend ใช้ rewrite `/api/v1/*` และ `/health/*` ไป FastAPI; BACKEND_ORIGIN เป็น server-only
 localhost URL ไม่มี credential ไม่ใช้ NEXT_PUBLIC สำหรับ secrets
@@ -140,11 +140,11 @@ npm test
 integration tests ต้องใช้ฐานแยกพร้อม opt-in ตาม local database guide มิฉะนั้นจะ skip อย่างชัดเจน
 backend tests ตรวจ approved OpenAPI drift, draft route exposure, health/error, worker exit,
 requirement mapping และ JSON-schema allowlists; ไม่ใช่การทดสอบ exam authorization จริง
-เพิ่ม Vitest/Testing Library/Playwright แบบ pinned เมื่อมี interactive feature ในข้อถัดไป
+ข้อ 04 pin Playwright และเพิ่ม browser regression แล้ว; Vitest/Testing Library ยังไม่ติดตั้ง
 
 ## เปลี่ยน contract ในขั้นถัดไป
 
-แก้ `docs/openapi.yaml` โดยตรง; ทุก domain operation เป็น draft และระบุ schema gaps
+แก้ `docs/openapi.yaml` โดยตรง; domain operations ที่ยังไม่ implement เป็น draft และระบุ schema gaps
 responses ที่ไม่มี content schema หมายถึง **ยังไม่อนุมัติ payload** ไม่ใช่ยอมรับ JSON อะไรก็ได้
 ก่อนเพิ่ม route ต้องตกลง policy ใน SRS, เติม explicit request/response models และเปลี่ยนเฉพาะ
 operation นั้นเป็น approved พร้อม behavior tests. Test จะ fail ถ้า FastAPI เพิ่ม route

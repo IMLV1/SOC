@@ -8,7 +8,7 @@
 
 เริ่ม **ข้อ 01: ตรวจ contract และวางโครงโปรเจกต์** แล้วทำข้อ 02–07 ให้ login → เริ่ม training run → เห็น event จาก PostgreSQL ผ่าน UI ได้ก่อน จากนั้นเพิ่ม detection/ticket, AI, evaluation, RAG, learning/exam และ deployment ตามลำดับ
 
-ตรวจ repository วันที่เขียน checklist: อยู่ branch `f1`, `frontend/` และ `backend/` มีเพียง `.gitkeep`; prototype ใช้งานเป็น reference ได้ แต่ไม่ใช่ production backend ช่องด้านล่างยังไม่ติ๊ก เพราะการมีเอกสารไม่ถือว่า implementation เสร็จ
+ประวัติตอนเริ่ม checklist: branch `f1` มี frontend/backend เพียง .gitkeep; ปัจจุบันข้อ 01–04 ผ่านแล้วตามหลักฐานแต่ละข้อด้านล่าง prototype ยังคงเป็น reference ไม่ใช่ production backend
 
 ข้อสอบต้องออกแบบ boundary ตั้งแต่ข้อ 01 และทดสอบ gate ตั้งแต่ข้อ 05 แม้จะทำหน้าข้อสอบในช่วงท้าย เพื่อไม่ต้องย้อนแก้ API ที่เผย AI hints/เฉลยในโหมดสอบ
 
@@ -102,7 +102,11 @@ HTTP smoke 3 และ Chromium E2E 2 ผ่าน; [GitHub CI](https://github.c
 
 ### 05 — Scenario fixtures และขอบเขต training/exam
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 04; SOC-005, พื้นฐาน LEARN
+- [x] ผ่าน local fixtures/catalog/boundary acceptance — หลัง 04; SOC-005, พื้นฐาน LEARN; 14 ต.ค. 2026
+
+ดู [ผลตรวจ](step-05-verification.md) และ [คู่มือ](scenario-development.md): backend 50 tests ไม่ซ้ำ,
+HTTP smoke 3, browser 4 และ bundle leakage 1 ผ่าน; เพิ่ม tests ใน CI แล้ว **รอยืนยันบน GitHub**
+run/exam endpoints ยังไม่เปิด; gate จริงอยู่ข้อ 06/15/16 ไม่อ้างว่าทดสอบระบบสอบแล้ว
 
 ```text
 ทำข้อ 05: เพิ่ม versioned scenario catalog, server-only event fixtures และ private ground truth
@@ -327,5 +331,6 @@ deploy production เฉพาะเมื่อ environment พร้อมแ�
 | 02 | ผ่าน — local DB foundation | [คู่มือ](local-development.md), [ผลตรวจ](step-02-verification.md); native backend 29 tests, container integration 16, Compose build/up, frontend smoke 3, provisioning ซ้ำ, outage recovery และ named-volume down/up persistence ผ่าน | ยังไม่เริ่ม auth/CI/jobs หรือ production deployment |
 | 03 | ผ่าน local และ GitHub CI | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); ทุก job ผ่านบน GitHub และ failure/cancelled ไม่เป็น success | Branch protection/rulesets API 403 เพราะ private repository plan; ยังไม่ยืนยัน enforced merge blocking; ไม่ deploy |
 | 04 | ผ่าน local และ GitHub auth/Guest acceptance | [คู่มือ](auth-development.md), [ผลตรวจ](step-04-verification.md); integration 26, foundation/contract 13, HTTP smoke 3, Chromium E2E 2 และทั้ง 5 GitHub jobs ผ่าน | Branch protection ยังติดข้อจำกัดแพ็กเกจ; ไม่มี runner/exam/admin CRUD/provider |
+| 05 | ผ่าน local fixtures/catalog/boundary | [คู่มือ](scenario-development.md), [ผลตรวจ](step-05-verification.md); migration/seed/grants/selector, backend 50 ไม่ซ้ำ, HTTP 3, browser 4, bundle 1 และ static/build ผ่าน | รอยืนยันบน GitHub; เปิดเฉพาะ S02 catalog, ยังไม่มี runner/exam gate/grading/provider |
 
 ถ้าข้อหนึ่งยังไม่ผ่าน ให้ใช้ prompt ต่อว่า: “แก้ข้อ NN ต่อจากผลทดสอบล่าสุดให้ผ่าน acceptance ที่ยังค้าง โดยไม่เริ่มข้อถัดไปและไม่เปลี่ยน test ให้ยอมรับพฤติกรรมผิด”

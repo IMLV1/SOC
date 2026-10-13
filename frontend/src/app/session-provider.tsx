@@ -39,6 +39,7 @@ export default function SessionProvider({ children }: { children: React.ReactNod
   return <Context.Provider value={{ session, loading, error, refresh }}>
     <nav className="account-nav" aria-label="บัญชี">
       <Link href="/">Sentinel</Link><Link href="/demo">ดูตัวอย่าง</Link>
+      <Link href="/scenarios">สถานการณ์ฝึก</Link>
       {loading ? <span role="status">กำลังตรวจบัญชี…</span> : session ? <>
         <Link href="/account">{session.user.display_name}</Link>
         <button onClick={() => void logout()}>ออกจากระบบ</button>

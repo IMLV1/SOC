@@ -113,6 +113,9 @@ Logout ซ้ำที่ session หมดแล้วไม่มีผลแ�
 | GET | `/demo/evaluation` | ผลของรอบตัวอย่างที่เผยแพร่แล้ว ระบุข้อมูลตัวอย่างชัดเจน |
 
 Demo เป็น seed snapshot ที่แยกจากรอบของสมาชิก ไม่เปิด route mutation และ GET ไม่ trigger งาน AI ใด ๆ Catalog ไม่ส่ง fixture schedule, private label หรือคำตอบของโจทย์
+ข้อ 05 เปิด GET /scenarios แล้ว: enabled training versions เรียง UUID ใช้ cursor/limit (50, สูงสุด 100),
+next_cursor=null เมื่อหมด; S02 enabled ส่วน S01/03/04/05 เตรียมไว้แต่ disabled
+ใช้ column projection + response allowlist ตาม [คู่มือ](scenario-development.md); exam bank ไม่อยู่ใน catalog
 
 ## 5. Simulation runs
 

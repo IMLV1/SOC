@@ -66,7 +66,8 @@ expired counters ลบได้ด้วย retention_runtime; retention schedu
 เป็นโควตาใน DB เท่านั้น ยังไม่เปิด runner/provider และไม่เลือก retake/exam policy
 Instructor role ไม่ทำให้ใช้ owner policy อ่านข้อมูลคนอื่นได้; assignment policy ต้อง role Instructor และแถว assignment จริง
 ทดสอบ policy ผ่าน api_runtime แล้ว; admin/run routes จริงจะเพิ่มในข้อตาม checklist ไม่สร้าง dummy endpoints เพื่ออ้างว่าระบบ domain เสร็จ
-Guest demo ข้อนี้เน้นอ่าน HTTP events; catalog, ticket/alert/evaluation demo ที่ยัง draft จะเพิ่มตาม feature ไม่เอาข้อสอบมาใช้เป็นตัวอย่าง
+Guest demo ข้อนี้เน้นอ่าน HTTP events; catalog เพิ่มแล้วใน [ข้อ 05](scenario-development.md)
+ticket/alert/evaluation demo ยัง draft และไม่เอาข้อสอบมาใช้เป็นตัวอย่าง
 
 ## Tests และ contract drift
 

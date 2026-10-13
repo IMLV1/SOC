@@ -1,0 +1,77 @@
+[
+  {
+    "id": "24f4f919-afee-5981-b591-84a3b2285ce7",
+    "stable_key": "S01",
+    "version": 1,
+    "purpose": "training",
+    "title": "Authentication timeline",
+    "difficulty": "beginner",
+    "duration_ms": 75000,
+    "learning_objectives": [
+      "Read request and response together",
+      "Correlate account, session and timeline",
+      "Separate observed impact from uncertainty"
+    ],
+    "enabled": false
+  },
+  {
+    "id": "b05c7c8c-6e54-5192-bd77-a45318699199",
+    "stable_key": "S02",
+    "version": 1,
+    "purpose": "training",
+    "title": "Account activity investigation",
+    "difficulty": "intermediate",
+    "duration_ms": 75000,
+    "learning_objectives": [
+      "Read request and response together",
+      "Correlate account, session and timeline",
+      "Separate observed impact from uncertainty"
+    ],
+    "enabled": true
+  },
+  {
+    "id": "aa669f5b-9b2a-5634-b1bc-7af2127873c0",
+    "stable_key": "S03",
+    "version": 1,
+    "purpose": "training",
+    "title": "Web request investigation",
+    "difficulty": "beginner",
+    "duration_ms": 75000,
+    "learning_objectives": [
+      "Read request and response together",
+      "Correlate account, session and timeline",
+      "Separate observed impact from uncertainty"
+    ],
+    "enabled": false
+  },
+  {
+    "id": "92b56b7a-3215-5707-b267-b35f1b5c59fc",
+    "stable_key": "S04",
+    "version": 1,
+    "purpose": "training",
+    "title": "Activity and change records",
+    "difficulty": "intermediate",
+    "duration_ms": 75000,
+    "learning_objectives": [
+      "Read request and response together",
+      "Correlate account, session and timeline",
+      "Separate observed impact from uncertainty"
+    ],
+    "enabled": false
+  },
+  {
+    "id": "d06be143-6bde-561e-aed1-e2dd13f2b457",
+    "stable_key": "S05",
+    "version": 1,
+    "purpose": "training",
+    "title": "Baseline comparison",
+    "difficulty": "advanced",
+    "duration_ms": 75000,
+    "learning_objectives": [
+      "Read request and response together",
+      "Correlate account, session and timeline",
+      "Separate observed impact from uncertainty"
+    ],
+    "enabled": false
+  }
+]

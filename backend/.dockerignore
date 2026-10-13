@@ -8,4 +8,6 @@
 !pyproject.toml
 !uv.lock
 !alembic.ini
+!fixtures/
+!fixtures/**
 **/__pycache__/

@@ -1,6 +1,6 @@
 # Learning path และการทดสอบเลื่อนระดับ (ข้อกำหนด)
 
-เอกสารนี้เพิ่มเป้าหมาย **สอนคนที่ยังไม่เก่ง Cybersecurity ให้ตรวจหลักฐาน SOC ได้ทีละขั้น** ลงในขอบเขตของ [SOC simulation](soc-simulation.md) ไม่แทนที่ detection, ticket หรือการทดลอง A/B/C เดิม สถานะปัจจุบัน: [HTML prototype](../prototype/README.md) สาธิต flow ได้ แต่ backend, ฐานข้อมูล, AI+RAG และข้อสอบที่ป้องกันการดูเฉลยยังไม่พัฒนา
+เอกสารนี้เพิ่มเป้าหมาย **สอนคนที่ยังไม่เก่ง Cybersecurity ให้ตรวจหลักฐาน SOC ได้ทีละขั้น** ลงในขอบเขตของ [SOC simulation](soc-simulation.md) ไม่แทนที่ detection, ticket หรือการทดลอง A/B/C เดิม สถานะปัจจุบัน: [HTML prototype](../prototype/README.md) สาธิต flow ได้ backend/ฐานข้อมูล/auth มี foundation แล้ว; AI+RAG และข้อสอบจริงยังไม่เปิด
 
 ## ลำดับผู้เรียน
 

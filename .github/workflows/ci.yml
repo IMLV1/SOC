@@ -102,6 +102,7 @@ jobs:
           npm run lint
           npm run typecheck
           npm run build
+          node --test tests/assets.test.mjs
 
   integration:
     runs-on: ubuntu-24.04
