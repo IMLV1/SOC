@@ -64,7 +64,7 @@ jobs:
           uv run --frozen ruff format --check app tests migrations ../scripts
           uv run --frozen mypy app
           uv run --frozen pytest -m 'not integration' --junitxml=../test-results/backend.xml
-          uv run --frozen python -c 'from app.main import app; import app.worker.__main__; assert app.openapi()'
+          uv run --frozen python -c 'from app.main import app as api; import app.worker.__main__; assert api.openapi()'
           uv run --frozen python ../scripts/check-doc-links.py
           uv run --frozen python -m unittest discover -s ../scripts/tests -v
       - name: Validate Actions syntax
