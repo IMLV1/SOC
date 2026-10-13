@@ -10,12 +10,11 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import URL, text
+from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.db.bootstrap import bootstrap
-from app.db.config import password_from_file
 from app.db.health import check_database
 from app.db.migrate import MIGRATION_LOCK, expected_head, migrate, revision_hashes
 from app.db.provision import PASSWORDS, assign, provision_user
@@ -23,46 +22,6 @@ from app.db.session import Database
 from app.main import app
 
 pytestmark = pytest.mark.integration
-
-
-@pytest.fixture
-def pg():
-    name = os.getenv("SOC_TEST_DB_NAME", "")
-    if not name:
-        pytest.skip("Explicit isolated PostgreSQL test environment is not configured.")
-    if not name.startswith("soc_test_") or os.getenv("SOC_TEST_ALLOW_RESET") != "yes":
-        pytest.fail("Refusing reset: use a separate soc_test_* database and explicit reset opt-in.")
-    directory = Path(os.environ["SOC_TEST_SECRETS_DIR"])
-
-    def url(role):
-        return URL.create(
-            "postgresql+asyncpg",
-            username=role,
-            password=password_from_file(str(directory / f"{role}.txt")),
-            host=os.getenv("SOC_TEST_DB_HOST", "127.0.0.1"),
-            port=int(os.getenv("SOC_TEST_DB_PORT", "5432")),
-            database=name,
-        )
-
-    async def reset():
-        engine = create_async_engine(url("postgres"))
-        try:
-            async with engine.begin() as conn:
-                # Constant schemas, in the explicitly opted-in test database only.
-                for schema in ("app", "private", "ops"):
-                    await conn.execute(text(f"DROP SCHEMA IF EXISTS {schema} CASCADE"))
-        finally:
-            await engine.dispose()
-        await bootstrap(url("postgres"), directory)
-
-    asyncio.run(reset())
-    return url
-
-
-@pytest.fixture
-def migrated(pg):
-    asyncio.run(migrate(pg("migration_owner"), "test"))
-    return pg
 
 
 async def sql(url, statement, values=None):
@@ -101,7 +60,7 @@ def test_fresh_migration_is_atomic_and_retryable(pg, monkeypatch):
     asyncio.run(scenario())
 
 
-def test_concurrent_repeat_migrations_have_one_ledger_row(pg):
+def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
     async def scenario():
         await asyncio.gather(migrate(pg("migration_owner")), migrate(pg("migration_owner")))
         await migrate(pg("migration_owner"))
@@ -118,7 +77,51 @@ def test_concurrent_repeat_migrations_have_one_ledger_row(pg):
             "quota_ledgers",
             "instructor_assignments",
             "audit_logs",
+            "auth_rate_limits",
         }
+
+    asyncio.run(scenario())
+
+
+def test_upgrade_from_auth_foundation_preserves_accounts(pg, monkeypatch):
+    from app.db import migrate as module
+
+    real_upgrade = module.command.upgrade
+    hashes = revision_hashes()
+
+    async def scenario():
+        monkeypatch.setattr(
+            module,
+            "revision_hashes",
+            lambda: {"0001_auth_foundation": hashes["0001_auth_foundation"]},
+        )
+        monkeypatch.setattr(
+            module.command,
+            "upgrade",
+            lambda config, target: real_upgrade(config, "0001_auth_foundation"),
+        )
+        await migrate(pg("migration_owner"), "previous")
+        db = Database(pg("migration_owner"))
+        try:
+            user = await provision_user(
+                db,
+                email="upgrade@example.test",
+                display_name="Upgrade",
+                password="Test-upgrade-password",
+                role="analyst",
+                daily_runs=10,
+                daily_ai_requests=20,
+            )
+        finally:
+            await db.close()
+        monkeypatch.setattr(module, "revision_hashes", lambda: hashes)
+        monkeypatch.setattr(module.command, "upgrade", real_upgrade)
+        await migrate(pg("migration_owner"), "step04")
+        rows = await sql(pg("api_runtime"), "SELECT id FROM app.users WHERE id=:id", {"id": user})
+        assert rows[0][0] == user
+        assert (await sql(pg("api_runtime"), "SELECT count(*) FROM ops.schema_migrations"))[0][
+            0
+        ] == 2
 
     asyncio.run(scenario())
 

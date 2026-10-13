@@ -7,7 +7,8 @@ Implementation, native PostgreSQL และ Docker build/up/integration/persiste
 
 PostgreSQL 17.11, SQLAlchemy async/asyncpg, Alembic one-shot, roles/grants,
 readiness, provisioning CLI และ Compose สำหรับ API/worker/Next.js
-ยังไม่มี auth routes, jobs/runner, exam, private truth หรือ RAG schema
+ข้อ 04 เพิ่ม auth routes และ auth_rate_limits แล้ว ดู [คู่มือ auth](auth-development.md)
+ยังไม่มี jobs/runner, exam, private truth หรือ RAG schema
 quota limits ต้องระบุโดย operator ไม่กำหนด default policy ของผลิตภัณฑ์แทนผู้ใช้
 
 | ส่วน | สิ่งที่มี |
@@ -58,7 +59,7 @@ API เห็นเฉพาะ api_runtime, worker เฉพาะ worker_runti
 
 เปลี่ยนพอร์ตผ่าน root `.env.example` → `.env`; password ใช้ไฟล์ ไม่ใส่ env
 frontend container build ใช้ BACKEND_ORIGIN=http://api:8000 เป็น same-origin proxy
-หน้าเริ่มต้นมีลิงก์ readiness จริง แต่ยังไม่มี auth หรือ domain UI
+หน้าเริ่มต้นมีลิงก์ readiness และ auth UI ตามคู่มือข้อ 04; run/exam domain UI ยังไม่เปิด
 
 ```powershell
 docker compose restart db

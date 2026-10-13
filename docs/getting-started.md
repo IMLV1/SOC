@@ -2,7 +2,8 @@
 
 มีเพียง Next.js landing page, FastAPI health และ Python worker entrypoint
 ข้อ 02 เพิ่ม DB/migrations/readiness แล้ว ดู [local database guide](local-development.md)
-ยังไม่มี auth, runner, exam หรือ AI; ไม่ต้องใช้ provider account
+ข้อ 04 มี auth และ Guest snapshot แล้ว ดู [คู่มือ auth](auth-development.md)
+ยังไม่มี runner, exam หรือ AI; ไม่ต้องใช้ provider account
 เก็บ `prototype/` ไว้เปิดแยกตามคู่มือเดิม
 
 ## Runtime และ dependencies ที่ตรวจแล้ว

@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: SOC API
   version: 0.1.0
-  description: Step 02. Health operations are implemented/approved, including DB/migration readiness.
-    All domain routes remain draft and must not be enabled before schema and policy approval. See srs.md.
+  description: Step 04. Health, auth/me and demo overview/events are implemented and approved. Other domain
+    operations remain draft. See auth-development.md and srs.md.
 paths:
   /health/live:
     get:
@@ -49,301 +49,523 @@ paths:
       - NFR-001
   /api/v1/auth/csrf:
     get:
-      operationId: get_auth_csrf
-      summary: GET /auth/csrf
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 token ผูก pre-auth/session cookie;
-        `Cache-Control: no-store`
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
+      tags:
+      - Auth
+      summary: Csrf Token
+      operationId: auth_csrf
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsrfEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Request Entity Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
       x-requirements:
       - FR-002
       x-authorization: public/auth-bootstrap
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/auth/register:
     post:
-      operationId: post_auth_register
-      summary: POST /auth/register
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. email, display_name, password ; 201 user
-        role=analyst; ยังไม่ login อัตโนมัติ
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
-      x-requirements:
-      - FR-002
-      x-authorization: public/auth-bootstrap
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '201':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
-      parameters:
-      - $ref: '#/components/parameters/CSRF'
-      - $ref: '#/components/parameters/Origin'
+      tags:
+      - Auth
+      summary: Register
+      operationId: auth_register
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: '#/components/schemas/RegisterInput'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Request Entity Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
+      x-requirements:
+      - FR-002
+      x-authorization: public/auth-bootstrap
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/auth/login:
     post:
-      operationId: post_auth_login
-      summary: POST /auth/login
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. email, password ; 200 user + csrf_token ใหม่;
-        Set-Cookie session ใหม่
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
-      x-requirements:
-      - FR-002
-      x-authorization: public/auth-bootstrap
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
-      parameters:
-      - $ref: '#/components/parameters/CSRF'
-      - $ref: '#/components/parameters/Origin'
+      tags:
+      - Auth
+      summary: Login
+      operationId: auth_login
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: '#/components/schemas/LoginInput'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Request Entity Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
+      x-requirements:
+      - FR-002
+      x-authorization: public/auth-bootstrap
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/auth/session:
     get:
-      operationId: get_auth_session
-      summary: GET /auth/session
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cookie ; 200 user, expires_at, csrf_token
-        หรือ 401
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security:
-      - SessionCookie: []
-      x-contract-status: draft
+      tags:
+      - Auth
+      summary: Current Session
+      operationId: auth_session
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Request Entity Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
       x-requirements:
       - FR-002
       x-authorization: authenticated owner; resource outside scope returns 404
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/auth/logout:
     post:
-      operationId: post_auth_logout
-      summary: POST /auth/logout
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. `{}` ; 204 revoke session และล้าง cookie;
-        session ที่หมดแล้ว logout ซ้ำได้
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
+      tags:
+      - Auth
+      summary: Logout
+      operationId: auth_logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Strict'
+        required: true
+      responses:
+        '204':
+          description: Successful Response
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Request Entity Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
       x-requirements:
       - FR-002
       x-authorization: 'Active session: CSRF + Origin and revoke. Expired session: Origin check and cookie
         clearing; repeat logout allowed.'
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '204':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
-      parameters:
-      - $ref: '#/components/parameters/CSRF'
-      - $ref: '#/components/parameters/Origin'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmptyRequest'
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/me:
     get:
-      operationId: get_me
-      summary: GET /me
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cookie ; 200 id, display_name, email, role,
-        status
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security:
-      - SessionCookie: []
-      x-contract-status: draft
+      tags:
+      - Auth
+      summary: Me
+      operationId: auth_me
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Request Entity Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
       x-requirements:
       - FR-002
       x-authorization: authenticated owner; resource outside scope returns 404
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/me/quota:
     get:
-      operationId: get_me_quota
-      summary: GET /me/quota
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cookie ; 200 run/AI limit, used, reserved,
-        reset_at
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security:
-      - SessionCookie: []
-      x-contract-status: draft
+      tags:
+      - Auth
+      summary: Quota
+      operationId: auth_quota
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotaEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Request Entity Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
       x-requirements:
       - FR-002
       x-authorization: authenticated owner; resource outside scope returns 404
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/scenarios:
     get:
       operationId: get_scenarios
@@ -387,123 +609,102 @@ paths:
       - $ref: '#/components/parameters/Limit'
   /api/v1/demo/overview:
     get:
-      operationId: get_demo_overview
-      summary: GET /demo/overview
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. counters และสถานะรอบตัวอย่าง
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
+      tags:
+      - Demo
+      summary: Overview
+      operationId: demo_overview
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoOverview'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
       x-requirements:
       - FR-003
       x-authorization: public/auth-bootstrap
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/demo/events:
     get:
-      operationId: get_demo_events
-      summary: GET /demo/events
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. released/redacted events แบบแบ่งหน้า ใช้ตัวกรองเดียวกับ
-        Event explorer
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
+      tags:
+      - Demo
+      summary: Events
+      operationId: demo_events
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoEvents'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
       x-requirements:
       - FR-003
       x-authorization: public/auth-bootstrap
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/demo/events/{event_id}:
     get:
-      operationId: get_demo_events_event_id
-      summary: GET /demo/events/{event_id}
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. event หลักฐานตัวอย่าง
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
-      x-requirements:
-      - FR-003
-      x-authorization: public/auth-bootstrap
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      tags:
+      - Demo
+      summary: Event
+      operationId: demo_event
       parameters:
       - name: event_id
         in: path
         required: true
-        schema: &id001
+        schema:
           type: string
           format: uuid
+          title: Event Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoDetail'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unprocessable Entity
+      x-contract-status: approved
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: approved for step 04; exact response projection
   /api/v1/demo/alerts:
     get:
       operationId: get_demo_alerts
@@ -620,7 +821,9 @@ paths:
       - name: ticket_id
         in: path
         required: true
-        schema: *id001
+        schema: &id001
+          type: string
+          format: uuid
   /api/v1/demo/evaluation:
     get:
       operationId: get_demo_evaluation
@@ -4166,12 +4369,354 @@ components:
       - data
       - meta
       title: ReadyEnvelope
+    AuthMeta:
+      properties:
+        request_id:
+          type: string
+          title: Request Id
+      additionalProperties: false
+      type: object
+      required:
+      - request_id
+      title: AuthMeta
+    CsrfData:
+      properties:
+        csrf_token:
+          type: string
+          title: Csrf Token
+      additionalProperties: false
+      type: object
+      required:
+      - csrf_token
+      title: CsrfData
+    CsrfEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/CsrfData'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: CsrfEnvelope
+    DemoDetail:
+      properties:
+        data:
+          $ref: '#/components/schemas/DemoEvent'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: DemoDetail
+    DemoEvent:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        event_time:
+          type: string
+          title: Event Time
+        method:
+          type: string
+          title: Method
+        path:
+          type: string
+          title: Path
+        status_code:
+          type: integer
+          title: Status Code
+        description:
+          type: string
+          title: Description
+      additionalProperties: false
+      type: object
+      required:
+      - id
+      - event_time
+      - method
+      - path
+      - status_code
+      - description
+      title: DemoEvent
+    DemoEvents:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/DemoEvent'
+          type: array
+          title: Data
+        meta:
+          $ref: '#/components/schemas/DemoMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: DemoEvents
+    DemoMeta:
+      properties:
+        request_id:
+          type: string
+          title: Request Id
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+      additionalProperties: false
+      type: object
+      required:
+      - request_id
+      title: DemoMeta
+    DemoOverview:
+      properties:
+        data:
+          $ref: '#/components/schemas/DemoSummary'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: DemoOverview
+    DemoSummary:
+      properties:
+        is_demo:
+          type: boolean
+          title: Is Demo
+          default: true
+        status:
+          type: string
+          title: Status
+          default: published_example
+        event_count:
+          type: integer
+          title: Event Count
+        description:
+          type: string
+          title: Description
+      additionalProperties: false
+      type: object
+      required:
+      - event_count
+      - description
+      title: DemoSummary
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LoginInput:
+      properties:
+        email:
+          type: string
+          maxLength: 254
+          title: Email
+        password:
+          type: string
+          maxLength: 128
+          minLength: 12
+          title: Password
+      additionalProperties: false
+      type: object
+      required:
+      - email
+      - password
+      title: LoginInput
+    QuotaData:
+      properties:
+        daily_runs:
+          type: integer
+          title: Daily Runs
+        daily_ai_requests:
+          type: integer
+          title: Daily Ai Requests
+        run_count:
+          type: integer
+          title: Run Count
+        ai_request_count:
+          type: integer
+          title: Ai Request Count
+        reserved_tokens:
+          type: integer
+          title: Reserved Tokens
+        consumed_tokens:
+          type: integer
+          title: Consumed Tokens
+        reset_at:
+          type: string
+          format: date-time
+          title: Reset At
+      additionalProperties: false
+      type: object
+      required:
+      - daily_runs
+      - daily_ai_requests
+      - run_count
+      - ai_request_count
+      - reserved_tokens
+      - consumed_tokens
+      - reset_at
+      title: QuotaData
+    QuotaEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/QuotaData'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: QuotaEnvelope
+    RegisterInput:
+      properties:
+        email:
+          type: string
+          maxLength: 254
+          title: Email
+        password:
+          type: string
+          maxLength: 128
+          minLength: 12
+          title: Password
+        display_name:
+          type: string
+          maxLength: 60
+          minLength: 1
+          title: Display Name
+      additionalProperties: false
+      type: object
+      required:
+      - email
+      - password
+      - display_name
+      title: RegisterInput
+    SessionData:
+      properties:
+        csrf_token:
+          type: string
+          title: Csrf Token
+        user:
+          $ref: '#/components/schemas/UserView'
+        expires_at:
+          type: string
+          format: date-time
+          title: Expires At
+      additionalProperties: false
+      type: object
+      required:
+      - csrf_token
+      - user
+      - expires_at
+      title: SessionData
+    SessionEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/SessionData'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: SessionEnvelope
+    Strict:
+      properties: {}
+      additionalProperties: false
+      type: object
+      title: Strict
+    UserEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/UserView'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: UserEnvelope
+    UserView:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        display_name:
+          type: string
+          title: Display Name
+        email:
+          type: string
+          title: Email
+        role:
+          type: string
+          enum:
+          - analyst
+          - instructor
+          title: Role
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+          title: Status
+      additionalProperties: false
+      type: object
+      required:
+      - id
+      - display_name
+      - email
+      - role
+      - status
+      title: UserView
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     SessionCookie:
       type: apiKey
       in: cookie
       name: soc_session
-      description: Draft cookie name; opaque HttpOnly Secure SameSite=Lax. Never localStorage.
+      description: 'Opaque soc_session cookie: HttpOnly, Secure, SameSite=Lax, Path=/. Explicit loopback
+        HTTP development may disable Secure.'
   parameters:
     CSRF:
       name: X-CSRF-Token

@@ -25,7 +25,8 @@ if command -v cygpath >/dev/null 2>&1; then
 fi
 docker compose --profile test run --build --rm -T \
   -v "$reports_dir:/reports" test \
-  python -m pytest tests/test_database.py -q -p no:cacheprovider --junitxml=/reports/integration.xml
+  python -m pytest tests/test_database.py tests/test_auth.py -q -p no:cacheprovider --junitxml=/reports/integration.xml
 SOC_SMOKE_ORIGIN="http://127.0.0.1:$SOC_WEB_PORT" SOC_EXPECT_READY_STATUS=200 \
   node --test frontend/tests/smoke.test.mjs
 docker compose exec -T worker python -m app.worker --check
+SOC_SMOKE_ORIGIN="http://127.0.0.1:$SOC_WEB_PORT" npm --prefix frontend run test:e2e

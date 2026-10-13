@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SessionProvider from "./session-provider";
 
 export const metadata: Metadata = {
   title: "Sentinel | SOC Learning Lab",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="th"><body>{children}</body></html>;
+  return <html lang="th"><body><SessionProvider>{children}</SessionProvider></body></html>;
 }

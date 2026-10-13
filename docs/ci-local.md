@@ -29,10 +29,10 @@ Bash ตรวจด้วย bash -n และรัน script จริง; �
 Markdown checker ตรวจ local inline file targets เท่านั้น ไม่ตรวจ URL ภายนอกหรือ heading anchors
 JUnit backend/integration upload 14 วัน เฉพาะ test-results/*.xml ไม่ upload .local, logs, cookies หรือ secrets
 
-CI ทดสอบเฉพาะพฤติกรรมที่มีในข้อ 01–02; ไม่มี generated TypeScript client/domain E2E ในขั้นนี้
+CI อัปเดตข้อ 04 เพิ่ม auth integration, generated TypeScript DTO drift และ Chromium auth/Guest E2E แล้ว
 approved FastAPI contract เปรียบเทียบกับ OpenAPI แล้ว ส่วน domain schemas ยัง draft
 PostgreSQL 17.11 เป็น local baseline เดิม; production/pgvector compatibility รอยืนยันในงานภายหลัง
-เพิ่ม regression tests สำหรับ feature ใหม่ใน jobs เดิมต่อไป ไม่ใช้ stub test อ้างว่า auth/exam/runner ผ่านแล้ว
+เพิ่ม regression tests สำหรับ feature ใหม่ใน jobs เดิมต่อไป; exam/runner ยังไม่ implement หรืออ้างว่าทดสอบผ่าน
 
 ## รัน local
 

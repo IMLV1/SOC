@@ -1,9 +1,10 @@
 # SOC Platform — API Contract (Draft)
 
-วันที่: 12 ตุลาคม 2026 · สถานะ: สัญญา API ที่เสนอ **ยังไม่มี endpoint เหล่านี้ให้เรียกจริง**
+วันที่: 12 ตุลาคม 2026 · อัปเดต 14 ต.ค. 2026: auth/me และ demo overview/events ใช้งานได้ในข้อ 04
 
 อัปเดตข้อ 01 (13 ต.ค. 2026): มีเฉพาะ health scaffold ใช้งานได้ ดู [SRS](srs.md)
-และ [OpenAPI](openapi.yaml) สำหรับสถานะ approved/draft; domain endpoints ด้านล่างยังไม่เปิด
+และ [OpenAPI](openapi.yaml) สำหรับสถานะ approved/draft; ดู [ขอบเขต auth ที่เปิดจริง](auth-development.md)
+ส่วน domain endpoints ที่เหลือด้านล่างยังเป็นแบบออกแบบ ไม่ใช่รายงานว่าเปิดแล้ว
 กติกา exam ใน SRS §3–5 มีผลเหนือ generic training projection: Instructor อ่านเฉลยสอบได้หลัง
 submit เท่านั้น; ผู้เรียนได้รับเฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม (ผู้ใช้ยืนยันแล้ว)
 

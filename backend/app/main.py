@@ -1,55 +1,28 @@
-"""Process/database health. Domain routes require approval before implementation."""
-
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
+from app.auth.routes import router as auth_router
+from app.auth.service import AuthError
 from app.db.config import database_url
 from app.db.health import check_database
 from app.db.session import Database
-
-
-class StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-
-class Meta(StrictModel):
-    request_id: str
-
-
-class ErrorDetail(StrictModel):
-    code: str
-    message: str
-
-
-class ErrorEnvelope(StrictModel):
-    error: ErrorDetail
-    meta: Meta
-
-
-class LiveData(StrictModel):
-    status: Literal["alive"] = "alive"
-
-
-class LiveEnvelope(StrictModel):
-    data: LiveData
-    meta: Meta
-
-
-class ReadyData(StrictModel):
-    status: Literal["ready"] = "ready"
-
-
-class ReadyEnvelope(StrictModel):
-    data: ReadyData
-    meta: Meta
+from app.demo import router as demo_router
+from app.http_models import (
+    ErrorDetail,
+    ErrorEnvelope,
+    LiveData,
+    LiveEnvelope,
+    Meta,
+    ReadyData,
+    ReadyEnvelope,
+)
 
 
 @asynccontextmanager
@@ -68,6 +41,8 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="SOC API", version="0.1.0", docs_url="/docs", redoc_url=None, lifespan=lifespan)
+app.include_router(auth_router)
+app.include_router(demo_router)
 
 
 @app.middleware("http")
@@ -90,6 +65,19 @@ def error_response(request: Request, status: int, code: str, message: str) -> JS
     return JSONResponse(status_code=status, content=body.model_dump())
 
 
+@app.exception_handler(AuthError)
+async def auth_error(request: Request, exc: AuthError) -> JSONResponse:
+    response = error_response(request, exc.status, exc.code, "Request could not be processed.")
+    if exc.status == 429:
+        response.headers["Retry-After"] = "60"
+    return response
+
+
+@app.exception_handler(SQLAlchemyError)
+async def database_error(request: Request, exc: SQLAlchemyError) -> JSONResponse:
+    return error_response(request, 503, "SERVICE_UNAVAILABLE", "Service temporarily unavailable.")
+
+
 @app.exception_handler(HTTPException)
 async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
     code = {404: "NOT_FOUND", 405: "METHOD_NOT_ALLOWED"}.get(exc.status_code, "HTTP_ERROR")
@@ -99,6 +87,8 @@ async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
 @app.exception_handler(RequestValidationError)
 async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
     # Do not reflect raw input, exception context, secrets or future exam data.
+    if any(error["type"] == "json_invalid" for error in exc.errors()):
+        return error_response(request, 400, "BAD_REQUEST", "Request could not be processed.")
     return error_response(request, 422, "VALIDATION_ERROR", "Request validation failed.")
 
 

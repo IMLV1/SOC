@@ -86,7 +86,10 @@ GitHub jobs รวม ci-gate ผ่านแล้ว; failure/cancelled ไม
 
 ### 04 — Authentication, authorization และ Guest demo
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 03; SOC-003/004
+- [x] ผ่าน local authentication/Guest acceptance — หลัง 03; SOC-003/004; 14 ต.ค. 2026
+
+ดู [ผลตรวจ](step-04-verification.md): PostgreSQL integration 26, foundation/contract 13,
+HTTP smoke 3 และ Chromium E2E 2 ผ่าน; ยังไม่ push/run GitHub CI สำหรับ branch ข้อ 04
 
 ```text
 ทำข้อ 04: implement register/login/logout/session/CSRF/me และ role/assignment checks ตาม api.md
@@ -323,5 +326,6 @@ deploy production เฉพาะเมื่อ environment พร้อมแ�
 | 01 | ผ่าน — contract draft + scaffold | [SRS](srs.md), [OpenAPI](openapi.yaml), [คู่มือ](getting-started.md), [ผลตรวจ](step-01-verification.md); backend 13 tests, frontend 3 smoke tests, lint/typecheck/build/OpenAPI และ local startup ผ่าน | Domain schemas ยัง draft; rubric/retake/override-unlock/provider pending; DB/CI/features อยู่ข้อถัดไป ยังไม่ deploy |
 | 02 | ผ่าน — local DB foundation | [คู่มือ](local-development.md), [ผลตรวจ](step-02-verification.md); native backend 29 tests, container integration 16, Compose build/up, frontend smoke 3, provisioning ซ้ำ, outage recovery และ named-volume down/up persistence ผ่าน | ยังไม่เริ่ม auth/CI/jobs หรือ production deployment |
 | 03 | ผ่าน local และ GitHub CI | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); ทุก job ผ่านบน GitHub และ failure/cancelled ไม่เป็น success | Branch protection/rulesets API 403 เพราะ private repository plan; ยังไม่ยืนยัน enforced merge blocking; ไม่ deploy |
+| 04 | ผ่าน local auth/Guest acceptance | [คู่มือ](auth-development.md), [ผลตรวจ](step-04-verification.md); integration 26, foundation/contract 13, HTTP smoke 3, Chromium E2E 2 และ static/build checks ผ่าน | Branch ข้อ 04 ยังไม่ push/GitHub run; ไม่มี runner/exam/admin CRUD/provider |
 
 ถ้าข้อหนึ่งยังไม่ผ่าน ให้ใช้ prompt ต่อว่า: “แก้ข้อ NN ต่อจากผลทดสอบล่าสุดให้ผ่าน acceptance ที่ยังค้าง โดยไม่เริ่มข้อถัดไปและไม่เปลี่ยน test ให้ยอมรับพฤติกรรมผิด”

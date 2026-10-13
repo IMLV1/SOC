@@ -1,12 +1,12 @@
 export default function Home() {
   return (
     <main>
-      <header><span className="brand">SENTINEL / SOC LEARNING LAB</span><span className="badge">ระหว่างพัฒนา · ข้อ 02</span></header>
+      <header><span className="brand">SENTINEL / SOC LEARNING LAB</span><span className="badge">ระหว่างพัฒนา · ข้อ 04</span></header>
       <section className="intro" aria-labelledby="title">
         <p className="eyebrow">เรียนรู้จากหลักฐาน</p>
         <h1 id="title">ฝึกคิดอย่างนักวิเคราะห์<br />ความปลอดภัย</h1>
         <p className="lead">เรียนวิธีอ่าน request และ response เชื่อมเหตุการณ์ และอธิบายข้อสรุปจากหลักฐานในระบบจำลอง</p>
-        <p className="notice">หน้านี้เป็นโครงเริ่มต้นของระบบ รองรับการตรวจฐานข้อมูลในเครื่องแล้ว แต่ยังไม่เปิดบัญชี บทเรียน รอบฝึก ข้อสอบ หรือ AI</p>
+        <p className="notice">สมัครบัญชี เข้าสู่ระบบ และอ่านตัวอย่างได้แล้ว บทเรียน รอบฝึก ข้อสอบ และ AI จะเพิ่มในขั้นถัดไป</p>
         <a className="health" href="/health/live">ตรวจว่า API ตอบสนอง <span aria-hidden="true">↗</span></a>
         <p><a className="readiness" href="/health/ready">ตรวจความพร้อมฐานข้อมูล</a></p>
       </section>

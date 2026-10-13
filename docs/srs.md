@@ -3,6 +3,8 @@
 วันที่ 13 ตุลาคม 2026 · Checklist 01 / SOC-001–002 · **Draft domain contract**
 
 ฉบับนี้รวมข้อกำหนดจาก docs ทั้งหมด ไม่ใช่รายงานว่าระบบทั้งหมดเสร็จแล้ว
+ข้อ 04 (14 ต.ค. 2026) เปิด auth/me และ Guest HTTP-event snapshot แล้ว ดู [contract และผลตรวจ](auth-development.md)
+ผู้ใช้ยืนยัน registration quota 10 runs/20 AI requests ต่อวัน UTC; ไม่รวมการตัดสินใจ retake/exam
 อัปเดตข้อ 02: เพิ่ม native DB foundation/migration/roles และ readiness 200/503 ตาม DB/head/checksums
 ดู [local guide](local-development.md); domain schemas/exam policy และ decision register ยังเดิม
 Compose build/up, PostgreSQL integration และ persistence ผ่านแล้ว ดู [ผลตรวจข้อ 02](step-02-verification.md)
@@ -190,7 +192,7 @@ AI job fail ยัง GET resource ได้ 200 พร้อม status/error_co
 
 | NFR | เป้าหมาย / วิธีวัด | สถานะ |
 |---|---|---|
-| NFR-001 Security | cookie HttpOnly/Secure/SameSite=Lax, CSRF+Origin ทุก mutation; owner/assignment; unknown fields forbidden; leakage/cross-run tests ต้องไม่รั่ว | health/error ไม่มีข้อมูลผู้ใช้; auth/domain tests ยังไม่เริ่ม |
+| NFR-001 Security | cookie HttpOnly/Secure/SameSite=Lax, CSRF+Origin ทุก mutation; owner/assignment; unknown fields forbidden; leakage/cross-run tests ต้องไม่รั่ว | auth/CSRF/owner/assignment tests ผ่านข้อ 04; run/exam tests ยังไม่เริ่ม |
 | NFR-002 Performance | read p95 <500ms, 20 concurrent users, 10,000 events/run ไม่รวม AI | target ยังไม่วัด |
 | NFR-003 Reliability | at-least-once jobs + dedupe/fencing; reclaim ≤90s; finish drain ≤60s | target ยังไม่ทดสอบ DB |
 | NFR-004 Usability | 375/768/1440px, keyboard focus/labels; loading/empty/error, สีมีข้อความกำกับ | shell เท่านั้น; full flows ยังไม่พร้อม |
@@ -252,7 +254,7 @@ DB version/image digest/pgvector compatibility ยังรอ hosting ในข
 | D-04 | feedback รายข้อเผยได้แค่ไหนโดยไม่เป็นเฉลยเต็ม; grading citation source access/withdrawal | learner result/export schema approval |
 | D-05 | chat/embedding provider, model/dimension/tokenizer, privacy, credentials ผ่าน secret store, งบและ rate card | real calls/benchmark/ingestion |
 | D-06 | approved KB manifest/reviewer, hosting/PostgreSQL/pgvector, domain/registry/backup/release owner | corpus publish/deploy |
-| D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า, quota defaults และ promotion notification | public learning rollout |
+| D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า และ promotion notification; quota ผู้สมัครใหม่ยืนยันแล้ว 10 runs/20 AI requests ต่อวัน UTC (14 ต.ค. 2026) ส่วน exam/retake ยัง pending | public learning rollout |
 
 ไม่มี default คะแนนผ่าน, auto-revoke unlock หรือ provider ที่เลือกให้เอง
 AI/RAG และ exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
