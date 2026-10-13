@@ -28,7 +28,7 @@ Branch `codex/step-04-auth` สร้างจาก origin/main `56b49a9` ห�
 | Browser Chromium | 2 E2E ผ่าน: register→login→refresh→logout ผ่าน Next.js proxy; stale session response ไม่ทำให้ UI กลับมา login หลัง logout; Guest demo read-only; widths 375/768/1440 ไม่ overflow |
 | HTTP smoke | 3 passed; assets/proxy และ domain routes ที่ยังไม่ implement ยัง unavailable |
 | Build/static | Docker Next standalone build, frontend lint/typecheck, backend Ruff/format/mypy และ actionlint ผ่าน |
-| CI scope | เพิ่ม auth integration, Chromium และ generated DTO drift checks; **ยังไม่รัน GitHub CI สำหรับ branch ข้อ 04** |
+| CI scope | เพิ่ม auth integration, Chromium และ generated DTO drift checks; GitHub CI ผ่านทั้ง 5 jobs บน commit `ea59c0e` ตามหลักฐานด้านล่าง |
 
 Backend ยังมี upstream HTTPX/Starlette deprecation warning เดิม ไม่ suppress
 ชุด integration/CI ใช้ project soc-ci-auth04 และฐานแยก ไม่แตะข้อมูลผู้ใช้จริง
@@ -41,5 +41,14 @@ Backend ยังมี upstream HTTPX/Starlette deprecation warning เดิ�
 ส่วน demo ticket/alert/evaluation ยัง draft; ข้อนี้ให้ตัวอย่างอ่าน request/response เท่านั้น
 Production ต้องใช้ HTTPS Secure cookies, trusted proxy/rate-limit policy และ retention scheduler ตามงานถัดไป
 branch protection ยังติด GitHub plan เดิม; ไม่เปลี่ยน billing/visibility
-งานข้อ 04 เตรียมส่ง PR เพื่อตรวจ GitHub CI; ยังไม่ deploy; วิธีเปิดและคำสั่งตรวจอยู่ใน [คู่มือ auth](auth-development.md)
+ส่งงานใน [PR #6](https://github.com/IMLV1/SOC/pull/6); ยังไม่ deploy; วิธีเปิดและคำสั่งตรวจอยู่ใน [คู่มือ auth](auth-development.md)
 เปิด preview project soc-auth04 แยกที่ localhost:13004 (API 18004, DB 55434); ไม่มี provider จริง
+
+## หลักฐาน GitHub CI
+
+[Run 38482432510](https://github.com/IMLV1/SOC/actions/runs/38482432510)
+ตรวจ commit `ea59c0e851d0736336c7bece2cfd8307df00a097` ใน PR #6 แล้วสำเร็จ:
+backend, frontend, prototype, integration และ ci-gate ผ่านทั้งหมด
+Integration รัน PostgreSQL tests 26, HTTP smoke 3 และ Chromium E2E 2 จริงบน GitHub
+การแก้เอกสารเพื่อบันทึกผลนี้จะกระตุ้น CI รอบใหม่; ดูผลของ PR head ล่าสุดในหน้า Checks
+ผล CI ไม่ได้หมายความว่าตั้ง branch protection แล้ว: ข้อจำกัดแพ็กเกจเดิมยังอยู่
