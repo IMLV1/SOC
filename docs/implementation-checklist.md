@@ -67,11 +67,12 @@ container integration 16 tests, frontend smoke 3 tests, roles/provisioning แ�
 
 ### 03 — CI ตั้งแต่เริ่ม
 
-- [x] ผ่าน local checks/workflow validation — หลัง 02; SOC-002; **รอยืนยันบน GitHub**
+- [x] ผ่าน local และ GitHub CI — หลัง 02; SOC-002; **branch protection ติดข้อจำกัดแพ็กเกจ**
 
 ผลตรวจ 13 ต.ค. 2026: prototype 18, backend foundation 13, container integration 16,
 frontend smoke 3 และ gate regression 4 tests ผ่าน; lint/typecheck/build/actionlint ผ่าน
-ยังไม่ตั้ง branch protection ดู [ผลตรวจ](step-03-verification.md) และ [คู่มือ](ci-local.md)
+GitHub jobs รวม ci-gate ผ่านแล้ว; failure/cancelled ไม่เป็น success แต่ยังตั้ง branch protection ไม่ได้ (API 403)
+ดู [ผลตรวจ](step-03-verification.md) และ [คู่มือ](ci-local.md)
 
 ```text
 ทำข้อ 03: สร้าง GitHub Actions CI ตาม ci-cd.md สำหรับ prototype, Next.js และ FastAPI
@@ -321,6 +322,6 @@ deploy production เฉพาะเมื่อ environment พร้อมแ�
 |---|---|---|---|
 | 01 | ผ่าน — contract draft + scaffold | [SRS](srs.md), [OpenAPI](openapi.yaml), [คู่มือ](getting-started.md), [ผลตรวจ](step-01-verification.md); backend 13 tests, frontend 3 smoke tests, lint/typecheck/build/OpenAPI และ local startup ผ่าน | Domain schemas ยัง draft; rubric/retake/override-unlock/provider pending; DB/CI/features อยู่ข้อถัดไป ยังไม่ deploy |
 | 02 | ผ่าน — local DB foundation | [คู่มือ](local-development.md), [ผลตรวจ](step-02-verification.md); native backend 29 tests, container integration 16, Compose build/up, frontend smoke 3, provisioning ซ้ำ, outage recovery และ named-volume down/up persistence ผ่าน | ยังไม่เริ่ม auth/CI/jobs หรือ production deployment |
-| 03 | ผ่าน local/config — รอยืนยันบน GitHub | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); prototype/backend/contract/integration/build/smoke/gate และ actionlint ผ่าน | ยังไม่รัน GitHub Actions จริงหรือเปิด branch protection; ไม่ deploy |
+| 03 | ผ่าน local และ GitHub CI | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); ทุก job ผ่านบน GitHub และ failure/cancelled ไม่เป็น success | Branch protection/rulesets API 403 เพราะ private repository plan; ยังไม่ยืนยัน enforced merge blocking; ไม่ deploy |
 
 ถ้าข้อหนึ่งยังไม่ผ่าน ให้ใช้ prompt ต่อว่า: “แก้ข้อ NN ต่อจากผลทดสอบล่าสุดให้ผ่าน acceptance ที่ยังค้าง โดยไม่เริ่มข้อถัดไปและไม่เปลี่ยน test ให้ยอมรับพฤติกรรมผิด”

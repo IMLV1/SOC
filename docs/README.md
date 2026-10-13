@@ -30,4 +30,4 @@ Stack ที่เลือก: **Next.js + TypeScript · FastAPI + Python · Po
 ข้อ 02 มี database foundation/migration/roles แล้ว; domain APIs, authentication และ provider ยังไม่ implement
 Compose build/up, integration tests และ named-volume persistence ผ่านแล้ว
 ข้อ 03 เพิ่ม CI/local checks แล้ว ดู [คู่มือ](ci-local.md) และ [ผลตรวจ](step-03-verification.md)
-รอยืนยันบน GitHub และตั้ง required check; ยังไม่เริ่มข้อ 04
+GitHub CI ผ่านแล้ว แต่ required check/branch protection ติดข้อจำกัดแพ็กเกจ private repository; ยังไม่เริ่มข้อ 04
