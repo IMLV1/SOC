@@ -78,12 +78,14 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "instructor_assignments",
             "audit_logs",
             "auth_rate_limits",
+            "scenarios",
         }
 
     asyncio.run(scenario())
 
 
-def test_upgrade_from_auth_foundation_preserves_accounts(pg, monkeypatch):
+@pytest.mark.parametrize("previous", ["0001_auth_foundation", "0002_auth_rate_limits"])
+def test_upgrade_from_auth_foundation_preserves_accounts(pg, monkeypatch, previous):
     from app.db import migrate as module
 
     real_upgrade = module.command.upgrade
@@ -93,12 +95,12 @@ def test_upgrade_from_auth_foundation_preserves_accounts(pg, monkeypatch):
         monkeypatch.setattr(
             module,
             "revision_hashes",
-            lambda: {"0001_auth_foundation": hashes["0001_auth_foundation"]},
+            lambda: {key: value for key, value in hashes.items() if key <= previous},
         )
         monkeypatch.setattr(
             module.command,
             "upgrade",
-            lambda config, target: real_upgrade(config, "0001_auth_foundation"),
+            lambda config, target: real_upgrade(config, previous),
         )
         await migrate(pg("migration_owner"), "previous")
         db = Database(pg("migration_owner"))
@@ -121,7 +123,7 @@ def test_upgrade_from_auth_foundation_preserves_accounts(pg, monkeypatch):
         assert rows[0][0] == user
         assert (await sql(pg("api_runtime"), "SELECT count(*) FROM ops.schema_migrations"))[0][
             0
-        ] == 2
+        ] == len(hashes)
 
     asyncio.run(scenario())
 

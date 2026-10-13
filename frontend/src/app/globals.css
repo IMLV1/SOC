@@ -28,3 +28,6 @@ h2 { font-size: 1.3rem; margin: 10px 0; }
 article p, footer { color: var(--muted); font-size: .9rem; }
 footer { padding-top: 40px; }
 @media (max-width: 650px) { main { padding: 24px 20px; } .intro { padding-top: 36px; } .levels { grid-template-columns: 1fr; } }
+.scenario-list { display: grid; gap: 1rem; margin-block: 1.5rem; }
+.scenario-list article { border: 1px solid #ccd4df; padding: 1rem; border-radius: .75rem; }
+.scenario-list h2 { overflow-wrap: anywhere; }

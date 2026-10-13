@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "purpose": "training",
+  "scenario_id": "aa669f5b-9b2a-5634-b1bc-7af2127873c0",
+  "duration_ms": 75000,
+  "events": [
+    {
+      "key": "e001",
+      "release_offset_ms": 0,
+      "event_offset_ms": 0,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/home"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    },
+    {
+      "key": "e002",
+      "release_offset_ms": 12000,
+      "event_offset_ms": 12000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "203.0.113.43",
+      "request": {
+        "method": "GET",
+        "path": "/search?input=training-probe"
+      },
+      "response": {
+        "status": 403,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "request_policy_denied"
+      }
+    },
+    {
+      "key": "e003",
+      "release_offset_ms": 22000,
+      "event_offset_ms": 22000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/news"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    },
+    {
+      "key": "e004",
+      "release_offset_ms": 45000,
+      "event_offset_ms": 45000,
+      "source": "web",
+      "asset_id": "GATEWAY-03",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/request-review/303"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "upstream_request_not_forwarded"
+      }
+    }
+  ]
+}

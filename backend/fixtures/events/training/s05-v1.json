@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "purpose": "training",
+  "scenario_id": "d06be143-6bde-561e-aed1-e2dd13f2b457",
+  "duration_ms": 75000,
+  "events": [
+    {
+      "key": "e001",
+      "release_offset_ms": 0,
+      "event_offset_ms": 0,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/home"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    },
+    {
+      "key": "e002",
+      "release_offset_ms": 5000,
+      "event_offset_ms": 5000,
+      "source": "baseline",
+      "asset_id": "FILES-05",
+      "username": "reports.reader",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/baseline/505"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "historical_read_rate",
+        "baseline_reads_per_minute": 3
+      }
+    },
+    {
+      "key": "e003",
+      "release_offset_ms": 15000,
+      "event_offset_ms": 15000,
+      "source": "file_access",
+      "asset_id": "FILES-05",
+      "username": "reports.reader",
+      "src_ip": "198.51.100.55",
+      "request": {
+        "method": "GET",
+        "path": "/reports/batch/0"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "records_read",
+        "session_id": "SIM-T-505",
+        "records_read": 700
+      }
+    },
+    {
+      "key": "e004",
+      "release_offset_ms": 24000,
+      "event_offset_ms": 24000,
+      "source": "file_access",
+      "asset_id": "FILES-05",
+      "username": "reports.reader",
+      "src_ip": "198.51.100.55",
+      "request": {
+        "method": "GET",
+        "path": "/reports/batch/1"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "records_read",
+        "session_id": "SIM-T-505",
+        "records_read": 700
+      }
+    },
+    {
+      "key": "e005",
+      "release_offset_ms": 33000,
+      "event_offset_ms": 33000,
+      "source": "file_access",
+      "asset_id": "FILES-05",
+      "username": "reports.reader",
+      "src_ip": "198.51.100.55",
+      "request": {
+        "method": "GET",
+        "path": "/reports/batch/2"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "records_read",
+        "session_id": "SIM-T-505",
+        "records_read": 700
+      }
+    },
+    {
+      "key": "e006",
+      "release_offset_ms": 42000,
+      "event_offset_ms": 42000,
+      "source": "file_access",
+      "asset_id": "FILES-05",
+      "username": "reports.reader",
+      "src_ip": "198.51.100.55",
+      "request": {
+        "method": "GET",
+        "path": "/reports/batch/3"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "records_read",
+        "session_id": "SIM-T-505",
+        "records_read": 700
+      }
+    },
+    {
+      "key": "e007",
+      "release_offset_ms": 55000,
+      "event_offset_ms": 55000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/news"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    },
+    {
+      "key": "e008",
+      "release_offset_ms": 65000,
+      "event_offset_ms": 65000,
+      "source": "change_management",
+      "asset_id": "SUPPORT-05",
+      "username": "reports.reader",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/activity-confirmation/505"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "account_owner_denied_activity",
+        "session_id": "SIM-T-505"
+      }
+    }
+  ]
+}

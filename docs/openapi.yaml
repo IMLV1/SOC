@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: SOC API
   version: 0.1.0
-  description: Step 04. Health, auth/me and demo overview/events are implemented and approved. Other domain
-    operations remain draft. See auth-development.md and srs.md.
+  description: Step 05. Health, auth/me, demo overview/events and training catalog are implemented and
+    approved. Other domain operations remain draft. See scenario-development.md and srs.md.
 paths:
   /health/live:
     get:
@@ -568,45 +568,60 @@ paths:
       x-schema-status: approved for step 04; exact response projection
   /api/v1/scenarios:
     get:
-      operationId: get_scenarios
-      summary: GET /scenarios
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. public metadata: id, version, title, difficulty,
-        duration_ms, learning_objectives
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
-        feature review before enabling.'
-      security: []
-      x-contract-status: draft
+      tags:
+      - Scenarios
+      summary: Catalog
+      operationId: scenario_catalog
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioCatalog'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Bad Request
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unprocessable Entity
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Service Unavailable
+      x-contract-status: approved
       x-requirements:
       - FR-003
-      x-authorization: public/auth-bootstrap
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
-      parameters:
-      - $ref: '#/components/parameters/Cursor'
-      - $ref: '#/components/parameters/Limit'
+      - NFR-001
+      x-authorization: public training metadata only; no exam bank
+      x-schema-status: approved step 05
+      security: []
   /api/v1/demo/overview:
     get:
       tags:
@@ -4710,6 +4725,79 @@ components:
       - msg
       - type
       title: ValidationError
+    CatalogMeta:
+      properties:
+        request_id:
+          type: string
+          title: Request Id
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+      additionalProperties: false
+      type: object
+      required:
+      - request_id
+      title: CatalogMeta
+    ScenarioCatalog:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/ScenarioView'
+          type: array
+          title: Data
+        meta:
+          $ref: '#/components/schemas/CatalogMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: ScenarioCatalog
+    ScenarioView:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        version:
+          type: integer
+          minimum: 1.0
+          title: Version
+        title:
+          type: string
+          maxLength: 120
+          minLength: 1
+          title: Title
+        difficulty:
+          type: string
+          enum:
+          - beginner
+          - intermediate
+          - advanced
+          title: Difficulty
+        duration_ms:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Duration Ms
+        learning_objectives:
+          items:
+            type: string
+          type: array
+          maxItems: 10
+          minItems: 1
+          title: Learning Objectives
+      additionalProperties: false
+      type: object
+      required:
+      - id
+      - version
+      - title
+      - difficulty
+      - duration_ms
+      - learning_objectives
+      title: ScenarioView
   securitySchemes:
     SessionCookie:
       type: apiKey

@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "purpose": "training",
+  "scenario_id": "92b56b7a-3215-5707-b267-b35f1b5c59fc",
+  "duration_ms": 75000,
+  "events": [
+    {
+      "key": "e001",
+      "release_offset_ms": 0,
+      "event_offset_ms": 0,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/home"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    },
+    {
+      "key": "e002",
+      "release_offset_ms": 5000,
+      "event_offset_ms": 5000,
+      "source": "change_management",
+      "asset_id": "PORTAL-01",
+      "username": "ops.scanner",
+      "src_ip": "192.0.2.64",
+      "request": {
+        "method": "GET",
+        "path": "/changes/404"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "approved_scan_window",
+        "change_ref": "CHG-T-404",
+        "scope": "PORTAL-01; offsets 10000-60000ms"
+      }
+    },
+    {
+      "key": "e003",
+      "release_offset_ms": 10000,
+      "event_offset_ms": 10000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "ops.scanner",
+      "src_ip": "192.0.2.64",
+      "request": {
+        "method": "GET",
+        "path": "/catalog/page/0"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "scanner_request",
+        "change_ref": "CHG-T-404"
+      }
+    },
+    {
+      "key": "e004",
+      "release_offset_ms": 15000,
+      "event_offset_ms": 15000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "ops.scanner",
+      "src_ip": "192.0.2.64",
+      "request": {
+        "method": "GET",
+        "path": "/catalog/page/1"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "scanner_request",
+        "change_ref": "CHG-T-404"
+      }
+    },
+    {
+      "key": "e005",
+      "release_offset_ms": 20000,
+      "event_offset_ms": 20000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "ops.scanner",
+      "src_ip": "192.0.2.64",
+      "request": {
+        "method": "GET",
+        "path": "/catalog/page/2"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "scanner_request",
+        "change_ref": "CHG-T-404"
+      }
+    },
+    {
+      "key": "e006",
+      "release_offset_ms": 25000,
+      "event_offset_ms": 25000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "ops.scanner",
+      "src_ip": "192.0.2.64",
+      "request": {
+        "method": "GET",
+        "path": "/catalog/page/3"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "scanner_request",
+        "change_ref": "CHG-T-404"
+      }
+    },
+    {
+      "key": "e007",
+      "release_offset_ms": 40000,
+      "event_offset_ms": 40000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/news"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    }
+  ]
+}

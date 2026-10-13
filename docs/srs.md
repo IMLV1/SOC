@@ -52,7 +52,7 @@ role Instructor เพียงอย่างเดียวไม่ให้�
 
 เอกสารเดิมคงรายละเอียดไว้ พร้อมหมายเหตุเชื่อมฉบับนี้ ไม่ใช้ draft schemas เป็นการอนุมัติ
 สิทธิ์หรือคะแนนโดยปริยาย OpenAPI ระบุ `x-contract-status` ทุก operation และ `x-schema-status`
-สำหรับ schema ร่าง; มีเพียง health contract ที่ approved สำหรับ implementation นี้
+สำหรับ schema ร่าง; health, auth/me, Guest HTTP snapshot และ training catalog เป็น approved ตามข้อที่ implement แล้ว
 
 ## 3. Training/exam boundary และการ serialize
 
@@ -160,7 +160,7 @@ finish lock เดียวกับ release/assessment ทำให้หลั
 
 ## 6. Requirements → use cases → endpoint/screen → acceptance
 
-ทุก endpoint ด้านล่าง (ยกเว้น health) อยู่ใต้ `/api/v1` และยังไม่ implement
+ทุก endpoint ด้านล่าง (ยกเว้น health) อยู่ใต้ `/api/v1`; health/auth/me/Guest HTTP snapshot และ catalog implement แล้ว ส่วนอื่นยัง draft
 แต่ละ operation ใน OpenAPI มี `x-requirements` เชื่อมกลับรหัสนี้; schema ร่างไม่ใช้ generate
 production client จนรายละเอียด request/response/authorization ผ่านการตรวจใน feature นั้น
 
@@ -195,7 +195,7 @@ AI job fail ยัง GET resource ได้ 200 พร้อม status/error_co
 | NFR-001 Security | cookie HttpOnly/Secure/SameSite=Lax, CSRF+Origin ทุก mutation; owner/assignment; unknown fields forbidden; leakage/cross-run tests ต้องไม่รั่ว | auth/CSRF/owner/assignment tests ผ่านข้อ 04; run/exam tests ยังไม่เริ่ม |
 | NFR-002 Performance | read p95 <500ms, 20 concurrent users, 10,000 events/run ไม่รวม AI | target ยังไม่วัด |
 | NFR-003 Reliability | at-least-once jobs + dedupe/fencing; reclaim ≤90s; finish drain ≤60s | target ยังไม่ทดสอบ DB |
-| NFR-004 Usability | 375/768/1440px, keyboard focus/labels; loading/empty/error, สีมีข้อความกำกับ | shell เท่านั้น; full flows ยังไม่พร้อม |
+| NFR-004 Usability | 375/768/1440px, keyboard focus/labels; loading/empty/error, สีมีข้อความกำกับ | auth/Guest ผ่านข้อ 04; catalog ตรวจในข้อ 05; full flows ยังไม่พร้อม |
 | NFR-005 Privacy/retention | run child data 30d, account audit 90d (ค่าที่เสนอ); secrets redacted; no learner shared cache | ยังไม่เปิด retention จริง |
 | NFR-006 Delivery/recovery | pinned runtimes/locks; contract drift gate; HTTPS same origin; RPO≤15m/RTO≤2h | local scaffold; hosting/restore pending |
 | NFR-007 RAG quality | ≥50 Thai/English held-out queries; Recall@5≥.85, supported claims/abstention≥.90; refs ไม่หลุด | targets ไม่ใช่ผลวัด; provider/corpus pending |
@@ -205,7 +205,7 @@ AI job fail ยัง GET resource ได้ 200 พร้อม status/error_co
 Data dictionary ฉบับเต็ม (ชนิด/nullability/FK/unique/index/retention) อยู่ที่
 [database §2–5, §14](database.md) และ [RAG §7](rag-langchain.md) เป็นส่วนหนึ่งของ SRS ฉบับร่าง
 UUID PK, timestamptz UTC, mutable version >0, same-run composite FK, append-only revisions
-ต้องถูกแปลงเป็น migration ตาม feature ไม่สร้างทุกตารางในข้อ 01
+ต้องถูกแปลงเป็น migration ตาม feature ไม่สร้างทุกตารางในข้อ 01; ข้อ 05 เพิ่ม training catalog/private truth เท่านั้น
 
 ```mermaid
 erDiagram
@@ -242,7 +242,7 @@ erDiagram
 
 Training soft delete เก็บ ticket/evidence/audit และมี restore ก่อน expiry; physical purge เป็น retention
 role ต่างหาก ไม่ purge งานยังทำ/unknown reservation; exam retention/feedback redaction ต้องกำหนดก่อน public
-DB version/image digest/pgvector compatibility ยังรอ hosting ในข้อ 02/13/18 ไม่อ้างว่าตรวจ Postgres แล้ว
+PostgreSQL 17.11/digest ผ่าน local integration ตั้งแต่ข้อ 02; production hosting/pgvector compatibility ยังรอข้อ 13/18
 
 ## 8. Decision register — ยังไม่ตัดสินแทนผู้ใช้
 
@@ -257,6 +257,8 @@ DB version/image digest/pgvector compatibility ยังรอ hosting ในข
 | D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า และ promotion notification; quota ผู้สมัครใหม่ยืนยันแล้ว 10 runs/20 AI requests ต่อวัน UTC (14 ต.ค. 2026) ส่วน exam/retake ยัง pending | public learning rollout |
 
 ไม่มี default คะแนนผ่าน, auto-revoke unlock หรือ provider ที่เลือกให้เอง
+ข้อ 05 ใช้ [training-only catalog/seed และ exam default-deny policy](scenario-development.md)
+เพื่อปิดช่องก่อนเปิด run/exam จริง; ไม่อนุมัติ draft rubric/result/attempt schema โดยปริยาย
 AI/RAG และ exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
 Approval เพิ่ม route: ตกลง policy/schema → เปลี่ยน operation เป็น approved → implement response
 allowlist/validation/permission → generated OpenAPI drift + behavior/integration tests → ติ๊ก checklist เฉพาะที่ผ่าน

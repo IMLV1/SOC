@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "purpose": "training",
+  "scenario_id": "b05c7c8c-6e54-5192-bd77-a45318699199",
+  "duration_ms": 75000,
+  "events": [
+    {
+      "key": "e001",
+      "release_offset_ms": 0,
+      "event_offset_ms": 0,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/home"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    },
+    {
+      "key": "e002",
+      "release_offset_ms": 1000,
+      "event_offset_ms": 1000,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e003",
+      "release_offset_ms": 2500,
+      "event_offset_ms": 2500,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e004",
+      "release_offset_ms": 4000,
+      "event_offset_ms": 4000,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e005",
+      "release_offset_ms": 5500,
+      "event_offset_ms": 5500,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e006",
+      "release_offset_ms": 7000,
+      "event_offset_ms": 7000,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e007",
+      "release_offset_ms": 8500,
+      "event_offset_ms": 8500,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e008",
+      "release_offset_ms": 10000,
+      "event_offset_ms": 10000,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e009",
+      "release_offset_ms": 11500,
+      "event_offset_ms": 11500,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e010",
+      "release_offset_ms": 13000,
+      "event_offset_ms": 13000,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e011",
+      "release_offset_ms": 14500,
+      "event_offset_ms": 14500,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 401,
+        "bytes_sent": 0
+      },
+      "log": {
+        "event_type": "login_failed"
+      }
+    },
+    {
+      "key": "e012",
+      "release_offset_ms": 25000,
+      "event_offset_ms": 25000,
+      "source": "web",
+      "asset_id": "PORTAL-01",
+      "username": "staff.member",
+      "src_ip": "192.0.2.40",
+      "request": {
+        "method": "GET",
+        "path": "/portal/news"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "page_view"
+      }
+    },
+    {
+      "key": "e013",
+      "release_offset_ms": 30000,
+      "event_offset_ms": 30000,
+      "source": "authentication",
+      "asset_id": "AUTH-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "POST",
+        "path": "/session"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "session_created",
+        "session_id": "SIM-T-204"
+      }
+    },
+    {
+      "key": "e014",
+      "release_offset_ms": 45000,
+      "event_offset_ms": 45000,
+      "source": "file_access",
+      "asset_id": "FILES-02",
+      "username": "accounts.clerk",
+      "src_ip": "198.51.100.40",
+      "request": {
+        "method": "GET",
+        "path": "/records/export"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "records_read",
+        "session_id": "SIM-T-204",
+        "records_read": 2400
+      }
+    },
+    {
+      "key": "e015",
+      "release_offset_ms": 65000,
+      "event_offset_ms": 65000,
+      "source": "change_management",
+      "asset_id": "SUPPORT-02",
+      "username": "accounts.clerk",
+      "src_ip": "192.0.2.44",
+      "request": {
+        "method": "GET",
+        "path": "/activity-confirmation/204"
+      },
+      "response": {
+        "status": 200,
+        "bytes_sent": 128
+      },
+      "log": {
+        "event_type": "account_owner_denied_activity",
+        "session_id": "SIM-T-204"
+      }
+    }
+  ]
+}

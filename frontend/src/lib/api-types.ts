@@ -1,5 +1,6 @@
 // Generated from approved docs/openapi.yaml; do not edit by hand.
 export type AuthMeta = { request_id: string };
+export type CatalogMeta = { request_id: string; next_cursor?: string | null };
 export type CsrfData = { csrf_token: string };
 export type CsrfEnvelope = { data: CsrfData; meta: AuthMeta };
 export type DemoDetail = { data: DemoEvent; meta: AuthMeta };
@@ -19,6 +20,8 @@ export type QuotaEnvelope = { data: QuotaData; meta: AuthMeta };
 export type ReadyData = { status?: "ready" };
 export type ReadyEnvelope = { data: ReadyData; meta: Meta };
 export type RegisterInput = { email: string; password: string; display_name: string };
+export type ScenarioCatalog = { data: Array<ScenarioView>; meta: CatalogMeta };
+export type ScenarioView = { id: string; version: number; title: string; difficulty: "beginner" | "intermediate" | "advanced"; duration_ms: number; learning_objectives: Array<string> };
 export type SessionData = { csrf_token: string; user: UserView; expires_at: string };
 export type SessionEnvelope = { data: SessionData; meta: AuthMeta };
 export type Strict = Record<string, never>;

@@ -118,6 +118,8 @@ Pin Node/Python/uv versions และ commit lockfiles ให้ CI ใช้ต
 ใช้ multi-stage build, non-root runtime และ `.dockerignore` ไม่ส่ง `.git`, `.env`, credentials, node_modules ของเครื่องผู้พัฒนาเข้า build context ตรวจว่า web image ไม่มี backend fixtures/ground truth แม้ไฟล์เหล่านั้นอยู่ใน repository
 
 Ground truth seed เป็น restricted artifact สำหรับ migration/evaluator เท่านั้น ไม่รวมใน web หรือ API/worker runtime image ถ้าแยก build target ให้บันทึก digest ของ seed artifact ใน release manifest ด้วย fixture schedule ฝั่ง server ต้องไม่ถูก static server เปิดอ่าน
+ข้อ 05 แยก local targets base/API, runner, seed และ test แล้วตาม [คู่มือ](scenario-development.md)
+จึงใช้ worker image แยกจาก API เพื่อไม่ให้ API มี future schedules; production manifest ยังเป็นงานข้อ 18
 
 สร้าง image เพียงครั้งเดียวจาก main SHA ที่ผ่าน CI ใช้ `sha-<commit>` เพื่อค้นหา แต่ rollout ด้วย `sha256:...` digest เสมอ Staging และ production ใช้ digest เดียวกัน ไม่ rebuild ตอน promote และไม่ใช้ `latest` เป็น release identity
 

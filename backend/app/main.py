@@ -23,6 +23,7 @@ from app.http_models import (
     ReadyData,
     ReadyEnvelope,
 )
+from app.scenarios.routes import router as scenario_router
 
 
 @asynccontextmanager
@@ -43,6 +44,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(title="SOC API", version="0.1.0", docs_url="/docs", redoc_url=None, lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(demo_router)
+app.include_router(scenario_router)
 
 
 @app.middleware("http")

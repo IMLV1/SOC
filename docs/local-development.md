@@ -8,7 +8,8 @@ Implementation, native PostgreSQL และ Docker build/up/integration/persiste
 PostgreSQL 17.11, SQLAlchemy async/asyncpg, Alembic one-shot, roles/grants,
 readiness, provisioning CLI และ Compose สำหรับ API/worker/Next.js
 ข้อ 04 เพิ่ม auth routes และ auth_rate_limits แล้ว ดู [คู่มือ auth](auth-development.md)
-ยังไม่มี jobs/runner, exam, private truth หรือ RAG schema
+ข้อ 05 เพิ่ม training catalog/private truth และ seed one-shot ดู [คู่มือ](scenario-development.md)
+ยังไม่มี jobs/runner, exam หรือ RAG schema; ตารางด้านล่างอธิบาย foundation ตอนข้อ 02
 quota limits ต้องระบุโดย operator ไม่กำหนด default policy ของผลิตภัณฑ์แทนผู้ใช้
 
 | ส่วน | สิ่งที่มี |
@@ -45,7 +46,7 @@ POSIX ใช้ `.local` 0700; ไฟล์ภายใน read-only และ�
 Windows ใช้ ACL ของโฟลเดอร์ผู้ใช้ เก็บ `.local` ส่วนตัว ไม่อัปโหลดเป็น artifact
 อย่าลบ/สร้าง secrets ใหม่เมื่อมี volume เก่าโดยคาดว่ารหัส postgres ใน volume จะเปลี่ยนเอง
 
-ลำดับ: db healthy → bootstrap → migrate exit 0 → API/worker → frontend
+ลำดับปัจจุบัน: db healthy → bootstrap → migrate exit 0 → seed exit 0 → API/worker → frontend
 bootstrap/migrate เป็น one-shot; exit 0 คือสำเร็จ ไม่ใช่ service ล่ม
 bootstrap เท่านั้นเห็น admin/role secrets; migrate/provision เห็น owner secret;
 API เห็นเฉพาะ api_runtime, worker เฉพาะ worker_runtime และ frontend ไม่มี DB secret

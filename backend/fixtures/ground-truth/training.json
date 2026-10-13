@@ -1,0 +1,139 @@
+[
+  {
+    "scenario_id": "24f4f919-afee-5981-b591-84a3b2285ce7",
+    "truth_version": 1,
+    "incident_key": "group-01",
+    "threat_label": true,
+    "expected_evidence_keys": [
+      "e002",
+      "e003",
+      "e004",
+      "e005",
+      "e006",
+      "e007",
+      "e008",
+      "e009",
+      "e010",
+      "e011",
+      "e013"
+    ],
+    "explanation": "Repeated rejected authentication attempts; no successful session in this fixture."
+  },
+  {
+    "scenario_id": "24f4f919-afee-5981-b591-84a3b2285ce7",
+    "truth_version": 1,
+    "incident_key": "group-02",
+    "threat_label": false,
+    "expected_evidence_keys": [
+      "e001",
+      "e012"
+    ],
+    "explanation": "Routine page reads by a separate account; do not correlate from timing alone."
+  },
+  {
+    "scenario_id": "b05c7c8c-6e54-5192-bd77-a45318699199",
+    "truth_version": 1,
+    "incident_key": "group-01",
+    "threat_label": true,
+    "expected_evidence_keys": [
+      "e002",
+      "e003",
+      "e004",
+      "e005",
+      "e006",
+      "e007",
+      "e008",
+      "e009",
+      "e010",
+      "e011",
+      "e013",
+      "e014",
+      "e015"
+    ],
+    "explanation": "Session and file access share an account and session; the account owner denies the activity."
+  },
+  {
+    "scenario_id": "b05c7c8c-6e54-5192-bd77-a45318699199",
+    "truth_version": 1,
+    "incident_key": "group-02",
+    "threat_label": false,
+    "expected_evidence_keys": [
+      "e001",
+      "e012"
+    ],
+    "explanation": "Routine page reads by a separate account; do not correlate from timing alone."
+  },
+  {
+    "scenario_id": "aa669f5b-9b2a-5634-b1bc-7af2127873c0",
+    "truth_version": 1,
+    "incident_key": "group-01",
+    "threat_label": true,
+    "expected_evidence_keys": [
+      "e002",
+      "e004"
+    ],
+    "explanation": "Request was denied and not forwarded; the attempt does not prove application compromise."
+  },
+  {
+    "scenario_id": "aa669f5b-9b2a-5634-b1bc-7af2127873c0",
+    "truth_version": 1,
+    "incident_key": "group-02",
+    "threat_label": false,
+    "expected_evidence_keys": [
+      "e001",
+      "e003"
+    ],
+    "explanation": "Routine page reads by a separate account; do not correlate from timing alone."
+  },
+  {
+    "scenario_id": "92b56b7a-3215-5707-b267-b35f1b5c59fc",
+    "truth_version": 1,
+    "incident_key": "group-01",
+    "threat_label": false,
+    "expected_evidence_keys": [
+      "e002",
+      "e003",
+      "e004",
+      "e005",
+      "e006"
+    ],
+    "explanation": "Scan source, scope and time match the approved change record."
+  },
+  {
+    "scenario_id": "92b56b7a-3215-5707-b267-b35f1b5c59fc",
+    "truth_version": 1,
+    "incident_key": "group-02",
+    "threat_label": false,
+    "expected_evidence_keys": [
+      "e001",
+      "e007"
+    ],
+    "explanation": "Routine page reads by a separate account; do not correlate from timing alone."
+  },
+  {
+    "scenario_id": "d06be143-6bde-561e-aed1-e2dd13f2b457",
+    "truth_version": 1,
+    "incident_key": "group-01",
+    "threat_label": true,
+    "expected_evidence_keys": [
+      "e002",
+      "e003",
+      "e004",
+      "e005",
+      "e006",
+      "e008"
+    ],
+    "explanation": "File access exceeds the supplied baseline; independent owner confirmation supports unauthorized activity."
+  },
+  {
+    "scenario_id": "d06be143-6bde-561e-aed1-e2dd13f2b457",
+    "truth_version": 1,
+    "incident_key": "group-02",
+    "threat_label": false,
+    "expected_evidence_keys": [
+      "e001",
+      "e007"
+    ],
+    "explanation": "Routine page reads by a separate account; do not correlate from timing alone."
+  }
+]
