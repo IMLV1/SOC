@@ -1,0 +1,392 @@
+"""Destructive tests require explicit opt-in and a separate soc_test_* database."""
+
+import asyncio
+import os
+import secrets
+import subprocess
+import sys
+from pathlib import Path
+from uuid import uuid4
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import URL, text
+from sqlalchemy.exc import DBAPIError
+from sqlalchemy.ext.asyncio import create_async_engine
+
+from app.db.bootstrap import bootstrap
+from app.db.config import password_from_file
+from app.db.health import check_database
+from app.db.migrate import MIGRATION_LOCK, expected_head, migrate, revision_hashes
+from app.db.provision import PASSWORDS, assign, provision_user
+from app.db.session import Database
+from app.main import app
+
+pytestmark = pytest.mark.integration
+
+
+@pytest.fixture
+def pg():
+    name = os.getenv("SOC_TEST_DB_NAME", "")
+    if not name:
+        pytest.skip("Explicit isolated PostgreSQL test environment is not configured.")
+    if not name.startswith("soc_test_") or os.getenv("SOC_TEST_ALLOW_RESET") != "yes":
+        pytest.fail("Refusing reset: use a separate soc_test_* database and explicit reset opt-in.")
+    directory = Path(os.environ["SOC_TEST_SECRETS_DIR"])
+
+    def url(role):
+        return URL.create(
+            "postgresql+asyncpg",
+            username=role,
+            password=password_from_file(str(directory / f"{role}.txt")),
+            host=os.getenv("SOC_TEST_DB_HOST", "127.0.0.1"),
+            port=int(os.getenv("SOC_TEST_DB_PORT", "5432")),
+            database=name,
+        )
+
+    async def reset():
+        engine = create_async_engine(url("postgres"))
+        try:
+            async with engine.begin() as conn:
+                # Constant schemas, in the explicitly opted-in test database only.
+                for schema in ("app", "private", "ops"):
+                    await conn.execute(text(f"DROP SCHEMA IF EXISTS {schema} CASCADE"))
+        finally:
+            await engine.dispose()
+        await bootstrap(url("postgres"), directory)
+
+    asyncio.run(reset())
+    return url
+
+
+@pytest.fixture
+def migrated(pg):
+    asyncio.run(migrate(pg("migration_owner"), "test"))
+    return pg
+
+
+async def sql(url, statement, values=None):
+    engine = create_async_engine(url, hide_parameters=True)
+    try:
+        async with engine.begin() as conn:
+            result = await conn.execute(text(statement), values or {})
+            return result.fetchall() if result.returns_rows else []
+    finally:
+        await engine.dispose()
+
+
+def test_fresh_migration_is_atomic_and_retryable(pg, monkeypatch):
+    from app.db import migrate as module
+
+    real_upgrade = module.command.upgrade
+
+    def fail_after_ddl(*args):
+        real_upgrade(*args)
+        raise RuntimeError("simulated failure after DDL")
+
+    async def scenario():
+        monkeypatch.setattr(module.command, "upgrade", fail_after_ddl)
+        with pytest.raises(RuntimeError, match="simulated failure"):
+            await migrate(pg("migration_owner"))
+        tables = await sql(
+            pg("postgres"), "SELECT count(*) FROM pg_tables WHERE schemaname IN ('app','ops')"
+        )
+        assert tables[0][0] == 0
+        monkeypatch.setattr(module.command, "upgrade", real_upgrade)
+        await migrate(pg("migration_owner"))
+        assert (await sql(pg("api_runtime"), "SELECT version_num FROM ops.alembic_version"))[0][
+            0
+        ] == expected_head()
+
+    asyncio.run(scenario())
+
+
+def test_concurrent_repeat_migrations_have_one_ledger_row(pg):
+    async def scenario():
+        await asyncio.gather(migrate(pg("migration_owner")), migrate(pg("migration_owner")))
+        await migrate(pg("migration_owner"))
+        rows = await sql(pg("api_runtime"), "SELECT version,checksum FROM ops.schema_migrations")
+        assert {row[0]: row[1] for row in rows} == revision_hashes()
+        tables = await sql(
+            pg("api_runtime"), "SELECT tablename FROM pg_tables WHERE schemaname='app'"
+        )
+        assert {row[0] for row in tables} == {
+            "users",
+            "auth_sessions",
+            "auth_challenges",
+            "user_quotas",
+            "quota_ledgers",
+            "instructor_assignments",
+            "audit_logs",
+        }
+
+    asyncio.run(scenario())
+
+
+def test_migration_waits_for_shared_advisory_lock(pg):
+    async def scenario():
+        owner = create_async_engine(pg("migration_owner"))
+        async with owner.begin() as conn:
+            await conn.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": MIGRATION_LOCK})
+            task = asyncio.create_task(migrate(pg("migration_owner")))
+            await asyncio.sleep(0.15)
+            assert not task.done()
+        await asyncio.wait_for(task, 10)
+        await owner.dispose()
+
+    asyncio.run(scenario())
+
+
+def test_checksum_mismatch_fails_closed(migrated):
+    async def scenario():
+        await sql(
+            migrated("migration_owner"), "UPDATE ops.schema_migrations SET checksum=repeat('0',64)"
+        )
+        with pytest.raises(RuntimeError, match="checksum"):
+            await migrate(migrated("migration_owner"))
+        db = Database(migrated("api_runtime"))
+        try:
+            assert not await check_database(db, "api_runtime")
+        finally:
+            await db.close()
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize(
+    "role", ["api_runtime", "worker_runtime", "evaluator_runtime", "retention_runtime"]
+)
+def test_runtime_roles_cannot_ddl_read_private_or_modify_ledger(migrated, role):
+    async def scenario():
+        flags = await sql(
+            migrated(role),
+            "SELECT rolsuper,rolcreatedb,rolcreaterole,rolbypassrls "
+            "FROM pg_roles WHERE rolname=current_user",
+        )
+        assert flags[0] == (False, False, False, False)
+        owned = await sql(
+            migrated(role), "SELECT count(*) FROM pg_tables WHERE tableowner=current_user"
+        )
+        assert owned[0][0] == 0
+        await sql(migrated("migration_owner"), "CREATE TABLE private.test_key (value text)")
+        for statement in [
+            "CREATE TABLE app.forbidden(id integer)",
+            "CREATE TABLE public.forbidden(id integer)",
+            "SELECT * FROM private.test_key",
+            "UPDATE ops.schema_migrations SET release_sha='tampered'",
+            "SET ROLE migration_owner",
+        ]:
+            with pytest.raises(DBAPIError):
+                await sql(migrated(role), statement)
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("role", ["api_runtime", "worker_runtime", "evaluator_runtime"])
+def test_runtime_audit_is_append_only(migrated, role):
+    async def scenario():
+        await sql(
+            migrated(role),
+            "INSERT INTO app.audit_logs(id,actor_role,action,entity_type) "
+            "VALUES (:id,'system','test','test')",
+            {"id": uuid4()},
+        )
+        for statement in [
+            "UPDATE app.audit_logs SET action='changed'",
+            "DELETE FROM app.audit_logs",
+            "TRUNCATE app.audit_logs",
+        ]:
+            with pytest.raises(DBAPIError):
+                await sql(migrated(role), statement)
+
+    asyncio.run(scenario())
+
+
+def test_provision_repeat_assignment_and_hashing(migrated):
+    async def scenario():
+        db = Database(migrated("migration_owner"))
+        password = secrets.token_urlsafe(24)
+        data = dict(
+            email="instructor@example.test",
+            display_name="Instructor",
+            password=password,
+            role="instructor",
+            daily_runs=3,
+            daily_ai_requests=0,
+        )
+        try:
+            first, again = await asyncio.gather(
+                provision_user(db, **data), provision_user(db, **data)
+            )
+            assert first == again
+            with pytest.raises(ValueError):
+                await provision_user(db, **{**data, "role": "analyst"})
+            analyst = await provision_user(
+                db, **{**data, "email": "analyst@example.test", "role": "analyst"}
+            )
+            await assign(db, first, analyst)
+            await assign(db, first, analyst)
+            with pytest.raises(ValueError):
+                await assign(db, analyst, first)
+            rows = await sql(
+                migrated("migration_owner"),
+                "SELECT password_hash FROM app.users WHERE id=:id",
+                {"id": first},
+            )
+            assert PASSWORDS.verify(rows[0][0], password)
+            assert password not in rows[0][0]
+            assert (
+                await sql(
+                    migrated("migration_owner"), "SELECT count(*) FROM app.instructor_assignments"
+                )
+            )[0][0] == 1
+            audit = await sql(migrated("api_runtime"), "SELECT action,reason FROM app.audit_logs")
+            assert len(audit) == 3
+            assert password not in str(audit)
+        finally:
+            await db.close()
+
+    asyncio.run(scenario())
+
+
+def test_constraints_and_runtime_transaction_rollback(migrated):
+    async def scenario():
+        db = Database(migrated("api_runtime"))
+        user_id = uuid4()
+        statement = """INSERT INTO app.users
+                       (id,normalized_email,display_name,password_hash,role,status)
+                       VALUES (:id,'test@example.test','Test',
+                               '$argon2id$test-fixture','analyst','active')"""
+        try:
+            with pytest.raises(RuntimeError):
+                async with db.sessions() as session, session.begin():
+                    await session.execute(text(statement), {"id": user_id})
+                    raise RuntimeError("rollback")
+            assert not await sql(migrated("api_runtime"), "SELECT id FROM app.users")
+            await sql(migrated("api_runtime"), statement, {"id": user_id})
+            for invalid, values in [
+                (statement, {"id": uuid4()}),  # normalized email unique
+                (
+                    "INSERT INTO app.user_quotas(user_id,daily_runs,daily_ai_requests) "
+                    "VALUES (:id,-1,0)",
+                    {"id": user_id},
+                ),
+                (
+                    "INSERT INTO app.user_quotas(user_id,daily_runs,daily_ai_requests) "
+                    "VALUES (:id,0,0)",
+                    {"id": uuid4()},
+                ),
+                ("UPDATE app.users SET role='admin' WHERE id=:id", {"id": user_id}),
+                ("UPDATE app.users SET version=0 WHERE id=:id", {"id": user_id}),
+            ]:
+                with pytest.raises(DBAPIError):
+                    await sql(migrated("api_runtime"), invalid, values)
+            with pytest.raises(DBAPIError):
+                await sql(migrated("worker_runtime"), "SELECT password_hash FROM app.users")
+        finally:
+            await db.close()
+
+    asyncio.run(scenario())
+
+
+def test_api_ready_and_worker_with_runtime_credentials(migrated, monkeypatch):
+    api_url = migrated("api_runtime")
+    directory = Path(os.environ["SOC_TEST_SECRETS_DIR"])
+    for key, value in {
+        "DB_HOST": api_url.host,
+        "DB_PORT": str(api_url.port),
+        "DB_NAME": api_url.database,
+        "DB_PASSWORD_FILE": str(directory / "api_runtime.txt"),
+    }.items():
+        monkeypatch.setenv(key, value)
+    with TestClient(app) as client:
+        assert client.get("/health/ready").json()["data"] == {"status": "ready"}
+        assert client.get("/health/ready").status_code == 200
+    env = {**os.environ, "DB_PASSWORD_FILE": str(directory / "worker_runtime.txt")}
+    result = subprocess.run(
+        [sys.executable, "-m", "app.worker", "--check"],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0
+    assert '"database_ready": true' in result.stdout
+    assert '"queue_ready": false' in result.stdout
+    monkeypatch.setenv("DB_PASSWORD_FILE", str(directory / "migration_owner.txt"))
+    with TestClient(app) as client:
+        response = client.get("/health/ready")
+        assert response.status_code == 503
+        assert api_url.password not in response.text
+
+
+def test_bootstrap_repeat_preserves_accounts_and_grants(migrated):
+    async def scenario():
+        database = Database(migrated("migration_owner"))
+        try:
+            user = await provision_user(
+                database,
+                email="repeat@example.test",
+                display_name="Repeat",
+                password=secrets.token_urlsafe(24),
+                role="instructor",
+                daily_runs=2,
+                daily_ai_requests=0,
+            )
+            await bootstrap(migrated("postgres"), Path(os.environ["SOC_TEST_SECRETS_DIR"]))
+            await migrate(migrated("migration_owner"))
+            assert (await sql(migrated("api_runtime"), "SELECT id FROM app.users"))[0][0] == user
+            with pytest.raises(DBAPIError):
+                await sql(migrated("api_runtime"), "DELETE FROM app.audit_logs")
+        finally:
+            await database.close()
+
+    asyncio.run(scenario())
+
+
+def test_sessions_challenges_and_ledger_constraints(migrated):
+    async def scenario():
+        database = Database(migrated("migration_owner"))
+        try:
+            user = await provision_user(
+                database,
+                email="session@example.test",
+                display_name="Session",
+                password=secrets.token_urlsafe(24),
+                role="analyst",
+                daily_runs=2,
+                daily_ai_requests=0,
+            )
+            params = {"id": uuid4(), "user": user, "hash": "a" * 64}
+            session = """INSERT INTO app.auth_sessions
+                (id,user_id,token_hash,csrf_hash,expires_at)
+                VALUES (:id,:user,:hash,:hash,now()+interval '1 day')"""
+            await sql(migrated("api_runtime"), session, params)
+            with pytest.raises(DBAPIError):
+                await sql(migrated("api_runtime"), session, {**params, "id": uuid4()})
+            with pytest.raises(DBAPIError):
+                await sql(
+                    migrated("api_runtime"), session, {**params, "id": uuid4(), "hash": "raw"}
+                )
+            challenge = """INSERT INTO app.auth_challenges(id,token_hash,csrf_hash,expires_at)
+                VALUES (:id,:hash,:hash,now()+interval '10 minutes')"""
+            await sql(migrated("api_runtime"), challenge, {"id": uuid4(), "hash": "b" * 64})
+            with pytest.raises(DBAPIError):
+                await sql(migrated("api_runtime"), challenge, {"id": uuid4(), "hash": "b" * 64})
+            ledger = """INSERT INTO app.quota_ledgers(id,scope_key,user_id,period_start)
+                VALUES (:id,:scope,:user,CURRENT_DATE)"""
+            values = {"id": uuid4(), "scope": f"user:{user}", "user": user}
+            await sql(migrated("api_runtime"), ledger, values)
+            for invalid in [
+                {**values, "id": uuid4()},
+                {**values, "id": uuid4(), "scope": "system"},
+            ]:
+                with pytest.raises(DBAPIError):
+                    await sql(migrated("api_runtime"), ledger, invalid)
+            with pytest.raises(DBAPIError):
+                await sql(migrated("api_runtime"), "UPDATE app.quota_ledgers SET run_count=-1")
+        finally:
+            await database.close()
+
+    asyncio.run(scenario())

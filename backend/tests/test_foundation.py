@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import subprocess
 import sys
@@ -14,6 +15,11 @@ from app.main import app
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = yaml.safe_load((ROOT / "docs/openapi.yaml").read_text(encoding="utf-8"))
+
+
+@pytest.fixture(autouse=True)
+def no_external_database(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DB_PASSWORD_FILE", raising=False)
 
 
 def test_health_does_not_claim_database_readiness() -> None:
@@ -46,7 +52,7 @@ def test_health_disallows_mutation() -> None:
 
 
 def test_worker_check_and_unimplemented_service_exit() -> None:
-    for args, exit_code in [(["--check"], 0), ([], 2)]:
+    for args, exit_code in [(["--check"], 2), ([], 2)]:
         result = subprocess.run(
             [sys.executable, "-m", "app.worker", *args],
             cwd=ROOT / "backend",
@@ -54,6 +60,7 @@ def test_worker_check_and_unimplemented_service_exit() -> None:
             text=True,
             timeout=10,
             check=False,
+            env={key: value for key, value in os.environ.items() if key != "DB_PASSWORD_FILE"},
         )
         assert result.returncode == exit_code
         assert json.loads(result.stdout)["queue_ready"] is False

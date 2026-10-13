@@ -1,6 +1,7 @@
-"""Process health only. Domain routes require approved contracts before implementation."""
+"""Process/database health. Domain routes require approval before implementation."""
 
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 from typing import Literal
 from uuid import uuid4
 
@@ -9,6 +10,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 from starlette.exceptions import HTTPException
+
+from app.db.config import database_url
+from app.db.health import check_database
+from app.db.session import Database
 
 
 class StrictModel(BaseModel):
@@ -38,7 +43,31 @@ class LiveEnvelope(StrictModel):
     meta: Meta
 
 
-app = FastAPI(title="SOC API", version="0.1.0", docs_url="/docs", redoc_url=None)
+class ReadyData(StrictModel):
+    status: Literal["ready"] = "ready"
+
+
+class ReadyEnvelope(StrictModel):
+    data: ReadyData
+    meta: Meta
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+    database = None
+    try:
+        database = Database(database_url("api_runtime"))
+    except (ValueError, OSError):
+        pass
+    application.state.database = database
+    try:
+        yield
+    finally:
+        if database is not None:
+            await database.close()
+
+
+app = FastAPI(title="SOC API", version="0.1.0", docs_url="/docs", redoc_url=None, lifespan=lifespan)
 
 
 @app.middleware("http")
@@ -80,16 +109,17 @@ async def live(request: Request) -> LiveEnvelope:
 
 @app.get(
     "/health/ready",
-    response_model=ErrorEnvelope,
-    status_code=503,
-    response_description="Database/migration foundation is not implemented in step 01.",
+    response_model=ReadyEnvelope,
+    responses={
+        503: {"model": ErrorEnvelope, "description": "Database or migration state unavailable."}
+    },
     operation_id="health_ready",
     tags=["health"],
 )
-async def ready(request: Request) -> ErrorEnvelope:
-    # Step 02 must replace this with real DB + migration compatibility checks.
-    # A live process is not proof that database-backed features are ready.
-    return ErrorEnvelope(
-        error=ErrorDetail(code="SERVICE_UNAVAILABLE", message="Database foundation is not ready."),
-        meta=Meta(request_id=request.state.request_id),
-    )
+async def ready(request: Request) -> ReadyEnvelope | JSONResponse:
+    database = request.app.state.database
+    if database is None or not await check_database(database, "api_runtime"):
+        return error_response(
+            request, 503, "SERVICE_UNAVAILABLE", "Database foundation is not ready."
+        )
+    return ReadyEnvelope(data=ReadyData(), meta=Meta(request_id=request.state.request_id))

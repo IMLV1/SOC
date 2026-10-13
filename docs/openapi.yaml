@@ -2,9 +2,8 @@ openapi: 3.1.0
 info:
   title: SOC API
   version: 0.1.0
-  description: Step 01. Only health operations are implemented/approved. All domain routes are draft and
-    must not be enabled or used to generate production clients before schema and policy approval. See
-    srs.md.
+  description: Step 02. Health operations are implemented/approved, including DB/migration readiness.
+    All domain routes remain draft and must not be enabled before schema and policy approval. See srs.md.
 paths:
   /health/live:
     get:
@@ -31,8 +30,14 @@ paths:
       summary: Ready
       operationId: health_ready
       responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyEnvelope'
         '503':
-          description: Database/migration foundation is not implemented in step 01.
+          description: Database or migration state unavailable.
           content:
             application/json:
               schema:
@@ -4139,6 +4144,28 @@ components:
       - error
       - meta
       x-schema-status: draft
+    ReadyData:
+      properties:
+        status:
+          type: string
+          const: ready
+          title: Status
+          default: ready
+      additionalProperties: false
+      type: object
+      title: ReadyData
+    ReadyEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/ReadyData'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: ReadyEnvelope
   securitySchemes:
     SessionCookie:
       type: apiKey

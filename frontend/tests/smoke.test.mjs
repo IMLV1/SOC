@@ -19,13 +19,17 @@ test("landing page loads without fixture assets or client secrets", async () => 
   }
 });
 
-test("same-origin health proxy preserves liveness and unavailable readiness", async () => {
+test("same-origin health proxy preserves liveness and configured readiness", async () => {
   const live = await fetch(`${origin}/health/live`);
   assert.equal(live.status, 200);
   assert.equal((await live.json()).data.status, "alive");
   const ready = await fetch(`${origin}/health/ready`);
-  assert.equal(ready.status, 503);
-  assert.equal((await ready.json()).error.code, "SERVICE_UNAVAILABLE");
+  const expected = Number(process.env.SOC_EXPECT_READY_STATUS || "503");
+  assert.ok([200, 503].includes(expected));
+  assert.equal(ready.status, expected);
+  const body = await ready.json();
+  if (expected === 200) assert.equal(body.data.status, "ready");
+  else assert.equal(body.error.code, "SERVICE_UNAVAILABLE");
   assert.equal(ready.headers.get("cache-control"), "no-store");
 });
 

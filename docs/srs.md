@@ -3,6 +3,9 @@
 วันที่ 13 ตุลาคม 2026 · Checklist 01 / SOC-001–002 · **Draft domain contract**
 
 ฉบับนี้รวมข้อกำหนดจาก docs ทั้งหมด ไม่ใช่รายงานว่าระบบทั้งหมดเสร็จแล้ว
+อัปเดตข้อ 02: เพิ่ม native DB foundation/migration/roles และ readiness 200/503 ตาม DB/head/checksums
+ดู [local guide](local-development.md); domain schemas/exam policy และ decision register ยังเดิม
+Compose build/up, PostgreSQL integration และ persistence ผ่านแล้ว ดู [ผลตรวจข้อ 02](step-02-verification.md)
 สิ่งที่ implement ในข้อ 01 มีหน้าเริ่มต้น, API health, worker entrypoint และ tooling เท่านั้น
 OpenAPI ที่ตรวจด้วยเครื่องมือได้อยู่ใน [openapi.yaml](openapi.yaml); วิธีเริ่มงานอยู่ใน
 [getting-started.md](getting-started.md) และผลตรวจจริงอยู่ใน [step-01-verification.md](step-01-verification.md)

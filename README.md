@@ -18,7 +18,12 @@ node server.cjs
 ข้อ 01 มี Next.js/FastAPI health scaffold และ Python worker entrypoint แล้ว:
 ดู [คู่มือเริ่มงาน](docs/getting-started.md), [SRS/contract gaps](docs/srs.md),
 [OpenAPI ฉบับเริ่มต้น](docs/openapi.yaml) และ [ผลตรวจ](docs/step-01-verification.md)
-ยังไม่มี domain features, database migrations หรือ provider จริง
+ข้อ 02 เพิ่มฐานข้อมูล/migration/roles และ local Compose แล้ว ดู [คู่มือฐานข้อมูล](docs/local-development.md)
+และ [ผลตรวจข้อ 02](docs/step-02-verification.md) Native PostgreSQL และ Docker build/up/tests/persistence ผ่านแล้ว
+ยังไม่มี domain features หรือ provider จริง
+
+ข้อ 03 เพิ่ม GitHub Actions CI และ ci-gate แล้ว; local checks ผ่าน **รอยืนยันบน GitHub**
+ดู [คู่มือ CI/required checks](docs/ci-local.md) และ [ผลตรวจข้อ 03](docs/step-03-verification.md)
 
 `prototype/` เป็น HTML/CSS/JavaScript ที่ใช้ localStorage, ข้อมูลเหตุการณ์จำลอง และ rubric จำลอง ยัง **ไม่มี backend, authentication, database หรือ AI+RAG จริง** ข้อสอบใน prototype ไม่ป้องกันการเปิด source เพื่อดูเฉลย และยังไม่ใช่เว็บไซต์ที่ deploy สาธารณะ
 

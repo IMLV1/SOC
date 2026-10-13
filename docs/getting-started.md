@@ -1,7 +1,8 @@
-# เริ่มงาน local — checklist 01
+# เริ่มงาน local — checklist 01–02
 
 มีเพียง Next.js landing page, FastAPI health และ Python worker entrypoint
-ไม่มี auth, DB, runner, exam, AI หรือ migrations จริง ไม่ต้องใช้ credentials/provider account
+ข้อ 02 เพิ่ม DB/migrations/readiness แล้ว ดู [local database guide](local-development.md)
+ยังไม่มี auth, runner, exam หรือ AI; ไม่ต้องใช้ provider account
 เก็บ `prototype/` ไว้เปิดแยกตามคู่มือเดิม
 
 ## Runtime และ dependencies ที่ตรวจแล้ว
@@ -14,13 +15,14 @@
 | ESLint / typescript-eslint / React Hooks | 10.12.0 / 8.71.2 / 7.1.1 | compatible peer constraints + lint จริง |
 | Python / uv | 3.12.14 / 0.9.5 | runtime จริง; `.python-version`, exact requires-python, uv required-version |
 | FastAPI / Pydantic / Uvicorn | 0.143.0 / 2.14.1 / 0.54.0 | PyPI metadata, uv resolver, API startup/tests |
-| SQLAlchemy / asyncpg / Alembic | 2.1.4 / 0.32.0 / 1.20.0 | lock resolution/import; ยังไม่ทดสอบ DB connection/migration |
+| SQLAlchemy async / asyncpg / Alembic | 2.1.4 / 0.32.0 / 1.20.0 | native PostgreSQL integration/migration ผ่านในข้อ 02 |
+| Argon2-cffi | 25.1.0 | provisioning hash/verify tests ผ่าน |
 
 Direct dependencies pin exact ใน `frontend/package.json` และ `backend/pyproject.toml`;
 transitive versions/integrity hashes อยู่ใน `package-lock.json` และ `uv.lock` ใช้ npm/uv ตาม pin
 ไม่แก้ lock ด้วยมือ ไม่อัปเกรด runtime โดยไม่ re-resolve และตรวจซ้ำ
-PostgreSQL version/image digest ยังรอ local infrastructure/hosting ในข้อ 02 และ pgvector ข้อ 13;
-ยังไม่มี DB image หรือ LangChain/provider dependency ในข้อ 01
+PostgreSQL local pin 17.11 พร้อม image digest ใน Compose; Docker build/up/integration ผ่านแล้ว
+hosting/pgvector/production compatibility ยัง pending; ไม่มี LangChain/provider dependency
 
 ตรวจจาก [Next.js installation](https://nextjs.org/docs/app/getting-started/installation),
 [npm Next.js metadata](https://registry.npmjs.org/next/16.4.0),
@@ -54,8 +56,8 @@ uv sync --frozen
 Python launcher ใน Windows ที่ชี้ WindowsApps อาจเป็น alias ที่ไม่มี interpreter
 ให้ติดตั้ง/เลือก Python 3.12.14 จริง และใช้ `uv sync --frozen --python <path-to-python.exe>`
 อย่าใส่ absolute path ของเครื่องผู้พัฒนาคนอื่นลง repository
-`.env.example` ฝั่ง backend เป็นรายชื่อ DB URL ที่สงวนไว้สำหรับข้อ 02 (ค่าว่างและยังไม่ถูกอ่าน)
-ไม่มี default password, session secret หรือ provider key; step 01 ไม่ต้อง copy backend env
+backend `.env.example` ระบุ DB_HOST/PORT/NAME และ DB_PASSWORD_FILE สำหรับ shell configuration
+ไม่ได้ auto-load .env; Compose ส่ง environment/secrets ให้โดยตรง ไม่มี default password/provider key
 
 ## เปิด API และ UI
 
@@ -74,8 +76,8 @@ npm run dev
 เปิด [หน้าเริ่มต้น](http://127.0.0.1:3000), [API docs ที่มี health เท่านั้น](http://127.0.0.1:8000/docs)
 และ [health ผ่าน same-origin proxy](http://127.0.0.1:3000/health/live)
 `/health/live` ตอบ 200 พร้อม envelope/request ID;
-`/health/ready` ตอบ **503 SERVICE_UNAVAILABLE โดยตั้งใจ** เพราะ DB/schema ยังไม่พร้อม
-เปลี่ยนเป็น 200 ได้เมื่อข้อ 02 มี dependency/migration checks จริง ไม่ใช้ flag บังคับให้เขียว
+`/health/ready` ตอบ 503 เมื่อไม่มี DB config/DB/schema ไม่พร้อม
+เมื่อตั้ง DB ตามคู่มือข้อ 02 จะตรวจ runtime role, Alembic head และ checksum จริงก่อนตอบ 200
 `/api/v1/*` ยังตอบ 404; Swagger ไม่แสดง draft domain APIs ราวกับเรียกได้
 
 Frontend ใช้ rewrite `/api/v1/*` และ `/health/*` ไป FastAPI; BACKEND_ORIGIN เป็น server-only
@@ -103,10 +105,10 @@ postbuild คัดลอก `.next/static` และ `public` ถ้ามี�
 uv run --frozen python -m app.worker --check
 ```
 
-คืน JSON `status=scaffold`, `queue_ready=false`, exit 0 เพื่อยืนยัน entrypoint/import
-เรียกโดยไม่มี `--check` จะ exit 2 พร้อมสถานะเดิม เพราะยังไม่มี durable queue/job handlers
-ไม่รัน worker หลอกที่รายงาน healthy หรือเริ่ม runner ซ้ำใน API startup
-ข้อ 06 จึงค่อยเพิ่ม process loop/lease/heartbeat จริง
+ต้องตั้ง DB env และ secret ของ worker_runtime ตาม local database guide
+`--check` คืน exit 0 เมื่อ database_ready=true, exit 2 ถ้าไม่พร้อม; queue_ready=false เสมอในข้อ 02
+ไม่มี --check จะรายงาน foundation status ทุก 30 วินาทีและรอหยุดอย่าง graceful
+ยังไม่มี durable queue/job handlers/lease/DB heartbeat; งานนั้นอยู่ข้อ 06
 
 ## คำสั่งตรวจ
 
@@ -133,6 +135,8 @@ npm test
 
 `npm test` เป็น smoke ผ่าน HTTP จริง 3 ข้อ ใช้ Node built-in test runner ไม่ใช่ full feature E2E
 ตั้ง `SOC_SMOKE_ORIGIN` เมื่อเปลี่ยนพอร์ต ค่าเริ่มต้น http://127.0.0.1:3000
+ตั้ง SOC_EXPECT_READY_STATUS=200 เมื่อใช้ DB ที่พร้อม; ค่าเริ่มต้น 503 สำหรับ scaffold ที่ไม่ตั้ง DB
+integration tests ต้องใช้ฐานแยกพร้อม opt-in ตาม local database guide มิฉะนั้นจะ skip อย่างชัดเจน
 backend tests ตรวจ approved OpenAPI drift, draft route exposure, health/error, worker exit,
 requirement mapping และ JSON-schema allowlists; ไม่ใช่การทดสอบ exam authorization จริง
 เพิ่ม Vitest/Testing Library/Playwright แบบ pinned เมื่อมี interactive feature ในข้อถัดไป
@@ -146,5 +150,5 @@ operation นั้นเป็น approved พร้อม behavior tests. Test
 ที่ไม่มีใน approved subset หรือ schema ของ implementation drift
 ห้าม export OpenAPI จากแอปทับไฟล์ทั้งฉบับจน domain draft inventory หาย
 
-ขอบเขต migrations อยู่ใน `backend/migrations/README.md`; ยังรัน Alembic upgrade ไม่ได้
-ไม่ใส่ placeholder migration ที่สร้าง revision ว่างแล้วอ้างว่าฐานพร้อม
+ใช้ `python -m app.db.migrate` ตาม [migration guide](../backend/migrations/README.md)
+ไม่เรียก Alembic upgrade โดยตรงเพื่อข้าม advisory lock/checksum ledger

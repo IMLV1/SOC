@@ -11,6 +11,7 @@ h1 { font-size: clamp(2rem, 5vw, 3.8rem); line-height: 1.35; font-weight: 650; m
 .notice { border-left: 3px solid var(--accent); padding: 12px 18px; background: #14252b; margin: 28px 0; }
 .health { display: inline-flex; gap: 24px; padding: 12px 20px; border-radius: 6px; background: var(--accent); color: #102720; text-decoration: none; font-weight: 650; }
 a:focus-visible { outline: 3px solid white; outline-offset: 5px; }
+.readiness { color: var(--accent); }
 .levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 article { border-top: 1px solid var(--line); padding-top: 20px; }
 article span { font-size: .8rem; color: var(--accent); }

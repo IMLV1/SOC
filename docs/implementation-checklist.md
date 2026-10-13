@@ -49,7 +49,11 @@ pin runtime/package versions ที่ตรวจสอบแล้ว สร�
 
 ### 02 — ฐานข้อมูลพื้นฐานและ local environment
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 01; SOC-001/002
+- [x] เสร็จและตรวจรับแล้ว — หลัง 01; SOC-001/002; ผ่านขอบเขตข้อ 02 วันที่ 13 ต.ค. 2026
+
+ผลตรวจ 13 ต.ค. 2026: native PostgreSQL 17.11 และ Compose build/up จาก volume ใหม่ผ่าน
+container integration 16 tests, frontend smoke 3 tests, roles/provisioning และ down/up persistence ผ่าน
+ดู [หลักฐานและขอบเขต](step-02-verification.md)
 
 ```text
 ทำข้อ 02: สร้าง Compose สำหรับ local development, PostgreSQL, API/worker และ Next.js
@@ -63,7 +67,11 @@ pin runtime/package versions ที่ตรวจสอบแล้ว สร�
 
 ### 03 — CI ตั้งแต่เริ่ม
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 02; SOC-002
+- [x] ผ่าน local checks/workflow validation — หลัง 02; SOC-002; **รอยืนยันบน GitHub**
+
+ผลตรวจ 13 ต.ค. 2026: prototype 18, backend foundation 13, container integration 16,
+frontend smoke 3 และ gate regression 4 tests ผ่าน; lint/typecheck/build/actionlint ผ่าน
+ยังไม่ตั้ง branch protection ดู [ผลตรวจ](step-03-verification.md) และ [คู่มือ](ci-local.md)
 
 ```text
 ทำข้อ 03: สร้าง GitHub Actions CI ตาม ci-cd.md สำหรับ prototype, Next.js และ FastAPI
@@ -312,5 +320,7 @@ deploy production เฉพาะเมื่อ environment พร้อมแ�
 | ข้อ | สถานะ (ยังไม่เริ่ม/กำลังทำ/รอตรวจ/ผ่าน) | หลักฐาน tests/ไฟล์/commit | สิ่งที่ค้าง |
 |---|---|---|---|
 | 01 | ผ่าน — contract draft + scaffold | [SRS](srs.md), [OpenAPI](openapi.yaml), [คู่มือ](getting-started.md), [ผลตรวจ](step-01-verification.md); backend 13 tests, frontend 3 smoke tests, lint/typecheck/build/OpenAPI และ local startup ผ่าน | Domain schemas ยัง draft; rubric/retake/override-unlock/provider pending; DB/CI/features อยู่ข้อถัดไป ยังไม่ deploy |
+| 02 | ผ่าน — local DB foundation | [คู่มือ](local-development.md), [ผลตรวจ](step-02-verification.md); native backend 29 tests, container integration 16, Compose build/up, frontend smoke 3, provisioning ซ้ำ, outage recovery และ named-volume down/up persistence ผ่าน | ยังไม่เริ่ม auth/CI/jobs หรือ production deployment |
+| 03 | ผ่าน local/config — รอยืนยันบน GitHub | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); prototype/backend/contract/integration/build/smoke/gate และ actionlint ผ่าน | ยังไม่รัน GitHub Actions จริงหรือเปิด branch protection; ไม่ deploy |
 
 ถ้าข้อหนึ่งยังไม่ผ่าน ให้ใช้ prompt ต่อว่า: “แก้ข้อ NN ต่อจากผลทดสอบล่าสุดให้ผ่าน acceptance ที่ยังค้าง โดยไม่เริ่มข้อถัดไปและไม่เปลี่ยน test ให้ยอมรับพฤติกรรมผิด”

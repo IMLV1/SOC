@@ -7,9 +7,10 @@ dependencies = [
   "fastapi==0.143.0",
   "uvicorn==0.54.0",
   "pydantic==2.14.1",
-  "sqlalchemy==2.1.4",
+  "sqlalchemy[asyncio]==2.1.4",
   "asyncpg==0.32.0",
   "alembic==1.20.0",
+  "argon2-cffi==25.1.0",
 ]
 
 [dependency-groups]
@@ -30,6 +31,7 @@ package = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = ["integration: requires an explicitly configured disposable PostgreSQL database"]
 
 [tool.ruff]
 target-version = "py312"

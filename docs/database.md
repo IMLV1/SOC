@@ -2,6 +2,11 @@
 
 วันที่: 12 ตุลาคม 2026 · สถานะ: Logical schema และแนวทาง physical schema ที่เสนอ ยังไม่มี database/migrations ติดตั้งจริง
 
+อัปเดตข้อ 02 วันที่ 13 ต.ค.: auth foundation มี migration และทดสอบบน native PostgreSQL 17.11 แล้ว
+เฉพาะ users/sessions/challenges/quotas/assignments/audit และ ops ledger; ส่วนที่เหลือยังเป็น design
+ดู [local guide](local-development.md) และ [ผลตรวจ](step-02-verification.md); Compose execution/integration/persistence ผ่านแล้ว
+audit.run_id/FK จะเพิ่มพร้อม runs ในข้อ 06; ไม่มีตาราง feature ล่วงหน้าหรือบัญชี seed รหัสคงที่
+
 ข้อ 01 เพิ่ม [SRS §4–5/7](srs.md) กำหนด training/exam mode, attempt lifecycle ร่าง และ
 global lock order: user guard → idempotency → run → attempt → child resources → sorted quota
 ใช้ subset ตาม operation ห้ามกลับลำดับ; claim job แยก transaction; ยังไม่มี migrations ในข้อ 01
