@@ -1,7 +1,8 @@
 # CI ข้อ 03 — วิธีตรวจและเปิดใช้ required check
 
 Workflow อยู่ที่ [.github/workflows/ci.yml](../.github/workflows/ci.yml)
-local commands/config ผ่านแล้ว; **รอยืนยันบน GitHub** ยังไม่ได้ push, รัน Actions หรือเปลี่ยน branch protection
+local commands/config และ [GitHub run](https://github.com/IMLV1/SOC/actions/runs/38396418296) ผ่านแล้ว
+เปิด [PR #3](https://github.com/IMLV1/SOC/pull/3) โดยไม่ merge; **branch protection ยังไม่ได้ตั้ง** เพราะ API ตอบ 403 ว่า private repository ต้องใช้แพ็กเกจที่รองรับ
 ผลตรวจอยู่ใน [step-03-verification.md](step-03-verification.md)
 
 ## ขอบเขตที่ implement
@@ -72,16 +73,17 @@ COMPOSE_PROJECT_NAME=soc-ci-local03 bash scripts/ci-compose.sh
 ไฟล์ secrets สุ่ม local เก็บเดิม; บน GitHub runner สร้างใหม่จาก checkout ทุกครั้ง
 reports ถูกเขียนโดย container non-root; test-results เป็น ignored output และไม่ควรเก็บข้อมูลจริง
 
-## ตั้ง required check บน GitHub (ยังไม่ได้ทำ)
+## ตั้ง required check บน GitHub (ยังติดข้อจำกัดแพ็กเกจ)
 
-1. Push งานนี้และเปิด PR เข้า main เมื่อผู้ใช้สั่ง แล้วตรวจ jobs ทุกตัวบน GitHub-hosted ubuntu-24.04
+1. ทำแล้ว: push f1, เปิด PR #3 เข้า main และตรวจ jobs ทุกตัวผ่านบน GitHub-hosted ubuntu-24.04
 2. ที่ repository Settings → Rules → Rulesets (หรือ Branch protection) ตั้ง target main
 3. บังคับ Pull Request/review และ Require status checks to pass; เลือก check ชื่อ **ci-gate** จาก GitHub Actions หลังมี run แรก
 4. เปิด Require branches to be up to date หรือใช้ merge queue ตามนโยบาย repository; workflow รองรับ merge_group แล้ว
 5. ตรวจด้วย PR ทดสอบที่ test fail ว่า merge ถูกกัน และ PR ที่ผ่านได้รับ gate success; ทดสอบ cancelled run ด้วย
 6. ถ้า plan/สิทธิ์ repository ไม่รองรับ ruleset ที่เลือก ให้บันทึก limitation ห้ามรายงานว่า protection เปิดแล้ว
 
-อย่าใช้ผล local แทนหลักฐาน GitHub run/merge protection; manual gate test ไม่ได้ตั้ง protection ให้ repository
+ทดสอบ GitHub failure/cancellation แล้ว ดูรายงาน; ยังไม่ได้พิสูจน์ enforced merge blocking
+ต้องให้เจ้าของเลือกแพ็กเกจ/นโยบายที่รองรับก่อนทำขั้น 2–5 ไม่เปลี่ยน visibility หรือซื้อแพ็กเกจอัตโนมัติ
 ไม่มี release.yml, maintenance หรือ deployment adapter ในข้อ 03
 
 อ้างอิง [GitHub required checks](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)

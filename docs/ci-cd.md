@@ -1,12 +1,12 @@
 # SOC Platform — CI/CD Design
 
-วันที่: 12 ตุลาคม 2026 · อัปเดตข้อ 03: 13 ตุลาคม 2026 · CI implementation/local checks ผ่าน; รอยืนยันบน GitHub
+วันที่: 12 ตุลาคม 2026 · อัปเดตข้อ 03: 13 ตุลาคม 2026 · CI local และ GitHub checks ผ่าน; branch protection ติดข้อจำกัดแพ็กเกจ
 ข้อ 02 มี local Docker images ที่ build/run ผ่านแล้ว ดู [ผลตรวจ](step-02-verification.md); production release ยังไม่ implement
 
 ข้อ 03 สร้างเฉพาะ [ci.yml](../.github/workflows/ci.yml) และ ci-gate ตาม implementation ปัจจุบัน
 ดู [คู่มือ CI/required checks](ci-local.md) และ [ผลตรวจ](step-03-verification.md)
 ส่วน release/deployment/security/E2E เต็มระบบด้านล่างเป็นแผนอนาคต ไม่ใช่สิ่งที่เปิดใช้แล้ว
-ยังไม่ได้ตั้ง branch protection หรือใช้ provider credentials; ตรวจ remote default branch แล้วเป็น main
+ยังไม่ได้ตั้ง branch protection (GitHub API 403: private repository plan restriction) หรือใช้ provider credentials; remote default branch เป็น main
 
 อ่านร่วมกับ [Architecture](architecture.md), [Database](database.md), [API](api.md) และ [Development plan](development-plan.md)
 
