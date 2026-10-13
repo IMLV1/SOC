@@ -14,9 +14,15 @@ Stack ที่เลือก: **Next.js + TypeScript · FastAPI + Python · Po
 | [ci-cd.md](ci-cd.md) | GitHub Actions, checks/tests/build, Docker artifacts, staging/production deploy และ rollback |
 | [rag-langchain.md](rag-langchain.md) | LangChain RAG, pgvector, knowledge ingestion, Ask AI, citations, สิทธิ์และการวัดคุณภาพ |
 | [development-plan.md](development-plan.md) | Roadmap, backlog, dependencies และ acceptance tests |
+| [implementation-checklist.md](implementation-checklist.md) | ลำดับเขียนโค้ด 19 ช่วง พร้อม prompt และเกณฑ์ตรวจรับแต่ละช่วง |
+| [srs.md](srs.md) | SRS เริ่มต้น, contract gaps, exam boundary/lifecycle/locks และ requirement mapping |
+| [openapi.yaml](openapi.yaml) | Machine-readable contract; approved health และ draft domain operations |
+| [getting-started.md](getting-started.md) | Runtime pins, lockfiles และวิธีเปิด scaffold ในเครื่อง |
+| [step-01-verification.md](step-01-verification.md) | ผลตรวจข้อ 01 และข้อจำกัดที่ยังไม่พร้อม |
 | [Prototype guide](../prototype/README.md) | วิธีเปิดต้นแบบและขอบเขตที่ยังเป็น mock |
 | [Prototype alignment](prototype-alignment.md) | เทียบพฤติกรรมต้นแบบกับ architecture/API และแยกงานที่ยังรอ backend |
 
 แนะนำให้อ่าน scope → learning path → architecture → API/database → CI/CD → development plan ก่อนเริ่ม implementation
 
-Architecture และ API เป็นข้อเสนอ ยังไม่ได้ติดตั้ง backend/ฐานข้อมูล/provider จริง ขั้นถัดไปตามแผนคือจัดทำ SRS และ OpenAPI ที่ตรวจด้วยเครื่องมือได้ แล้วเริ่ม vertical slice ของ login → run → events
+มี scaffold frontend/API health และ worker entrypoint จากข้อ 01 แล้ว พร้อม SRS/OpenAPI เริ่มต้น
+domain APIs, ฐานข้อมูล, authentication และ provider ยังไม่ implement; เริ่มข้อ 02 เมื่อได้รับคำสั่ง
