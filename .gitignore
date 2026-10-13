@@ -60,14 +60,3 @@ Desktop.ini
 
 # Dependency lockfiles, source files, docs, tests, .gitkeep files,
 # and prototype/screenshots/ are intentionally tracked.
-
-# Python and local tooling
-.venv/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-*.egg-info/
-.tools/
-.uv-cache/

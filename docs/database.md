@@ -2,10 +2,6 @@
 
 วันที่: 12 ตุลาคม 2026 · สถานะ: Logical schema และแนวทาง physical schema ที่เสนอ ยังไม่มี database/migrations ติดตั้งจริง
 
-ข้อ 01 เพิ่ม [SRS §4–5/7](srs.md) กำหนด training/exam mode, attempt lifecycle ร่าง และ
-global lock order: user guard → idempotency → run → attempt → child resources → sorted quota
-ใช้ subset ตาม operation ห้ามกลับลำดับ; claim job แยก transaction; ยังไม่มี migrations ในข้อ 01
-
 อ่านร่วมกับ [Architecture](architecture.md), [API contract](api.md), [CI/CD](ci-cd.md) และ [Development plan](development-plan.md)
 
 ## 1. ฐานข้อมูลและขอบเขต
@@ -223,13 +219,13 @@ CREATE INDEX job_reclaim ON app.jobs (lease_expires_at, id) WHERE status = 'runn
 
 | Operation | ขอบเขต atomic transaction |
 |---|---|
-| create run | user guard → reserve idempotency → lock quota → increment count → insert run/instances/versions → enqueue runner → audit/response cache |
+| create run | reserve idempotency → lock quota → increment count → insert run/instances/versions → enqueue runner → audit/response cache |
 | release events | lock run → ตรวจ running/server time → insert due events → enqueue detector → advance cursor |
 | pause/resume | lock run → ตรวจ expected_version/state → freeze/start clock → increment version/audit; unique index กันสอง running |
 | ticket/note mutation | lock run ก่อน ticket/note → ตรวจ owner/state/version → change + history/evidence + audit |
 | finish | lock run → freeze release/assessment cutoffs + snapshot input → set completing → enqueue finalize; ซ้ำคืนงานเดิม |
 | finalize | drain เฉพาะงานใน cutoff จน deadline → freeze evaluation → set completed; งาน AI ช้าไม่ rewrite snapshot |
-| AI enqueue | lock run → ticket/analysis ที่เกี่ยวข้อง → lock ledgers ตาม scope key → reserve quota → insert analysis/snapshot/job; failure rollback ทั้งหมด |
+| AI enqueue | lock ledgers ตามลำดับ → reserve quota → insert analysis/snapshot/job; failure rollback ทั้งหมด |
 | disable account | lock user → ตรวจ last Instructor/self-disable → set disabled/version → revoke sessions + audit |
 
 ใช้ READ COMMITTED พร้อม explicit row locks/unique constraints เป็นค่าเริ่มต้น; retry deadlock/serialization failure แบบ bounded เฉพาะ operation ที่ idempotent ลำดับ locks ต้องคงที่ (run ก่อน resource; quota rows เรียง scope key) และ external AI/network call อยู่นอก DB transaction
@@ -345,9 +341,4 @@ retrieval snapshots เป็นข้อมูลลูกของ run ตา�
 | grading_citations | grading_revision_id FK, source_type, evidence_event_id?, retrieval_item_id? | ref ต้องอยู่ใน frozen evidence/retrieval ของ attempt เดียวกัน |
 | level_unlocks | user_id FK, level_id FK, earned_from_revision_id FK, unlocked_at | UNIQUE(user_id,level_id); เพิ่มพร้อมผลผ่านครบทุกเคสใน transaction เดียว |
 
-Grade worker อ่าน private key ด้วย role แยกจาก learner API/detector/triage AI หลัง frozen submission;
-exam serializers ไม่ส่งชื่อเคสที่ใบ้ผล, initial severity, rubric หรือคำอธิบายก่อน submit
-submit ถือ user guard → idempotency → run → attempt ตาม SRS §5 ไม่ใช่ attempt ก่อน run
-exam_answers หนึ่งแถวต่อ attempt ป้องกันสองคำตอบจากหลายแท็บ Instructor อ่านเฉลยสอบหลัง submit
-ผู้เรียนได้เฉพาะ feedback ไม่ได้เฉลยเต็ม Instructor override เพิ่ม grading revision;
-ผลต่อ unlock/revoke ยังรอ policy ไม่ recompute จนถอนสิทธิ์โดยไม่ได้ตกลง
+Grade worker อ่าน private key ด้วย role แยกจาก learner API/detector/triage AI; exam serializers ไม่ส่งชื่อเคสที่ใบ้ผล, initial severity, rubric หรือคำอธิบายก่อน submit ใช้ transaction lock attempt + run และ idempotency record ตอน submit เพื่อไม่เกิดสองคำตอบจากหลายแท็บ Instructor override สร้าง `grading_revisions` ใหม่ ไม่เขียนทับแถวเดิม และ recompute unlock ตาม policy ที่ประกาศต่อผู้เรียน

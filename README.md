@@ -16,11 +16,6 @@ node server.cjs
 
 ## สถานะโครงการ
 
-ข้อ 01 มี Next.js/FastAPI health scaffold และ Python worker entrypoint แล้ว:
-ดู [คู่มือเริ่มงาน](docs/getting-started.md), [SRS/contract gaps](docs/srs.md),
-[OpenAPI ฉบับเริ่มต้น](docs/openapi.yaml) และ [ผลตรวจ](docs/step-01-verification.md)
-ยังไม่มี domain features, database migrations หรือ provider จริง
-
 `prototype/` เป็น HTML/CSS/JavaScript ที่ใช้ localStorage, ข้อมูลเหตุการณ์จำลอง และ rubric จำลอง ยัง **ไม่มี backend, authentication, database หรือ AI+RAG จริง** ข้อสอบใน prototype ไม่ป้องกันการเปิด source เพื่อดูเฉลย และยังไม่ใช่เว็บไซต์ที่ deploy สาธารณะ
 
 เอกสารสำหรับพัฒนาระบบจริงอยู่ที่ [docs/README.md](docs/README.md) โดย [ข้อกำหนดเส้นทางเรียนรู้](docs/learning-path.md) ระบุ flow บทเรียน/ข้อสอบและสิ่งที่ต้องทำฝั่ง server ส่วน [ขอบเขต SOC](docs/soc-simulation.md) อธิบายภาพรวมและเกณฑ์งานส่ง

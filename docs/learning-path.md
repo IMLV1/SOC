@@ -51,16 +51,7 @@
 
 ## ข้อมูลขั้นต่ำและความสัมพันธ์
 
-`users 1—N lesson_progress`, `learning_levels 1—N lessons`, `learning_levels 1—N exam_cases`,
-`users 1—N exam_attempts`, `exam_attempts 1—0..1 exam_answers` (หนึ่ง frozen answer ต่อเคส/attempt),
-`exam_attempts 1—N grading_revisions`, `grading_revisions 1—N grading_citations` และ
-`users 1—N level_unlocks` โดย attempt ผูกกับ run_id, scenario_version, rubric_version,
-evidence_snapshot_hash และผู้เรียน Retake สร้าง attempt ใหม่ ไม่เพิ่ม final answer ใน attempt เดิม
-ดู [Database](database.md), [API](api.md) และ [SRS](srs.md)
-
-Policy ที่ผู้ใช้ยืนยัน 13 ต.ค. 2026: Instructor ดูเฉลยสอบได้หลัง submit เท่านั้น;
-ผู้เรียนได้รับเฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็มแม้สอบจบแล้ว
-รายละเอียด rubric/retake และผลของ override ต่อ unlock ยังรอตัดสินใจตาม SRS §8
+`users 1—N lesson_progress`, `learning_levels 1—N lessons`, `learning_levels 1—N exam_cases`, `users 1—N exam_attempts`, `exam_attempts 1—N exam_answers`, `exam_attempts 1—N grading_revisions`, `grading_revisions 1—N grading_citations` และ `users 1—N level_unlocks` โดย attempt ผูกกับ `run_id`, `scenario_version`, `rubric_version`, `evidence_snapshot_hash` และผู้เรียน ส่วน answer key แยกสิทธิ์อ่านจากตาราง/asset ที่ส่งให้ client รายละเอียด schema อยู่ใน [Database design](database.md); endpoint ร่างอยู่ใน [API contract](api.md)
 
 ## ขอบเขตของ prototype ปัจจุบัน
 

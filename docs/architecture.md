@@ -2,11 +2,6 @@
 
 วันที่ปรับปรุง: 12 ตุลาคม 2026 · สถานะ: ข้อเสนอสำหรับพัฒนา ยังไม่ใช่ระบบที่ติดตั้งแล้ว
 
-อัปเดตข้อ 01: frontend/API health/worker entrypoint มี scaffold แล้ว ดู [คู่มือ](getting-started.md)
-domain features/DB ยังไม่พร้อม; [SRS](srs.md) กำหนด exam boundary และ lock order เพิ่มเติม
-generic finish/completed/truth ในเอกสารนี้หมายถึง training; exam submit freeze run + answer,
-Instructor อ่านเฉลยสอบหลัง submit เท่านั้น และ learner ได้เฉพาะ rubric feedback ไม่มีเฉลยเต็ม
-
 อ่านร่วมกับ [ขอบเขตโครงการ](soc-simulation.md), [Learning path](learning-path.md), [API contract](api.md) และ [แผนพัฒนา](development-plan.md)
 
 แบบออกแบบเพิ่มเติม: [Database](database.md) ลงรายละเอียดตาราง/constraints/transactions และ [CI/CD](ci-cd.md) ระบุ checks, build, deployment, migration และ recovery ทั้งสองเป็นแผน ยังไม่ได้ติดตั้งจริง

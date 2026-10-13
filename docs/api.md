@@ -2,11 +2,6 @@
 
 วันที่: 12 ตุลาคม 2026 · สถานะ: สัญญา API ที่เสนอ **ยังไม่มี endpoint เหล่านี้ให้เรียกจริง**
 
-อัปเดตข้อ 01 (13 ต.ค. 2026): มีเฉพาะ health scaffold ใช้งานได้ ดู [SRS](srs.md)
-และ [OpenAPI](openapi.yaml) สำหรับสถานะ approved/draft; domain endpoints ด้านล่างยังไม่เปิด
-กติกา exam ใน SRS §3–5 มีผลเหนือ generic training projection: Instructor อ่านเฉลยสอบได้หลัง
-submit เท่านั้น; ผู้เรียนได้รับเฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม (ผู้ใช้ยืนยันแล้ว)
-
 อ่านร่วมกับ [Architecture](architecture.md) และ [Development plan](development-plan.md) ขั้นถัดไปคือแปลงเป็น `docs/openapi.yaml` ใน Phase 0 และใช้ contract tests ตรวจ implementation
 
 การจัดเก็บข้อมูลและ transaction ของแต่ละ endpoint อยู่ใน [Database design](database.md); checks และการนำ API ขึ้นระบบอยู่ใน [CI/CD design](ci-cd.md)
@@ -128,10 +123,6 @@ Demo เป็น seed snapshot ที่แยกจากรอบของส
 | GET | `/runs/{run_id}/export` | — | 200 downloadable JSON เมื่อ completed; ก่อนนั้น 409 |
 
 POST /runs เป็นธุรกรรมที่สร้าง created แล้วเปลี่ยนเป็น running ภายใน transaction; ภายนอกเห็น running หรือ error ไม่ต้องมี endpoint start เพิ่ม `scenario_ids` ต้องไม่ซ้ำและอยู่ใน catalog ที่เปิดใช้ seed เป็นจำนวนเต็ม 0–2^31−1 หรือ server สุ่มและส่งกลับ
-
-POST /runs รับ training catalog เท่านั้น ไม่รับ mode/attempt/owner จาก client; exam สร้างผ่าน
-level attempts หลัง server gate. `/finish` ใช้ training; exam คืน 409 EXAM_SUBMIT_REQUIRED
-และต้องใช้ submit ซึ่ง freeze คำตอบ/run พร้อมกัน ไม่เปิดเฉลยจาก generic completion
 
 ตัวอย่างสร้างรอบ:
 
@@ -329,7 +320,7 @@ Human score และ detector metrics ใช้คนละแหล่งข�
 | GET | `/admin/runs/{run_id}/tickets` | filters เหมือน tickets ปกติ | 200 tickets |
 | GET | `/admin/runs/{run_id}/tickets/{ticket_id}` | — | 200 assessment/notes/evidence/analysis ที่ใช้ review |
 | PATCH | `/admin/runs/{run_id}/tickets/{ticket_id}` | expected_version, severity?, status?, reason | 200; ไม่รับ title/disposition/assessment/note |
-| GET | `/admin/runs/{run_id}/ground-truth` | — | training อ่านก่อนจบได้; exam ต้อง submitted แล้ว; assignment + privileged handler + access audit |
+| GET | `/admin/runs/{run_id}/ground-truth` | — | 200 แม้รอบยังไม่จบ ผ่าน privileged handler และ audit การอ่าน |
 | GET | `/admin/runs/{run_id}/evaluation` | — | status contract เหมือน evaluation ปกติ |
 | GET | `/admin/runs/{run_id}/audit` | cursor?, limit? | 200 review/change history |
 | GET | `/admin/runs/{run_id}/comments` | cursor?, limit? | 200 instructor comments |
@@ -404,16 +395,12 @@ Retry เดิมคง question, evidence และ retrieval snapshot (หา
 | POST | `/lessons/{lesson_id}/steps/{step_id}/complete` | บันทึกการทำขั้นของเจ้าของ session; 200 progress/version; ตรวจ step ที่มีอยู่และลำดับ |
 | POST | `/lessons/{lesson_id}/complete` | 200 เมื่อครบทุกขั้น; idempotent; ไม่รับ `user_id`/`passed` จาก client |
 | POST | `/levels/{level_id}/attempts` | 201 attempt + run_id ของ exam case ที่ server เลือก/อนุญาต; ตรวจ lesson, level, quota และหนึ่ง active exam ต่อบัญชี; ใช้ Idempotency-Key |
-| GET | `/attempts/{attempt_id}` | 200 เฉพาะเจ้าของ; Instructor กำกับใช้ admin route หลัง submit; ไม่มี full answer key ทุกสถานะ |
+| GET | `/attempts/{attempt_id}` | 200 เฉพาะเจ้าของหรือ Instructor ที่กำกับ; ก่อน submit ไม่มี answer key, score หรือ feedback |
 | POST | `/attempts/{attempt_id}/submit` | `expected_version`, evidence_event_ids, severity, disposition, reason; 202 grading pending หรือ 200 result ที่เสร็จแล้ว; freeze คำตอบทันทีและใช้ Idempotency-Key |
 | GET | `/attempts/{attempt_id}/result` | ก่อน submit คืน 409 RESULT_LOCKED; หลัง submit คืน pending/passed/failed/needs_review และ rubric รายข้อพร้อม evidence/knowledge citations ที่เปิดเผยได้ |
 | GET | `/admin/attempts/{attempt_id}` | Instructor ใน assignment scope อ่าน submission/grading หลัง submit พร้อม access audit |
 | POST | `/admin/attempts/{attempt_id}/review` | rubric revision, decision=pass/fail/needs_review, reason, expected_version; audit และ unlock update ใน transaction เดียว |
 
-ข้อสอบใช้ชื่อเป็นกลางและไม่ส่ง initial severity; ไม่ reuse demo fixture ข้อมูล `attempt_id`
-ชี้ `run_id` ฝั่ง server ทุก projection ใช้ exam allowlist ตาม SRS §3 รวม list/detail/search,
-analysis/sources, overview, alerts, tickets, audit/history, evaluation/export, error และ cache
-ผู้เรียนไม่อ่าน full exam ground truth แม้ final result/completed; เปิดเฉพาะ feedback ตาม rubric
-Instructor ที่กำกับอ่านเฉลยได้หลัง submit ผ่าน admin พร้อม audit เท่านั้น
+ข้อสอบใช้ชื่อ/initial severity ที่เป็นกลางและไม่ reuse demo fixture ข้อมูล `attempt_id` ชี้ `run_id` ฝั่ง server แต่ endpoint `/runs/{run_id}` ของ attempt ต้องใช้ serializer แบบ exam: ส่งเฉพาะ released evidence และสถานะที่ไม่ใบ้คำตอบ; `/demo/*`, `/scenarios`, analysis, overview, alerts, tickets และ export ต้องไม่เปิด answer key ก่อน submit/finish รวมถึงชื่อไฟล์, metadata และ error text `GET /runs/{run_id}/ground-truth` ยังล็อกตาม §10 แต่สำหรับ exam ให้เปิดเฉพาะหลัง final result ตาม policy
 
 การให้คะแนนเชิงเหตุผลเป็นงาน background ที่ผูก evidence snapshot/rubric/model/knowledge release ที่ตรึงไว้ ไม่รับคะแนนหรือ `passed` จาก client กฎตรวจหลักฐานและ classification ฝั่ง server เป็นตัวคุมผล หาก AI/RAG ล้มเหลวหรือไม่มั่นใจ ให้ `needs_review` และ Instructor พิจารณา ไม่ auto-pass; result ต้องระบุ source ของคำแนะนำ (`deterministic|ai_rag|instructor`) และ citation ที่ตรวจสิทธิ์แล้ว
