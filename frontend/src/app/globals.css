@@ -1,4 +1,13 @@
 :root { color-scheme: dark; --bg: #0d161b; --text: #eef4f2; --muted: #b4c5c4; --line: #30444b; --accent: #9ce0cd; }
+.account-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; padding: 16px 5%; border-bottom: 1px solid var(--line); }
+a { color: var(--accent); }
+button { background: var(--accent); color: #102720; padding: 10px 18px; border: 0; border-radius: 6px; font: inherit; cursor: pointer; }
+button:disabled { opacity: .6; cursor: wait; }
+button:focus-visible, input:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+.auth-page { max-width: 620px; }
+.auth-page label { display: block; margin-bottom: 18px; }
+.auth-page input { display: block; width: 100%; background: #14252b; color: var(--text); border: 1px solid var(--line); padding: 12px; border-radius: 5px; font: inherit; }
+.account-message { margin: 16px 5%; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, Tahoma, sans-serif; line-height: 1.7; }
 main { max-width: 1160px; margin: auto; padding: 32px 36px; }

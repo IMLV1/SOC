@@ -3,7 +3,8 @@
 วันที่ปรับปรุง: 12 ตุลาคม 2026 · สถานะ: ข้อเสนอสำหรับพัฒนา ยังไม่ใช่ระบบที่ติดตั้งแล้ว
 
 อัปเดตข้อ 01: frontend/API health/worker entrypoint มี scaffold แล้ว ดู [คู่มือ](getting-started.md)
-domain features/DB ยังไม่พร้อม; [SRS](srs.md) กำหนด exam boundary และ lock order เพิ่มเติม
+ข้อ 02 เพิ่ม DB และข้อ 04 เปิด auth/me/Guest snapshot แล้ว ดู [คู่มือ auth](auth-development.md)
+domain features ที่เหลือยังไม่พร้อม; [SRS](srs.md) กำหนด exam boundary และ lock order เพิ่มเติม
 generic finish/completed/truth ในเอกสารนี้หมายถึง training; exam submit freeze run + answer,
 Instructor อ่านเฉลยสอบหลัง submit เท่านั้น และ learner ได้เฉพาะ rubric feedback ไม่มีเฉลยเต็ม
 
@@ -13,7 +14,9 @@ Instructor อ่านเฉลยสอบหลัง submit เท่าน�
 
 ## 1. สถานะและแนวทาง
 
-ปัจจุบัน `prototype/` เป็นเว็บต้นแบบ HTML/CSS/JavaScript ใช้ localStorage และ AI fixture ส่วน `frontend/` และ `backend/` ยังไม่มีแอปจริง นำรูปแบบหน้าจอและ flow มาใช้ต่อได้ แต่ต้องย้ายสิทธิ์ ข้อมูล นาฬิกา การตรวจจับ และเฉลยไปฝั่ง server
+`prototype/` เป็นเว็บต้นแบบ HTML/CSS/JavaScript ใช้ localStorage และ AI fixture เก็บไว้เป็น reference
+ปัจจุบัน frontend/backend มี auth/DB/Guest snapshot ตามข้อ 04 แล้ว ส่วน runner/detection/exam ยังไม่ implement
+สิทธิ์และข้อมูลจริงอยู่ฝั่ง server ไม่ย้ายเฉลยไป frontend
 
 เอกสารนี้เติมรายละเอียดทางเทคนิคจาก `soc-simulation.md` โดยไม่ขยายไปสู่การโจมตีจริง README ที่ root เป็นทางเข้าและวิธีเปิดต้นแบบ ส่วนข้อกำหนดระบบเต็มอยู่ใน docs
 

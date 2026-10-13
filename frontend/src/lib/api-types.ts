@@ -1,0 +1,26 @@
+// Generated from approved docs/openapi.yaml; do not edit by hand.
+export type AuthMeta = { request_id: string };
+export type CsrfData = { csrf_token: string };
+export type CsrfEnvelope = { data: CsrfData; meta: AuthMeta };
+export type DemoDetail = { data: DemoEvent; meta: AuthMeta };
+export type DemoEvent = { id: string; event_time: string; method: string; path: string; status_code: number; description: string };
+export type DemoEvents = { data: Array<DemoEvent>; meta: DemoMeta };
+export type DemoMeta = { request_id: string; next_cursor?: string | null };
+export type DemoOverview = { data: DemoSummary; meta: AuthMeta };
+export type DemoSummary = { is_demo?: boolean; status?: string; event_count: number; description: string };
+export type ErrorDetail = { code: string; message: string };
+export type ErrorEnvelope = { error: ErrorDetail; meta: Meta };
+export type LiveData = { status?: "alive" };
+export type LiveEnvelope = { data: LiveData; meta: Meta };
+export type LoginInput = { email: string; password: string };
+export type Meta = { request_id: string };
+export type QuotaData = { daily_runs: number; daily_ai_requests: number; run_count: number; ai_request_count: number; reserved_tokens: number; consumed_tokens: number; reset_at: string };
+export type QuotaEnvelope = { data: QuotaData; meta: AuthMeta };
+export type ReadyData = { status?: "ready" };
+export type ReadyEnvelope = { data: ReadyData; meta: Meta };
+export type RegisterInput = { email: string; password: string; display_name: string };
+export type SessionData = { csrf_token: string; user: UserView; expires_at: string };
+export type SessionEnvelope = { data: SessionData; meta: AuthMeta };
+export type Strict = Record<string, never>;
+export type UserEnvelope = { data: UserView; meta: AuthMeta };
+export type UserView = { id: string; display_name: string; email: string; role: "analyst" | "instructor"; status: "active" | "disabled" };

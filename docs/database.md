@@ -6,6 +6,8 @@
 เฉพาะ users/sessions/challenges/quotas/assignments/audit และ ops ledger; ส่วนที่เหลือยังเป็น design
 ดู [local guide](local-development.md) และ [ผลตรวจ](step-02-verification.md); Compose execution/integration/persistence ผ่านแล้ว
 audit.run_id/FK จะเพิ่มพร้อม runs ในข้อ 06; ไม่มีตาราง feature ล่วงหน้าหรือบัญชี seed รหัสคงที่
+ข้อ 04 เพิ่ม migration 0002 auth_rate_limits, shared per-minute counters และ retention grants;
+ทดสอบ fresh/upgrade จาก 0001 แล้ว ไม่มีการแก้ checksum ของ migration เดิม
 
 ข้อ 01 เพิ่ม [SRS §4–5/7](srs.md) กำหนด training/exam mode, attempt lifecycle ร่าง และ
 global lock order: user guard → idempotency → run → attempt → child resources → sorted quota

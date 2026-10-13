@@ -17,4 +17,4 @@ USER root
 RUN uv sync --frozen
 COPY tests ./tests
 USER soc
-CMD ["python", "-m", "pytest", "tests/test_database.py", "-q", "-p", "no:cacheprovider"]
+CMD ["python", "-m", "pytest", "tests/test_database.py", "tests/test_auth.py", "-q", "-p", "no:cacheprovider"]

@@ -84,13 +84,15 @@ def test_openapi_valid_and_approved_contract_has_no_drift() -> None:
         assert CONTRACT["components"]["schemas"][name] == schema
 
 
-def test_all_api_inventory_operations_are_mapped_and_draft() -> None:
+def test_all_api_inventory_operations_are_mapped_with_explicit_status() -> None:
     source = (ROOT / "docs/api.md").read_text(encoding="utf-8")
     srs = (ROOT / "docs/srs.md").read_text(encoding="utf-8")
     for method, path in re.findall(r"\| (GET|POST|PATCH|DELETE) \| `([^`]+)`", source):
         path = path.replace("T/", "/runs/{run_id}/tickets/{ticket_id}/")
         operation = CONTRACT["paths"]["/api/v1" + path][method.lower()]
-        assert operation["x-contract-status"] == "draft"
+        assert operation["x-contract-status"] in ("draft", "approved")
+        if operation["x-contract-status"] == "approved":
+            assert "/api/v1" + path in app.openapi()["paths"]
         assert operation["x-requirements"]
         assert all(requirement in srs for requirement in operation["x-requirements"])
 

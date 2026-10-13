@@ -66,6 +66,7 @@ jobs:
           uv run --frozen pytest -m 'not integration' --junitxml=../test-results/backend.xml
           uv run --frozen python -c 'from app.main import app as api; import app.worker.__main__; assert api.openapi()'
           uv run --frozen python ../scripts/check-doc-links.py
+          uv run --frozen python ../scripts/generate-client-types.py --check
           uv run --frozen python -m unittest discover -s ../scripts/tests -v
       - name: Validate Actions syntax
         run: |
@@ -121,6 +122,12 @@ jobs:
         with:
           python-version-file: .python-version
       - run: python scripts/init-local.py
+      - name: Browser test dependencies
+        run: |
+          npm install --global npm@11.19.0
+          npm ci --prefix frontend
+          cd frontend
+          npx playwright install --with-deps chromium
       - run: bash scripts/ci-compose.sh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ always() }}

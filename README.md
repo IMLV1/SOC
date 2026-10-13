@@ -20,7 +20,8 @@ node server.cjs
 [OpenAPI ฉบับเริ่มต้น](docs/openapi.yaml) และ [ผลตรวจ](docs/step-01-verification.md)
 ข้อ 02 เพิ่มฐานข้อมูล/migration/roles และ local Compose แล้ว ดู [คู่มือฐานข้อมูล](docs/local-development.md)
 และ [ผลตรวจข้อ 02](docs/step-02-verification.md) Native PostgreSQL และ Docker build/up/tests/persistence ผ่านแล้ว
-ยังไม่มี domain features หรือ provider จริง
+ข้อ 04 มีสมัครสมาชิก/login/session/logout และ Guest snapshot แล้ว ดู [คู่มือ auth](docs/auth-development.md)
+ยังไม่มีรอบฝึก/ข้อสอบหรือ provider จริง
 
 ข้อ 03 เพิ่ม GitHub Actions CI และ ci-gate แล้ว; local และ GitHub checks ผ่าน **branch protection ติดข้อจำกัดแพ็กเกจ private repository**
 ดู [คู่มือ CI/required checks](docs/ci-local.md) และ [ผลตรวจข้อ 03](docs/step-03-verification.md)
