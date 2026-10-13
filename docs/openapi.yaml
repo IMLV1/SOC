@@ -1,0 +1,4211 @@
+openapi: 3.1.0
+info:
+  title: SOC API
+  version: 0.1.0
+  description: Step 01. Only health operations are implemented/approved. All domain routes are draft and
+    must not be enabled or used to generate production clients before schema and policy approval. See
+    srs.md.
+paths:
+  /health/live:
+    get:
+      tags:
+      - health
+      summary: Live
+      operationId: health_live
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveEnvelope'
+      security: []
+      x-contract-status: approved
+      x-requirements:
+      - FR-001
+      - NFR-001
+  /health/ready:
+    get:
+      tags:
+      - health
+      summary: Ready
+      operationId: health_ready
+      responses:
+        '503':
+          description: Database/migration foundation is not implemented in step 01.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      security: []
+      x-contract-status: approved
+      x-requirements:
+      - FR-001
+      - NFR-001
+  /api/v1/auth/csrf:
+    get:
+      operationId: get_auth_csrf
+      summary: GET /auth/csrf
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 token ผูก pre-auth/session cookie;
+        `Cache-Control: no-store`
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-002
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/auth/register:
+    post:
+      operationId: post_auth_register
+      summary: POST /auth/register
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. email, display_name, password ; 201 user
+        role=analyst; ยังไม่ login อัตโนมัติ
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-002
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '201':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+  /api/v1/auth/login:
+    post:
+      operationId: post_auth_login
+      summary: POST /auth/login
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. email, password ; 200 user + csrf_token ใหม่;
+        Set-Cookie session ใหม่
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-002
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+  /api/v1/auth/session:
+    get:
+      operationId: get_auth_session
+      summary: GET /auth/session
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cookie ; 200 user, expires_at, csrf_token
+        หรือ 401
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-002
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/auth/logout:
+    post:
+      operationId: post_auth_logout
+      summary: POST /auth/logout
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. `{}` ; 204 revoke session และล้าง cookie;
+        session ที่หมดแล้ว logout ซ้ำได้
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-002
+      x-authorization: 'Active session: CSRF + Origin and revoke. Expired session: Origin check and cookie
+        clearing; repeat logout allowed.'
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '204':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+  /api/v1/me:
+    get:
+      operationId: get_me
+      summary: GET /me
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cookie ; 200 id, display_name, email, role,
+        status
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-002
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/me/quota:
+    get:
+      operationId: get_me_quota
+      summary: GET /me/quota
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cookie ; 200 run/AI limit, used, reserved,
+        reset_at
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-002
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/scenarios:
+    get:
+      operationId: get_scenarios
+      summary: GET /scenarios
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. public metadata: id, version, title, difficulty,
+        duration_ms, learning_objectives
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/demo/overview:
+    get:
+      operationId: get_demo_overview
+      summary: GET /demo/overview
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. counters และสถานะรอบตัวอย่าง
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/demo/events:
+    get:
+      operationId: get_demo_events
+      summary: GET /demo/events
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. released/redacted events แบบแบ่งหน้า ใช้ตัวกรองเดียวกับ
+        Event explorer
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/demo/events/{event_id}:
+    get:
+      operationId: get_demo_events_event_id
+      summary: GET /demo/events/{event_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. event หลักฐานตัวอย่าง
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema: &id001
+          type: string
+          format: uuid
+  /api/v1/demo/alerts:
+    get:
+      operationId: get_demo_alerts
+      summary: GET /demo/alerts
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. alerts ตัวอย่างและ linked ticket IDs
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/demo/tickets:
+    get:
+      operationId: get_demo_tickets
+      summary: GET /demo/tickets
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. tickets ตัวอย่าง
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/demo/tickets/{ticket_id}:
+    get:
+      operationId: get_demo_tickets_ticket_id
+      summary: GET /demo/tickets/{ticket_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. detail, evidence, mock/real mode และ human
+        assessment ตัวอย่าง
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/demo/evaluation:
+    get:
+      operationId: get_demo_evaluation
+      summary: GET /demo/evaluation
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. ผลของรอบตัวอย่างที่เผยแพร่แล้ว ระบุข้อมูลตัวอย่างชัดเจน
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-003
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/runs:
+    get:
+      operationId: get_runs
+      summary: GET /runs
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. status?, cursor?, limit? ; 200 เฉพาะรอบของผู้ใช้
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-004
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: post_runs
+      summary: POST /runs
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. scenario_ids[1..5], seed? ; 201 สร้างและเริ่ม
+        running พร้อม version; ยึด scenario versions ตอนสร้าง
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-004
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '201':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingRunCreate'
+  /api/v1/runs/{run_id}:
+    get:
+      operationId: get_runs_run_id
+      summary: GET /runs/{run_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 สถานะ เวลา version และ quota/expiry
+        metadata
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-004
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/runs/{run_id}/overview:
+    get:
+      operationId: get_runs_run_id_overview
+      summary: GET /runs/{run_id}/overview
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 counters, histogram, ticket severity
+        และ analysis statuses
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-005
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/runs/{run_id}/pause:
+    post:
+      operationId: post_runs_run_id_pause
+      summary: POST /runs/{run_id}/pause
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version ; 200 paused, elapsed_ms
+        และ version ใหม่
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-004
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionRequest'
+  /api/v1/runs/{run_id}/resume:
+    post:
+      operationId: post_runs_run_id_resume
+      summary: POST /runs/{run_id}/resume
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version ; 200 running และ version
+        ใหม่
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-004
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionRequest'
+  /api/v1/runs/{run_id}/finish:
+    post:
+      operationId: post_runs_run_id_finish
+      summary: POST /runs/{run_id}/finish
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version ; 202 completing + evaluation_url
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-004
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '202':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Existing training completion; no duplicate finalization.
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionRequest'
+      x-exam-behavior: 409 EXAM_SUBMIT_REQUIRED; training repeated finish returns existing completion
+        even with old version.
+  /api/v1/runs/{run_id}/audit:
+    get:
+      operationId: get_runs_run_id_audit
+      summary: GET /runs/{run_id}/audit
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cursor?, limit?, entity_id? ; 200 append-only
+        change history
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-009
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/runs/{run_id}/export:
+    get:
+      operationId: get_runs_run_id_export
+      summary: GET /runs/{run_id}/export
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 downloadable JSON เมื่อ completed;
+        ก่อนนั้น 409
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-009
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/runs/{run_id}/events:
+    get:
+      operationId: get_runs_run_id_events
+      summary: GET /runs/{run_id}/events
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. q?, from?, to?, source?, asset_id?, username?,
+        src_ip?, after_seq?, cursor?, limit?
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-005
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/runs/{run_id}/events/{event_id}:
+    get:
+      operationId: get_runs_run_id_events_event_id
+      summary: GET /runs/{run_id}/events/{event_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. request, response, raw log ที่ redact แล้ว
+        พร้อม event_time และ ingested_at
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-005
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: event_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/runs/{run_id}/alerts:
+    get:
+      operationId: get_runs_run_id_alerts
+      summary: GET /runs/{run_id}/alerts
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. severity?, detector_type?, cursor?, limit?;
+        คืน rule/anomaly explanation และ ticket refs
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-005
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/runs/{run_id}/alerts/{alert_id}:
+    get:
+      operationId: get_runs_run_id_alerts_alert_id
+      summary: GET /runs/{run_id}/alerts/{alert_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. detection version, correlation reason, evidence
+        refs และ linked ticket
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-005
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: alert_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/runs/{run_id}/tickets:
+    get:
+      operationId: get_runs_run_id_tickets
+      summary: GET /runs/{run_id}/tickets
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. q?, severity?, status?, disposition?, deleted=exclude/only/include,
+        cursor?, limit? ; 200 list
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: post_runs_run_id_tickets
+      summary: POST /runs/{run_id}/tickets
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. title, severity, evidence_ids, reason ; 201
+        manual ticket, open, version=1
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '201':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/runs/{run_id}/tickets/{ticket_id}:
+    get:
+      operationId: get_runs_run_id_tickets_ticket_id
+      summary: GET /runs/{run_id}/tickets/{ticket_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 detail รวม deleted flag และ latest
+        assessment
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+    patch:
+      operationId: patch_runs_run_id_tickets_ticket_id
+      summary: PATCH /runs/{run_id}/tickets/{ticket_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, reason, title?, severity?,
+        status?, disposition? ; 200 ticket พร้อม assessment revision เมื่อข้อสรุปเปลี่ยน
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+    delete:
+      operationId: delete_runs_run_id_tickets_ticket_id
+      summary: DELETE /runs/{run_id}/tickets/{ticket_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, reason ; 200 soft-deleted
+        resource + version ใหม่
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequest'
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/restore:
+    post:
+      operationId: post_runs_run_id_tickets_ticket_id_restore
+      summary: POST /runs/{run_id}/tickets/{ticket_id}/restore
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, reason ; 200 restored resource
+        + version ใหม่
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequest'
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/timeline:
+    get:
+      operationId: get_runs_run_id_tickets_ticket_id_timeline
+      summary: GET /runs/{run_id}/tickets/{ticket_id}/timeline
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cursor?, limit? ; 200 released evidence +
+        investigation history
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/assessments:
+    get:
+      operationId: get_runs_run_id_tickets_ticket_id_assessments
+      summary: GET /runs/{run_id}/tickets/{ticket_id}/assessments
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cursor?, limit? ; 200 assessment revisions
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-006
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/notes:
+    get:
+      operationId: get_runs_run_id_tickets_ticket_id_notes
+      summary: GET /runs/{run_id}/tickets/{ticket_id}/notes
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. deleted?, cursor?, limit? ; 200 notes ที่มีสิทธิ์อ่าน
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-007
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: post_runs_run_id_tickets_ticket_id_notes
+      summary: POST /runs/{run_id}/tickets/{ticket_id}/notes
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. body, evidence_ids[] ; 201 note owner=current
+        user
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-007
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '201':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/notes/{note_id}:
+    patch:
+      operationId: patch_runs_run_id_tickets_ticket_id_notes_note_id
+      summary: PATCH /runs/{run_id}/tickets/{ticket_id}/notes/{note_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, body, evidence_ids[], reason
+        ; 200 note + version ใหม่
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-007
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - name: note_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+    delete:
+      operationId: delete_runs_run_id_tickets_ticket_id_notes_note_id
+      summary: DELETE /runs/{run_id}/tickets/{ticket_id}/notes/{note_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, reason ; 200 soft-deleted
+        note
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-007
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - name: note_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequest'
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/notes/{note_id}/restore:
+    post:
+      operationId: post_runs_run_id_tickets_ticket_id_notes_note_id_restore
+      summary: POST /runs/{run_id}/tickets/{ticket_id}/notes/{note_id}/restore
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, reason ; 200 restored note
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-007
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - name: note_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequest'
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/notes/{note_id}/versions:
+    get:
+      operationId: get_runs_run_id_tickets_ticket_id_notes_note_id_versions
+      summary: GET /runs/{run_id}/tickets/{ticket_id}/notes/{note_id}/versions
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cursor?, limit? ; 200 immutable previous
+        versions
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-007
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - name: note_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/runs/{run_id}/analyses:
+    get:
+      operationId: get_runs_run_id_analyses
+      summary: GET /runs/{run_id}/analyses
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. status?, ticket_id?, cursor?, limit?
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-008
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue after run frozen.
+        Grading is separate.
+  /api/v1/runs/{run_id}/analyses/{analysis_id}:
+    get:
+      operationId: get_runs_run_id_analyses_analysis_id
+      summary: GET /runs/{run_id}/analyses/{analysis_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. mode, status, model/prompt version, evidence
+        refs, result, usage, error
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-008
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: analysis_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue after run frozen.
+        Grading is separate.
+  /api/v1/runs/{run_id}/analyses/{analysis_id}/retry:
+    post:
+      operationId: post_runs_run_id_analyses_analysis_id_retry
+      summary: POST /runs/{run_id}/analyses/{analysis_id}/retry
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version; 202 analysis_id ใหม่ +
+        status=queued
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-008
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '202':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: analysis_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionRequest'
+      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue after run frozen.
+        Grading is separate.
+  /api/v1/runs/{run_id}/evaluation:
+    get:
+      operationId: get_runs_run_id_evaluation
+      summary: GET /runs/{run_id}/evaluation
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. ก่อน finish:409 EVALUATION_LOCKED; completing:202
+        pending; completed:200 snapshot
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-009
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '202':
+          description: Completion pending; never report pending as score zero.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/runs/{run_id}/ground-truth:
+    get:
+      operationId: get_runs_run_id_ground_truth
+      summary: GET /runs/{run_id}/ground-truth
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 เฉพาะเจ้าของรอบที่ completed; ก่อนนั้น
+        409 GROUND_TRUTH_LOCKED
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-009
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: 'Learner: full exam truth never disclosed. Instructor: submitted exam + assignment
+        + audit required; before submit 409.'
+  /api/v1/admin/experiments:
+    post:
+      operationId: post_admin_experiments
+      summary: POST /admin/experiments
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. dataset_run_id, modes=[A,B,C], config_versions;
+        202 batch ID
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-011
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '202':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/admin/experiments/{experiment_id}:
+    get:
+      operationId: get_admin_experiments_experiment_id
+      summary: GET /admin/experiments/{experiment_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 arm statuses, dataset hash, versions,
+        metrics และข้อจำกัด
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-011
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: experiment_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/admin/users:
+    get:
+      operationId: get_admin_users
+      summary: GET /admin/users
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. q?, status?, cursor?, limit? ; 200 safe user
+        fields
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/admin/users/{user_id}:
+    patch:
+      operationId: patch_admin_users_user_id
+      summary: PATCH /admin/users/{user_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, status=active/disabled,
+        reason ; 200; disabled revoke sessions ใน transaction เดียว
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/admin/users/{user_id}/quota:
+    patch:
+      operationId: patch_admin_users_user_id_quota
+      summary: PATCH /admin/users/{user_id}/quota
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, daily_runs, daily_ai_requests,
+        reason ; 200; ไม่ reset การใช้เดิม
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/admin/runs:
+    get:
+      operationId: get_admin_runs
+      summary: GET /admin/runs
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. owner_user_id?, status?, cursor?, limit?
+        ; 200 supervised runs
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/admin/runs/{run_id}:
+    get:
+      operationId: get_admin_runs_run_id
+      summary: GET /admin/runs/{run_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 run metadata
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/admin/runs/{run_id}/events:
+    get:
+      operationId: get_admin_runs_run_id_events
+      summary: GET /admin/runs/{run_id}/events
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. filters เหมือน events ปกติ ; 200 released
+        evidence เท่านั้น
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/admin/runs/{run_id}/events/{event_id}:
+    get:
+      operationId: get_admin_runs_run_id_events_event_id
+      summary: GET /admin/runs/{run_id}/events/{event_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 redacted event detail
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: event_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/admin/runs/{run_id}/tickets:
+    get:
+      operationId: get_admin_runs_run_id_tickets
+      summary: GET /admin/runs/{run_id}/tickets
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. filters เหมือน tickets ปกติ ; 200 tickets
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/admin/runs/{run_id}/tickets/{ticket_id}:
+    get:
+      operationId: get_admin_runs_run_id_tickets_ticket_id
+      summary: GET /admin/runs/{run_id}/tickets/{ticket_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; 200 assessment/notes/evidence/analysis
+        ที่ใช้ review
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+    patch:
+      operationId: patch_admin_runs_run_id_tickets_ticket_id
+      summary: PATCH /admin/runs/{run_id}/tickets/{ticket_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. expected_version, severity?, status?, reason
+        ; 200; ไม่รับ title/disposition/assessment/note
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/admin/runs/{run_id}/ground-truth:
+    get:
+      operationId: get_admin_runs_run_id_ground_truth
+      summary: GET /admin/runs/{run_id}/ground-truth
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; training อ่านก่อนจบได้; exam ต้อง submitted
+        แล้ว; assignment + privileged handler + access audit
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: 'Learner: full exam truth never disclosed. Instructor: submitted exam + assignment
+        + audit required; before submit 409.'
+  /api/v1/admin/runs/{run_id}/evaluation:
+    get:
+      operationId: get_admin_runs_run_id_evaluation
+      summary: GET /admin/runs/{run_id}/evaluation
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. — ; status contract เหมือน evaluation ปกติ
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+        '202':
+          description: Completion pending; never report pending as score zero.
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/admin/runs/{run_id}/audit:
+    get:
+      operationId: get_admin_runs_run_id_audit
+      summary: GET /admin/runs/{run_id}/audit
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cursor?, limit? ; 200 review/change history
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /api/v1/admin/runs/{run_id}/comments:
+    get:
+      operationId: get_admin_runs_run_id_comments
+      summary: GET /admin/runs/{run_id}/comments
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. cursor?, limit? ; 200 instructor comments
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: post_admin_runs_run_id_comments
+      summary: POST /admin/runs/{run_id}/comments
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. body 1–2,000 chars ; 201 comment พร้อม author
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '201':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/runs/{run_id}/tickets/{ticket_id}/questions:
+    post:
+      operationId: post_runs_run_id_tickets_ticket_id_questions
+      summary: POST /runs/{run_id}/tickets/{ticket_id}/questions
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. question 1–2,000 chars, expected_version
+        ของ ticket, Idempotency-Key และ CSRF; 202 analysis_id/kind=question/status=queued
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-012
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '202':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: ticket_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionRequest'
+      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue after run frozen.
+        Grading is separate.
+  /api/v1/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}:
+    get:
+      operationId: get_runs_run_id_analyses_analysis_id_sources_retrieval_item_id
+      summary: GET /runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. citation excerpt/metadata เฉพาะ item ของ
+        analysis นี้และ run ตนเอง
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-012
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+        '410':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: analysis_id
+        in: path
+        required: true
+        schema: *id001
+      - name: retrieval_item_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue after run frozen.
+        Grading is separate.
+  /api/v1/admin/runs/{run_id}/analyses/{analysis_id}:
+    get:
+      operationId: get_admin_runs_run_id_analyses_analysis_id
+      summary: GET /admin/runs/{run_id}/analyses/{analysis_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. Instructor อ่านผลเดิมใน assignment scope
+        พร้อม access audit
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: analysis_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue after run frozen.
+        Grading is separate.
+  /api/v1/admin/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}:
+    get:
+      operationId: get_admin_runs_run_id_analyses_analysis_id_sources_retrieval_item_id
+      summary: GET /admin/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. อ่าน citation ใน scope เดียวกัน; ไม่มีสิทธิ์ถาม/retry
+        ของผู้อื่น
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+        '410':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: run_id
+        in: path
+        required: true
+        schema: *id001
+      - name: analysis_id
+        in: path
+        required: true
+        schema: *id001
+      - name: retrieval_item_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue after run frozen.
+        Grading is separate.
+  /api/v1/learning-path:
+    get:
+      operationId: get_learning_path
+      summary: GET /learning-path
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. public level/lesson metadata เท่านั้น ไม่ส่ง
+        exam bank หรือ answer key
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-013
+      x-authorization: public/auth-bootstrap
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/me/learning-path:
+    get:
+      operationId: get_me_learning_path
+      summary: GET /me/learning-path
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 บทเรียนที่เรียนจบ, เคสที่ผ่าน, ระดับที่เปิด
+        และ next action ของบัญชี
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-013
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+  /api/v1/lessons/{lesson_id}:
+    get:
+      operationId: get_lessons_lesson_id
+      summary: GET /lessons/{lesson_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 ตัวอย่างฝึก versioned 5 ขั้น และคำอธิบาย;
+        ไม่มี fixture ข้อสอบ
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-013
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: lesson_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/lessons/{lesson_id}/steps/{step_id}/complete:
+    post:
+      operationId: post_lessons_lesson_id_steps_step_id_complete
+      summary: POST /lessons/{lesson_id}/steps/{step_id}/complete
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. บันทึกการทำขั้นของเจ้าของ session; 200 progress/version;
+        ตรวจ step ที่มีอยู่และลำดับ
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-013
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: lesson_id
+        in: path
+        required: true
+        schema: *id001
+      - name: step_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/lessons/{lesson_id}/complete:
+    post:
+      operationId: post_lessons_lesson_id_complete
+      summary: POST /lessons/{lesson_id}/complete
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 เมื่อครบทุกขั้น; idempotent; ไม่รับ `user_id`/`passed`
+        จาก client
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-013
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: lesson_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/levels/{level_id}/attempts:
+    post:
+      operationId: post_levels_level_id_attempts
+      summary: POST /levels/{level_id}/attempts
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 201 attempt + run_id ของ exam case ที่ server
+        เลือก/อนุญาต; ตรวจ lesson, level, quota และหนึ่ง active exam ต่อบัญชี; ใช้ Idempotency-Key
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-014
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '201':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: level_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+  /api/v1/attempts/{attempt_id}:
+    get:
+      operationId: get_attempts_attempt_id
+      summary: GET /attempts/{attempt_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 เฉพาะเจ้าของ; Instructor กำกับใช้ admin
+        route หลัง submit; ไม่มี full answer key ทุกสถานะ
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-014
+      x-authorization: owner only on learner route; assigned Instructor uses /admin/attempts after submit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamAttemptViewEnvelope'
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: attempt_id
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/attempts/{attempt_id}/submit:
+    post:
+      operationId: post_attempts_attempt_id_submit
+      summary: POST /attempts/{attempt_id}/submit
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. `expected_version`, evidence_event_ids, severity,
+        disposition, reason; 202 grading pending หรือ 200 result ที่เสร็จแล้ว; freeze คำตอบทันทีและใช้
+        Idempotency-Key
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-015
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '202':
+          description: Draft success semantics from api.md; payload schema pending approval.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradingPendingEnvelope'
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Existing finished result on authorized idempotent replay; feedback schema pending
+            D-04.
+      parameters:
+      - name: attempt_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      - $ref: '#/components/parameters/Idempotency'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitRequest'
+      x-transaction: user guard -> idempotency -> run -> attempt -> frozen answer/cutoffs -> jobs/audit/cache;
+        same key different body 409; second key cannot overwrite answer.
+  /api/v1/attempts/{attempt_id}/result:
+    get:
+      operationId: get_attempts_attempt_id_result
+      summary: GET /attempts/{attempt_id}/result
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. ก่อน submit คืน 409 RESULT_LOCKED; หลัง submit
+        คืน pending/passed/failed/needs_review และ rubric รายข้อพร้อม evidence/knowledge citations ที่เปิดเผยได้
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-016
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: attempt_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: Before submit 409 RESULT_LOCKED. Pending/passed/failed/needs_review; rubric feedback
+        only, never full answer key. D-04 schema pending.
+  /api/v1/admin/attempts/{attempt_id}:
+    get:
+      operationId: get_admin_attempts_attempt_id
+      summary: GET /admin/attempts/{attempt_id}
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. Instructor ใน assignment scope อ่าน submission/grading
+        หลัง submit พร้อม access audit
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-016
+      - FR-017
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: attempt_id
+        in: path
+        required: true
+        schema: *id001
+      x-exam-behavior: Submitted attempt required. Review mutation blocked until rubric/override-unlock
+        policy approved.
+  /api/v1/admin/attempts/{attempt_id}/review:
+    post:
+      operationId: post_admin_attempts_attempt_id_review
+      summary: POST /admin/attempts/{attempt_id}/review
+      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. rubric revision, decision=pass/fail/needs_review,
+        reason, expected_version; audit และ unlock update ใน transaction เดียว
+
+        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter schemas require
+        feature review before enabling.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-016
+      - FR-017
+      - FR-010
+      x-authorization: instructor + assignment + access audit
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Draft success semantics from api.md; payload schema pending approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '403':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '413':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
+      parameters:
+      - name: attempt_id
+        in: path
+        required: true
+        schema: *id001
+      - $ref: '#/components/parameters/CSRF'
+      - $ref: '#/components/parameters/Origin'
+      x-pending-request-schema: api.md input columns; must be expanded to strict schema before approval.
+        No arbitrary JSON handler is authorized.
+      x-exam-behavior: Submitted attempt required. Review mutation blocked until rubric/override-unlock
+        policy approved.
+components:
+  schemas:
+    ErrorDetail:
+      properties:
+        code:
+          type: string
+          title: Code
+        message:
+          type: string
+          title: Message
+      additionalProperties: false
+      type: object
+      required:
+      - code
+      - message
+      title: ErrorDetail
+    ErrorEnvelope:
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      additionalProperties: false
+      type: object
+      required:
+      - error
+      - meta
+      title: ErrorEnvelope
+    LiveData:
+      properties:
+        status:
+          type: string
+          const: alive
+          title: Status
+          default: alive
+      additionalProperties: false
+      type: object
+      title: LiveData
+    LiveEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/LiveData'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: LiveEnvelope
+    Meta:
+      properties:
+        request_id:
+          type: string
+          title: Request Id
+      additionalProperties: false
+      type: object
+      required:
+      - request_id
+      title: Meta
+    Severity:
+      type: string
+      enum:
+      - low
+      - medium
+      - high
+      - critical
+      x-schema-status: draft
+    Disposition:
+      type: string
+      enum:
+      - true_positive
+      - benign_positive
+      - false_positive
+      - undetermined
+      x-schema-status: draft
+    RunStatus:
+      type: string
+      enum:
+      - created
+      - running
+      - paused
+      - reviewing
+      - completing
+      - completed
+      - failed
+      x-schema-status: draft
+    AttemptState:
+      type: string
+      enum:
+      - in_progress
+      - submitted
+      - grading
+      - finalized
+      - needs_review
+      x-schema-status: draft
+      description: Proposed lifecycle; active predicate, abort/expiry and retake policy D-02 remain undecided.
+    VersionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_version: &id002
+          type: integer
+          minimum: 1
+      required:
+      - expected_version
+      x-schema-status: draft
+    ReasonRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_version: *id002
+        reason: &id003
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Trim and require nonempty; length is not a grading criterion.
+      required:
+      - expected_version
+      - reason
+      x-schema-status: draft
+    EmptyRequest:
+      type: object
+      additionalProperties: false
+      x-schema-status: draft
+    TrainingRunCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        scenario_ids:
+          type: array
+          items: *id001
+          minItems: 1
+          maxItems: 5
+          uniqueItems: true
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+      required:
+      - scenario_ids
+      x-schema-status: draft
+      description: IDs must belong to enabled training catalog, never exam bank. Unknown mode/owner/attempt
+        fields rejected.
+    SubmitRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_version: *id002
+        evidence_event_ids:
+          type: array
+          items: *id001
+          minItems: 1
+          uniqueItems: true
+        severity:
+          $ref: '#/components/schemas/Severity'
+        disposition:
+          $ref: '#/components/schemas/Disposition'
+        reason: *id003
+      required:
+      - expected_version
+      - evidence_event_ids
+      - severity
+      - disposition
+      - reason
+      x-schema-status: draft
+      description: Validate completeness using approved rubric and same-run released snapshot before atomic
+        freeze. Exact evidence bound pending rubric D-01. No client score/passed.
+    QuestionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_version: *id002
+        question: *id003
+      required:
+      - expected_version
+      - question
+      x-schema-status: draft
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        email: &id004
+          type: string
+          format: email
+          maxLength: 254
+        password: &id005
+          type: string
+          minLength: 12
+          maxLength: 128
+          writeOnly: true
+      required:
+      - email
+      - password
+      x-schema-status: draft
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        email: *id004
+        password: *id005
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 60
+      required:
+      - email
+      - password
+      - display_name
+      x-schema-status: draft
+    ExamRunView:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        mode:
+          type: string
+          const: exam
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        version: *id002
+        elapsed_ms:
+          type: integer
+          minimum: 0
+      required:
+      - id
+      - mode
+      - status
+      - version
+      - elapsed_ms
+      x-schema-status: draft
+    ExamAttemptView:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        run_id: *id001
+        state:
+          $ref: '#/components/schemas/AttemptState'
+        version: *id002
+      required:
+      - id
+      - run_id
+      - state
+      - version
+      x-schema-status: draft
+      description: Blind allowlist before submit. No key, score, rubric, case label, initial severity
+        or AI output.
+    ExamTicketView:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        run_id: *id001
+        title:
+          type: string
+          description: Server-generated neutral title only.
+        status:
+          type: string
+          enum:
+          - open
+          - investigating
+          - resolved
+          - closed
+        version: *id002
+        evidence_ids:
+          type: array
+          items: *id001
+      required:
+      - id
+      - run_id
+      - title
+      - status
+      - version
+      - evidence_ids
+      x-schema-status: draft
+    ExamAlertView:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        run_id: *id001
+        evidence_ids:
+          type: array
+          items: *id001
+      required:
+      - id
+      - run_id
+      - evidence_ids
+      x-schema-status: draft
+    ExamRunViewEnvelope:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/ExamRunView'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - data
+      - meta
+      x-schema-status: draft
+    ExamAttemptViewEnvelope:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/ExamAttemptView'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - data
+      - meta
+      x-schema-status: draft
+    GradingPendingEnvelope:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+          properties:
+            attempt_id: *id001
+            status:
+              type: string
+              const: pending
+          required:
+          - attempt_id
+          - status
+          x-schema-status: draft
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - data
+      - meta
+      x-schema-status: draft
+    DomainErrorDetail:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        fields:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              field:
+                type: string
+              code:
+                type: string
+            required:
+            - field
+            - code
+            x-schema-status: draft
+      required:
+      - code
+      - message
+      x-schema-status: draft
+    DomainErrorEnvelope:
+      type: object
+      additionalProperties: false
+      properties:
+        error:
+          $ref: '#/components/schemas/DomainErrorDetail'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - error
+      - meta
+      x-schema-status: draft
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: soc_session
+      description: Draft cookie name; opaque HttpOnly Secure SameSite=Lax. Never localStorage.
+  parameters:
+    CSRF:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    Origin:
+      name: Origin
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uri
+    Idempotency:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Scope user+method+resource path; authorization before cache. Same body replays, different
+        body 409; at least 24h and until job terminal.
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+  responses:
+    DomainError:
+      description: Sanitized error envelope. 401 session; 403 role/CSRF; 404 missing or out of scope;
+        409 state/version/policy; 422 validation; 429 quota; 503 unavailable. Never reflect secrets, answer
+        keys or raw input.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DomainErrorEnvelope'
+servers:
+- url: /
+  description: Same-origin API; domain paths include /api/v1.
+x-decision-register: srs.md#8-decision-register--ยังไม่ตัดสินแทนผู้ใช้
+x-exam-policy:
+  training_creation: POST /runs accepts training catalog only; server sets immutable mode.
+  finish: training only; exam returns 409 EXAM_SUBMIT_REQUIRED
+  learner_truth: never expose full exam answer key; rubric feedback only after submission
+  instructor_truth: assignment + access audit + submitted exam required
+  hints: deny triage, questions, retries, sources and nested hints before submit
+  serialization: explicit exam allowlist on all projections; never reuse training DTO
+  lock_order:
+  - user_guard
+  - idempotency
+  - run
+  - attempt
+  - ticket/note/analysis/progression
+  - sorted_quota_ledgers

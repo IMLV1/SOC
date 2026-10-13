@@ -254,6 +254,11 @@ Ingestion/reindex ไม่รันใน API startup หรือ migration; r
 
 ## 12. Learning coach และการประเมินเหตุผลหลังสอบ (งานเพิ่ม)
 
+Boundary และลำดับ transaction ใช้ [SRS §3–5](srs.md): run ก่อน attempt/resource ก่อน quota;
+submit freeze ก่อน grading ผู้ใช้ยืนยันให้ Instructor อ่านเฉลยหลัง submit เท่านั้น
+ผู้เรียนเห็นเฉพาะ rubric feedback ไม่ใช่ full answer key รวม citations/export/ประวัติ
+rubric, feedback disclosure และ override/unlock policy ยัง pending ไม่ให้ AI ตัดสินแทน
+
 ช่วงเรียนค้นได้เฉพาะคู่มือที่อนุมัติแล้วเกี่ยวกับวิธีอ่าน Method, Path, status, request/response และการเชื่อม event; ตัวอย่างฝึกต้องแยกจาก exam bank อย่างชัดเจน ระหว่าง exam **ห้ามเรียก triage/Ask AI ที่แสดงคำใบ้ของ attempt นั้น** และห้ามส่ง private answer key เข้า retrieval index ที่ learner role ค้นได้
 
 หลัง submit ให้ deterministic evaluator ตรวจว่าหลักฐานครบ, evidence refs อยู่ใน frozen snapshot, disposition/severity ถูกเกณฑ์ แล้วค่อยใช้ RAG ช่วยอธิบายว่าข้อความเหตุผลเชื่อม event กับคู่มืออย่างไร ผลลัพธ์ต้องแยก `criterion`, `finding`, `evidence_refs`, `knowledge_refs`, `uncertainty` และ version ของ rubric/model/release Cite คู่มือเพื่ออธิบายหลักการ ไม่ใช้คู่มือเป็นหลักฐานว่าการโจมตีในรอบนี้สำเร็จ ความยาวข้อความเพียงอย่างเดียวไม่ใช่เกณฑ์ผ่าน

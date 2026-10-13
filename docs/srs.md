@@ -1,0 +1,257 @@
+# SOC Learning Lab — SRS ฉบับเริ่มต้น
+
+วันที่ 13 ตุลาคม 2026 · Checklist 01 / SOC-001–002 · **Draft domain contract**
+
+ฉบับนี้รวมข้อกำหนดจาก docs ทั้งหมด ไม่ใช่รายงานว่าระบบทั้งหมดเสร็จแล้ว
+สิ่งที่ implement ในข้อ 01 มีหน้าเริ่มต้น, API health, worker entrypoint และ tooling เท่านั้น
+OpenAPI ที่ตรวจด้วยเครื่องมือได้อยู่ใน [openapi.yaml](openapi.yaml); วิธีเริ่มงานอยู่ใน
+[getting-started.md](getting-started.md) และผลตรวจจริงอยู่ใน [step-01-verification.md](step-01-verification.md)
+
+## 1. วัตถุประสงค์ ขอบเขต และแหล่งอ้างอิง
+
+สอนผู้เริ่มต้นอ่านหลักฐาน SOC ด้วยข้อมูลจำลอง เรียน → สอบ → feedback → retake/เลื่อนระดับ
+ควบคู่กับ training run, detection, ticket/note, AI/RAG และการทดลอง A/B/C
+ไม่ยิงระบบจริง ไม่เชื่อม SIEM/EDR ไม่ให้ AI สั่งปฏิบัติการ และไม่มี public ingestion/upload
+`prototype/` เป็น reference เท่านั้น: localStorage, fixture, rubric และบัญชีเดโมไม่ใช่ข้อมูลจริง
+
+แหล่งข้อกำหนดที่อ่าน: [scope](soc-simulation.md), [learning](learning-path.md),
+[architecture](architecture.md), [API](api.md), [database](database.md),
+[RAG](rag-langchain.md), [CI/CD](ci-cd.md), [plan](development-plan.md),
+[alignment](prototype-alignment.md), [checklist](implementation-checklist.md), [index](README.md)
+ใช้ checklist กำหนดขอบเขตงานแต่ละครั้ง; Phase 0 ใน roadmap กว้างกว่าข้อ 01
+จึงยังไม่ทำ Compose, DB schema/migrations, CI หรือ feature ในข้อ 02 เป็นต้นไป
+
+คำศัพท์: **run** คือรอบปล่อยหลักฐาน; **attempt** คือการสอบหนึ่งเคสที่ผูก run แบบ 1:1;
+**submission** คือคำตอบ immutable; **grading revision** คือผลประเมินแต่ละครั้ง;
+**finish** คือปิด training เพื่อประเมิน; **submit** คือ freeze คำตอบสอบ;
+**final result** ไม่ได้หมายความว่าอนุญาตให้ผู้เรียนอ่าน answer key
+
+Guest อ่าน public metadata/demo; Analyst เข้าถึงรอบตนเอง; Instructor กำกับเฉพาะ assignment
+และฝึกรอบตนเองได้; worker/detector ไม่มีสิทธิ์อ่านเฉลย; evaluator/grader มี connection/role แยก
+role Instructor เพียงอย่างเดียวไม่ให้สิทธิ์ดูทุกบัญชี
+
+## 2. ช่องว่าง ความขัดแย้ง และข้อสรุป
+
+| จุดที่พบ | หลักฐานเดิม | ข้อสรุป / สถานะ |
+|---|---|---|
+| Stack ยังไม่เลือก | scope §13 เทียบ architecture §2 และ checklist | ใช้ Next.js App Router/TypeScript, FastAPI/Python, PostgreSQL, SQLAlchemy/asyncpg, Alembic ตามคำสั่งผู้ใช้ |
+| Ingestion API / AI ก่อนเปิด ticket | scope §5–6 เทียบ architecture §8–9, api §12 | internal worker/jobs; ไม่มี browser ingestion; detector policy เปิด ticket ได้โดยไม่รอ AI |
+| Phase 0 มี DB/CI | plan §2 / ci-cd §2 เทียบ checklist 01–03 | งานนี้เฉพาะข้อ 01; migration จริงข้อ 02 และ CI ข้อ 03 |
+| Generic finish/evaluation เปิดเฉลย | api §5/10 เทียบ §16 และ checklist 16 | finish ใช้ training เท่านั้น; exam ใช้ submit ไม่ bypass grading |
+| Instructor อ่าน truth ก่อนจบ | api §11 เทียบ exam §16 | **ผู้ใช้ยืนยัน 13 ต.ค.: exam อ่านเฉลยได้หลัง submit เท่านั้น**; training คง assignment + privileged handler + audit เดิม |
+| ผู้เรียนอ่าน truth หลัง exam final | api §16 ยังเขียน “ตาม policy” | **ผู้ใช้ยืนยัน: เฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม**; ทุก projection ต้องใช้ policy เดียวกัน |
+| คำตอบหนึ่งหรือหลายรายการ | learning ระบุ 1:N answers; database §14 ใช้ attempt_id PK | หนึ่ง final answer ต่อ attempt/หนึ่งเคสตาม submit API; retake เป็น attempt ใหม่; แก้ความสัมพันธ์เชิงเอกสารให้เป็น 0..1 frozen answer |
+| Lock attempt + run ไม่เรียง | database §14 เทียบ run-first §6 และ RAG §8 | ใช้ global ordering §5; ห้าม attempt → run |
+| LEARN ID ซ้ำคนละความหมาย | plan LEARN-01–03 เป็น backlog; learning LEARN-01–07 เป็น requirements | ใช้ FR IDs ด้านล่าง; อ้างเดิมพร้อมชื่อเอกสาร ไม่ถือว่า ID สองชุดตรงกัน |
+| Exam statuses, result schema, abort/expiry, rubric ไม่ครบ | api §16/database §14 | lifecycle ร่าง §4; policy ที่เปลี่ยนสิทธิ์หรือคะแนนยัง pending §8; ไม่เปิด endpoint จริงก่อนอนุมัติ |
+
+เอกสารเดิมคงรายละเอียดไว้ พร้อมหมายเหตุเชื่อมฉบับนี้ ไม่ใช้ draft schemas เป็นการอนุมัติ
+สิทธิ์หรือคะแนนโดยปริยาย OpenAPI ระบุ `x-contract-status` ทุก operation และ `x-schema-status`
+สำหรับ schema ร่าง; มีเพียง health contract ที่ approved สำหรับ implementation นี้
+
+## 3. Training/exam boundary และการ serialize
+
+Server เป็นผู้กำหนด immutable `run.mode=training|exam` และสัมพันธ์ `attempt_id`;
+POST /runs รับเฉพาะ public training scenario IDs ไม่รับ mode/attempt/owner/score/passed
+exam bank ไม่อยู่ใน `/scenarios` หรือ demo; POST /levels/{level_id}/attempts ตรวจ gate
+บทเรียน versioned, level, quota และเลือก exam case ฝั่ง server ใน transaction เดียวกับ run
+การรู้ UUID หรือแก้ client state ไม่ทำให้เข้าถึง exam ผ่าน training creation ได้
+
+| Surface | Training | Exam ก่อน submit | Exam หลัง submit |
+|---|---|---|---|
+| events/detail/search/timeline | released/redacted เท่านั้น | เช่นเดียวกัน; neutral metadata | frozen/released เท่านั้น |
+| run/list/overview | clock, counters, metadata | allowlist: id/mode/status/version/elapsed; counters ห้ามแยกตาม severity/label | ยังผ่าน exam projection |
+| alerts/tickets | detector explanation, severity และ AI แยกจากคำตอบคน | neutral title, evidence refs, workflow status; ไม่ส่ง detector severity/explanation, suggested severity, label หรือ AI brief | feedback อยู่ result route; ไม่คืน training projection อัตโนมัติ |
+| analyses/list/detail/retry/questions/sources | owner + state + quota; revoked policy | ห้าม triage/Ask AI ที่ช่วยตอบ รวม direct endpoint, nested data และ cache | run ถูก freeze แล้ว ไม่เริ่ม Ask AI/retry; grading ใช้เส้นทางแยก |
+| audit/history/comments | scoped/redacted | ตัด before/after และข้อความระบบที่ใบ้เฉลย; ห้าม serialize raw audit | feedback ต้องไม่กลายเป็น answer key ทางอ้อม |
+| evaluation/export/ground-truth | completed ตามสิทธิ์ | ไม่เปิดผลหรือเฉลย | learner ไม่ได้รับเฉลยเต็ม แม้ run completed; export/evaluation ต้องไม่ใช้ training payload |
+| admin truth/review | assignment + access audit; truth ก่อน finish ได้ | exam truth/submission/grading ยังล็อก | Instructor ที่กำกับอ่านผ่าน admin ได้พร้อม audit |
+
+ใช้ explicit allowlist schema แยก exam; **ห้าม serialize training DTO แล้วลบ field บางตัว**
+neutral severity ใช้การไม่ส่ง field ไม่เพิ่ม `unrated` เข้า severity enum ของคำตอบ
+learner severity ที่กรอกเองไม่ใช่ initial detector severity แต่ final answer อ่านจาก submission หลัง freeze
+ไม่มี rubric, threshold, private key, future fixture schedule, exam seed/config hash ที่ย้อนหาโจทย์,
+ชื่อไฟล์/exception/context ที่ใบ้ผลใน client, errors, logs หรือ shared retrieval corpus
+ก่อน implement ต้องมี leakage tests ทุก surface ในตาราง รวม Instructor ที่ฝึกรอบตนเอง
+กฎ exam มี precedence เหนือ completed ของ generic run เสมอ
+
+Training AI และ grading แยกบริการ/DB privileges: triage/retriever ไม่อ่าน private key;
+grader อ่าน private key เฉพาะหลัง frozen submission ไม่ใส่ key ใน learner KB หรือ prompt triage
+อ้าง evidence เฉพาะ frozen snapshot และ knowledge เฉพาะ frozen retrieval items ของ analysis/attempt
+source revoke ทำให้ result=null/withdrawn ทุก projection, citation 410; ไม่เปลี่ยนคะแนนเก่าเงียบ ๆ
+provider outage/no_match/invalid citation/ความเห็นขัดแย้งระหว่าง grading → needs_review ไม่ auto-pass
+
+## 4. Lifecycle และ finish/submit
+
+Run state เดิม: `created → running ↔ paused → (resume running)`;
+`running → reviewing` เมื่อปล่อยครบ; mutable states → `completing → completed`;
+failure จาก nonterminal state → `failed`. created เป็น internal state;
+POST training run สำเร็จภายนอกเห็น running หรือ error เท่านั้น
+reviewing ยังไม่เปิดเฉลย; completing/completed/failed ห้ามแก้ ticket/note/assessment
+Instructor comments ใช้ข้อยกเว้น retention เดิม แต่ต้องตรวจ exam visibility
+
+Training finish: owner/CSRF → lock → ตรวจ version/state → freeze release_seq และ assessment
+cutoff ด้วยเวลา DB → enqueue finalize → 202. งานใน cutoff drain สูงสุด 60 วินาที
+แล้ว immutable evaluation; AI มาช้าไม่แก้ snapshot. finish ซ้ำ completing/completed
+คืน resource เดิม ไม่ต้องตรง version เก่า แต่ยังตรวจเจ้าของ/CSRF
+generic finish ของ exam ปฏิเสธ 409 `EXAM_SUBMIT_REQUIRED` โดยไม่สร้าง evaluation/เปิด truth
+
+Attempt lifecycle ร่าง (ชื่อ wire enum ยังต้องยืนยันก่อนข้อ 16):
+
+```text
+in_progress --valid submit--> submitted --worker claim--> grading
+grading --validated deterministic + grading policy--> finalized
+grading --ambiguity/outage/no_match/invalid citation--> needs_review
+needs_review --authorized instructor revision--> finalized หรือ needs_review
+```
+
+แยก `result.status=pending|passed|failed|needs_review` จาก run.status
+`failed` ใน result หมายถึงสอบไม่ผ่าน; run.failed หมายถึงระบบล้มเหลว ไม่ใช่คะแนนศูนย์
+run สามารถ completed ขณะ attempt ยัง pending/needs_review ได้ ไม่ทำให้เปิดเฉลยแก่ learner
+grading revision append-only; finalized ที่ถูก review ใหม่ไม่เขียนทับ revision เก่า
+ผลของการ review ต่อ unlock ต้องรอ policy §8 จึงยังไม่เปิด review mutation จริง
+
+Submit: ตรวจ session/owner/CSRF/Idempotency-Key และ version → ตรวจ attempt in_progress,
+run ยัง mutable, evidence ที่ต้องใช้ครบตาม rubric และ refs เป็น released events ใน run เดียวกัน
+→ insert exam_answers หนึ่งแถวพร้อม content hash/snapshot → freeze run cutoffs/set completing
+→ attempt submitted + jobs + audit + idempotency response ใน transaction เดียว
+validation fail 422 ไม่มี answer/job/cutoff บางส่วนหลงเหลือ ก่อน evidence ครบห้ามส่ง
+เกณฑ์ว่า “ครบ” ต้องมาจาก versioned rubric ที่อนุมัติ ไม่ตัดสินด้วยความยาวเหตุผล
+การหยุดเวลา/ปล่อยครบไม่เท่ากับ submit; ไม่ auto-submit คำตอบว่าง
+
+key/body เดิม replay resource เดิมหลังตรวจสิทธิ์; key เดิม/body ต่าง 409;
+key ใหม่ขณะ frozen แล้วไม่เขียน answer ใหม่ (ร่าง: 409 ALREADY_SUBMITTED)
+สองแท็บต้องมี final answer เดียวด้วย PK(attempt_id), row lock และ transaction
+retake สร้าง attempt/run ใหม่และคงประวัติ; quota/cooldown/case selection ยัง pending
+นิยาม active attempt, pause/abort/expiry และการนับ paused exam รอการตัดสินใจ ไม่ infer จาก
+partial UNIQUE owner WHERE run.status=running ซึ่งเป็นข้อจำกัดคนละเรื่อง
+
+## 5. Transaction และลำดับ lock เดียวกัน
+
+ใช้ READ COMMITTED + explicit locks/CAS/unique constraints; การตรวจสิทธิ์เกิดก่อนอ่าน idempotency
+cache และตรวจ state/ownership อีกครั้งใน transaction ใช้ลำดับต่อไปเมื่อ operation แตะแถวชนิดนั้น:
+
+1. user/progression guard (เรียง UUID ถ้ามีหลายคน)
+2. idempotency record `(user, method, route including IDs, key)`
+3. run (เรียง UUID)
+4. attempt (เรียง UUID)
+5. ticket → note / analysis / grading revision และ progress/unlock rows ตาม key คงที่
+6. quota ledger เรียง `scope_key, period_start` → reservation/component rows
+7. insert jobs/audit/response cache แล้ว commit
+
+ใช้เฉพาะ subset ตามงาน ห้ามถือ lock ชั้นหลังแล้วกลับไปชั้นก่อน
+create run ไม่มี existing run lock: user guard/idempotency → quota → INSERT run/attempt;
+แถวใหม่ยังไม่ visible จน commit จึงไม่ใช่การ lock run ที่เผยอยู่หลัง quota
+runner/pause/finish จับ run ก่อน resource; submit/review/grade จับ run ก่อน attempt เสมอ
+grade/unlock ของหลาย attempt ในบัญชีเดียวต้อง user guard ก่อน เพื่อ serialize promotion
+question/retry จับ run → ticket/analysis → quota; ไม่เพิ่ม ticket version จากการถาม
+create/resume ยังต้อง unique constraint หนึ่ง running run ต่อ owner ไม่เปลี่ยนเป็นหนึ่ง mutable run
+
+claim job ใช้ SKIP LOCKED/lease/fencing ใน transaction สั้นแยกก่อน domain transaction;
+ไม่ถือ job-row lock แล้วรอ run การ heartbeat/commit ผลตรวจ lease_token ปัจจุบัน
+network/AI อยู่นอก transaction เสมอ retry deadlock แบบ bounded สำหรับ idempotent operation
+finish lock เดียวกับ release/assessment ทำให้หลังตอบสำเร็จไม่มี evidence/answer ใหม่ข้าม cutoff
+ต้องทดสอบบน PostgreSQL จริงในข้อที่เกี่ยวข้อง ไม่อ้างว่า scaffold ตรวจ race นี้แล้ว
+
+## 6. Requirements → use cases → endpoint/screen → acceptance
+
+ทุก endpoint ด้านล่าง (ยกเว้น health) อยู่ใต้ `/api/v1` และยังไม่ implement
+แต่ละ operation ใน OpenAPI มี `x-requirements` เชื่อมกลับรหัสนี้; schema ร่างไม่ใช้ generate
+production client จนรายละเอียด request/response/authorization ผ่านการตรวจใน feature นั้น
+
+| ID / แหล่งเดิม | Use case / actor, precondition → flow → postcondition | Endpoints / screen | วิธีตรวจรับ (planned ยกเว้น FR-001) |
+|---|---|---|---|
+| FR-001 / SOC-002 | UC-01 Guest เปิด shell → health; ไม่ต้อง DB | `/health/live`, `/health/ready`, `/` | live 200, ready 503 ก่อน DB foundation; start/build/import/worker check |
+| FR-002 / SOC-003 | UC-02 Guest bootstrap → register Analyst → login; logout revoke | `/auth/*`, `/me`, `/me/quota`; Auth | ไม่ auto-login, CSRF/Origin, wrong password generic, expiry 401, disabled/revoked |
+| FR-003 / SOC-004/005 | UC-03 Guest อ่าน snapshot/catalog ไม่มี mutation | `/scenarios`, `/demo/*`; Demo | ไม่ enqueue AI, exam bank/future data ไม่หลุด |
+| FR-004 / SOC-006/007 | UC-04 Analyst quota ผ่าน → create/pause/resume/finish | `/runs`, `/runs/{run_id}`, controls; Runs | server clock, idempotency/quota race, 409 version, restart ไม่ซ้ำ |
+| FR-005 / SOC-008/009 | UC-05 เจ้าของค้น released events/alerts | run `/events`, `/alerts`, `/overview`; Explorer | cursor/filter validation, same-run refs, detector ไม่อ่าน truth |
+| FR-006 / SOC-010/013 | UC-06 เจ้าของ mutable run → ticket CRUD/restore/assessment | run `/tickets/*`; Investigation | version race, reason, immutable revisions, soft delete ไม่ลบ denominator |
+| FR-007 / SOC-010 | UC-07 ผู้เขียนแก้ note ของตน | ticket `/notes/*`; Notes | cross-run refs/other-author/parent deleted ถูกปฏิเสธ; history คงอยู่ |
+| FR-008 / SOC-011/012 | UC-08 training owner อ่าน/retry analysis | run `/analyses/*`; Analysis | snapshot refs, quota, timeout/invalid_output, mode mock/real; exam hints denied |
+| FR-009 / SOC-014 | UC-09 training finish → pending → frozen evaluation/export | run `/evaluation`, `/ground-truth`, `/export`, `/audit` | cutoff/late result, null metrics เมื่อ denominator=0; exam ใช้ policy แยก |
+| FR-010 / SOC-015 | UC-10 assigned Instructor → account/quota/comments/review | `/admin/users*`, `/admin/runs*`; Admin | unassigned 404, Analyst admin 403, ไม่เขียนทับ learner answer; exam truth หลัง submit |
+| FR-011 / SOC-014 | UC-11 Instructor dataset completed → experiment A/B/C | `/admin/experiments*`; Experiments | same dataset/config, mock ไม่แทน C real, metrics แยก learning |
+| FR-012 / RAG-001–005 | UC-12 mutable training ticket → question → validated citations | ticket `/questions`, analysis `/sources/*`; Ask AI | revocation ทุก projection, retry frozen release, no_match ไม่เรียก chat |
+| FR-013 / learning LEARN-01/02 | UC-13 login → onboarding → step lessons → progress | `/learning-path`, `/me/learning-path`, `/lessons/*`; Learning | refresh ไม่หาย, versioned steps/order, completion ไม่เท่ากับผ่านสอบ |
+| FR-014 / learning LEARN-03/04 | UC-14 prerequisites ผ่าน → server เลือก case/attempt | `/levels/{level_id}/attempts`, `/attempts/{attempt_id}`; Exam | direct API bypass ไม่ได้, blind serializer ทุก route, demo fixture แยก |
+| FR-015 / learning LEARN-05 | UC-15 เจ้าของ evidence ครบ → submit immutable answer | `/attempts/{attempt_id}/submit`; Submit | 422 ไม่ freeze ถ้าไม่ครบ; concurrent submit ได้ answer เดียว; finish bypass ไม่ได้ |
+| FR-016 / learning LEARN-06/07 | UC-16 submitted → grading → feedback/review/retake | attempt `/result`, `/admin/attempts/*`; Feedback | outage/ambiguity needs_review; rubric/model/release/snapshot pinned; learner ไม่มี key |
+| FR-017 / learning LEARN-07 | UC-17 ผ่านทุกเคส → atomic unlock | grading/review transaction; Learning path | duplicate grading/unlock race; override policy ต้องอนุมัติก่อน; retake ไม่ทับเดิม |
+
+Error/alternative flows ร่วม: session หมด 401; role ไม่พอ 403; resource ไม่อยู่ใน scope 404;
+stale version/invalid transition/read-only/idempotency conflict 409; validation 422;
+quota 429; dependencies ไม่พร้อม 503. เก็บ draft UI เมื่อ 409; grading pending ไม่แสดงคะแนน 0
+AI job fail ยัง GET resource ได้ 200 พร้อม status/error_code ไม่ทำให้ evidence workflow ล้มทั้งหมด
+ไม่มี guest mutation นอก auth; Instructor ของคนอื่นใช้ admin routes ไม่ใช้ owner routes
+
+| NFR | เป้าหมาย / วิธีวัด | สถานะ |
+|---|---|---|
+| NFR-001 Security | cookie HttpOnly/Secure/SameSite=Lax, CSRF+Origin ทุก mutation; owner/assignment; unknown fields forbidden; leakage/cross-run tests ต้องไม่รั่ว | health/error ไม่มีข้อมูลผู้ใช้; auth/domain tests ยังไม่เริ่ม |
+| NFR-002 Performance | read p95 <500ms, 20 concurrent users, 10,000 events/run ไม่รวม AI | target ยังไม่วัด |
+| NFR-003 Reliability | at-least-once jobs + dedupe/fencing; reclaim ≤90s; finish drain ≤60s | target ยังไม่ทดสอบ DB |
+| NFR-004 Usability | 375/768/1440px, keyboard focus/labels; loading/empty/error, สีมีข้อความกำกับ | shell เท่านั้น; full flows ยังไม่พร้อม |
+| NFR-005 Privacy/retention | run child data 30d, account audit 90d (ค่าที่เสนอ); secrets redacted; no learner shared cache | ยังไม่เปิด retention จริง |
+| NFR-006 Delivery/recovery | pinned runtimes/locks; contract drift gate; HTTPS same origin; RPO≤15m/RTO≤2h | local scaffold; hosting/restore pending |
+| NFR-007 RAG quality | ≥50 Thai/English held-out queries; Recall@5≥.85, supported claims/abstention≥.90; refs ไม่หลุด | targets ไม่ใช่ผลวัด; provider/corpus pending |
+
+## 7. ข้อมูล ER และ migration boundary
+
+Data dictionary ฉบับเต็ม (ชนิด/nullability/FK/unique/index/retention) อยู่ที่
+[database §2–5, §14](database.md) และ [RAG §7](rag-langchain.md) เป็นส่วนหนึ่งของ SRS ฉบับร่าง
+UUID PK, timestamptz UTC, mutable version >0, same-run composite FK, append-only revisions
+ต้องถูกแปลงเป็น migration ตาม feature ไม่สร้างทุกตารางในข้อ 01
+
+```mermaid
+erDiagram
+    USERS ||--o{ AUTH_SESSIONS : owns
+    USERS ||--o{ RUNS : owns
+    USERS ||--o{ USER_LESSON_PROGRESS : learns
+    LEARNING_LEVELS ||--o{ LESSONS : contains
+    LESSONS ||--o{ USER_LESSON_PROGRESS : records
+    LEARNING_LEVELS ||--o{ EXAM_CASES : contains
+    EXAM_CASES ||--o{ EXAM_ATTEMPTS : assigns
+    USERS ||--o{ EXAM_ATTEMPTS : owns
+    RUNS ||--o| EXAM_ATTEMPTS : backs
+    EXAM_ATTEMPTS ||--o| EXAM_ANSWERS : freezes
+    EXAM_ATTEMPTS ||--o{ GRADING_REVISIONS : retains
+    GRADING_REVISIONS ||--o{ GRADING_CITATIONS : cites
+    USERS ||--o{ LEVEL_UNLOCKS : earns
+    RUNS ||--o{ EVENTS : releases
+    RUNS ||--o{ TICKETS : contains
+    TICKETS ||--o{ ASSESSMENTS : records
+    TICKETS ||--o{ NOTES : contains
+    RUNS ||--o{ ANALYSES : analyzes
+    RUNS ||--o{ EVALUATIONS : snapshots
+```
+
+| Contract delta ที่ต้องเพิ่มเมื่อทำ migration | Constraints / indices |
+|---|---|
+| runs.mode text NOT NULL | CHECK training/exam; server-set; training create ไม่รับ field นี้ |
+| exam_attempts.run_id uuid NOT NULL | UNIQUE + FK runs; owner/mode consistency ใน service transaction |
+| exam_answers.attempt_id uuid PK/FK | 0..1 final answer; immutable; evidence refs FK/snapshot validation ภายใน run |
+| attempt.state text, version int; submitted_at nullable ก่อน submit | enum ตาม §4 ยัง draft; partial active uniqueness predicate รอ §8 |
+| grading revisions/citations | UNIQUE(attempt_id,revision); refs อยู่ frozen snapshot; private key ไม่ออก response |
+| level_unlocks | UNIQUE(user_id,level_id); preserve provenance; revoke/override design pending |
+| user/progression guard | lock users row ได้ในขั้นแรก; separate guard table เป็นทางเลือกภายหลัง |
+
+Training soft delete เก็บ ticket/evidence/audit และมี restore ก่อน expiry; physical purge เป็น retention
+role ต่างหาก ไม่ purge งานยังทำ/unknown reservation; exam retention/feedback redaction ต้องกำหนดก่อน public
+DB version/image digest/pgvector compatibility ยังรอ hosting ในข้อ 02/13/18 ไม่อ้างว่าตรวจ Postgres แล้ว
+
+## 8. Decision register — ยังไม่ตัดสินแทนผู้ใช้
+
+| ID | ต้องตัดสินใจ | กั้นงานใด |
+|---|---|---|
+| D-01 | rubric/version/น้ำหนัก/คะแนนผ่าน; severity/disposition ที่ยอมรับ; evidence completeness และความกำกวม | exam create/submit/grading จริง |
+| D-02 | retake จำนวนครั้ง/cooldown/quota/case rotation; active รวม pending/needs_review หรือไม่; pause/abort/expiry | attempt admission/index/lifecycle จริง |
+| D-03 | override pass→fail หลัง unlock: คงสิทธิ์/ถอนสิทธิ์/ผลต่อ attempt ระดับถัดไป; ผู้อนุมัติและการแจ้งผู้เรียน | review/unlock mutation จริง |
+| D-04 | feedback รายข้อเผยได้แค่ไหนโดยไม่เป็นเฉลยเต็ม; grading citation source access/withdrawal | learner result/export schema approval |
+| D-05 | chat/embedding provider, model/dimension/tokenizer, privacy, credentials ผ่าน secret store, งบและ rate card | real calls/benchmark/ingestion |
+| D-06 | approved KB manifest/reviewer, hosting/PostgreSQL/pgvector, domain/registry/backup/release owner | corpus publish/deploy |
+| D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า, quota defaults และ promotion notification | public learning rollout |
+
+ไม่มี default คะแนนผ่าน, auto-revoke unlock หรือ provider ที่เลือกให้เอง
+AI/RAG และ exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
+Approval เพิ่ม route: ตกลง policy/schema → เปลี่ยน operation เป็น approved → implement response
+allowlist/validation/permission → generated OpenAPI drift + behavior/integration tests → ติ๊ก checklist เฉพาะที่ผ่าน
