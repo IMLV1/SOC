@@ -1,0 +1,1 @@
+"""SOC modular monolith foundation."""

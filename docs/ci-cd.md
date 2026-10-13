@@ -1,6 +1,12 @@
 # SOC Platform — CI/CD Design
 
-วันที่: 12 ตุลาคม 2026 · สถานะ: แบบออกแบบ ยังไม่ได้สร้าง workflow, Docker image หรือ deploy จริง
+วันที่: 12 ตุลาคม 2026 · อัปเดตข้อ 03: 13 ตุลาคม 2026 · CI implementation/local checks ผ่าน; รอยืนยันบน GitHub
+ข้อ 02 มี local Docker images ที่ build/run ผ่านแล้ว ดู [ผลตรวจ](step-02-verification.md); production release ยังไม่ implement
+
+ข้อ 03 สร้างเฉพาะ [ci.yml](../.github/workflows/ci.yml) และ ci-gate ตาม implementation ปัจจุบัน
+ดู [คู่มือ CI/required checks](ci-local.md) และ [ผลตรวจ](step-03-verification.md)
+ส่วน release/deployment/security/E2E เต็มระบบด้านล่างเป็นแผนอนาคต ไม่ใช่สิ่งที่เปิดใช้แล้ว
+ยังไม่ได้ตั้ง branch protection หรือใช้ provider credentials; ตรวจ remote default branch แล้วเป็น main
 
 อ่านร่วมกับ [Architecture](architecture.md), [Database](database.md), [API](api.md) และ [Development plan](development-plan.md)
 
@@ -44,7 +50,7 @@ Production approval เป็นนโยบายเริ่มต้นขอ
 
 ## 4. Workflow ที่จะสร้าง
 
-ไฟล์และ scripts ในตารางนี้เป็นสิ่งที่ต้องพัฒนา ยังไม่มีใน repository
+ci.yml implement แล้วในข้อ 03; release/maintenance/dependabot ในตารางยังเป็นแผน ไม่มีใน repository
 
 | ไฟล์ | Trigger | Jobs / ผลลัพธ์ |
 |---|---|---|
@@ -87,15 +93,15 @@ node --check prototype/server.cjs
 npm --prefix prototype test
 ```
 
-คำสั่งเป้าหมาย Phase 0 แยกตาม runtime ด้านล่าง ยังต้องสร้าง package scripts/config ก่อนใช้:
+คำสั่ง Phase 0 ที่ implement แล้วอยู่ใน [คู่มือ CI](ci-local.md); ตารางนี้รวมเป้าหมาย feature ในอนาคต:
 
 | ส่วน / working directory | คำสั่งที่เสนอ |
 |---|---|
-| frontend/ | `npm ci`, `npm run lint` (ESLint), `npm run typecheck` (tsc --noEmit), `npm test` (Vitest run), `npm run build` (next build) |
+| frontend/ | `npm ci`, `npm run lint` (ESLint), `npm run typecheck`, `npm test` (Node HTTP smoke; ต้องเปิด API/UI), `npm run build` (next build) |
 | backend/ dependencies | `uv sync --frozen` ใช้ pyproject.toml และ uv.lock |
 | backend/ quality | `uv run --frozen ruff check .`, `uv run --frozen ruff format --check .`, `uv run --frozen mypy app` |
 | backend/ tests | `uv run --frozen pytest`; HTTPX ทดสอบ FastAPI และ integration ใช้ PostgreSQL จริง |
-| backend/ migrations | `uv run --frozen alembic upgrade head` ผ่าน wrapper ที่ถือ advisory lock และตรวจ supplemental ledger |
+| backend/ migrations | `uv run --frozen python -m app.db.migrate` เป็น wrapper ที่ถือ advisory lock และตรวจ supplemental ledger; direct Alembic ถูกปิด |
 | backend/ build | ตรวจ import `app.main:app`, สร้าง runtime image และ smoke Uvicorn/worker; Python ไม่มี next build/TypeScript compile |
 | browser E2E | Playwright รันกับ Next.js + FastAPI + Python worker + PostgreSQL |
 

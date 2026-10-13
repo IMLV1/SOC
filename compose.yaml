@@ -1,0 +1,146 @@
+name: soc-local
+
+x-backend: &backend
+  image: soc-backend:local
+  build:
+    context: ./backend
+    target: base
+
+x-db-env: &db-env
+  DB_HOST: db
+  DB_PORT: "5432"
+  DB_NAME: soc
+
+services:
+  db:
+    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    environment:
+      POSTGRES_DB: soc
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets: [postgres]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    ports: ["127.0.0.1:${SOC_DB_PORT:-55432}:5432"]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d soc"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  bootstrap:
+    <<: *backend
+    command: [python, -m, app.db.bootstrap]
+    environment:
+      <<: *db-env
+      DB_PASSWORD_FILE: /run/secrets/postgres
+      ROLE_SECRETS_DIR: /role-secrets
+    secrets: [postgres]
+    volumes: [./.local/secrets:/role-secrets:ro]
+    depends_on:
+      db: {condition: service_healthy}
+    restart: "no"
+
+  migrate:
+    <<: *backend
+    command: [python, -m, app.db.migrate]
+    environment:
+      <<: *db-env
+      DB_PASSWORD_FILE: /run/secrets/migration_owner
+      RELEASE_SHA: ${RELEASE_SHA:-local}
+    secrets: [migration_owner]
+    depends_on:
+      bootstrap: {condition: service_completed_successfully}
+    restart: "no"
+
+  api:
+    <<: *backend
+    environment:
+      <<: *db-env
+      DB_PASSWORD_FILE: /run/secrets/api_runtime
+    secrets: [api_runtime]
+    ports: ["127.0.0.1:${SOC_API_PORT:-8000}:8000"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=6)"]
+      interval: 10s
+      timeout: 8s
+      retries: 5
+
+  worker:
+    <<: *backend
+    restart: unless-stopped
+    command: [python, -m, app.worker]
+    environment:
+      <<: *db-env
+      DB_PASSWORD_FILE: /run/secrets/worker_runtime
+    secrets: [worker_runtime]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -m, app.worker, --check]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    ports: ["127.0.0.1:${SOC_WEB_PORT:-3000}:3000"]
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 8s
+      retries: 5
+
+  provision:
+    <<: *backend
+    profiles: [tools]
+    entrypoint: [python, -m, app.db.provision]
+    environment:
+      <<: *db-env
+      DB_PASSWORD_FILE: /run/secrets/migration_owner
+    secrets: [migration_owner]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+
+  test-db:
+    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    profiles: [test]
+    environment:
+      POSTGRES_DB: soc_test_foundation
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets: [postgres]
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d soc_test_foundation"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  test:
+    profiles: [test]
+    build:
+      context: ./backend
+      target: test
+    environment:
+      SOC_TEST_DB_HOST: test-db
+      SOC_TEST_DB_PORT: "5432"
+      SOC_TEST_DB_NAME: soc_test_foundation
+      SOC_TEST_SECRETS_DIR: /role-secrets
+      SOC_TEST_ALLOW_RESET: "yes"
+    volumes: [./.local/secrets:/role-secrets:ro]
+    depends_on:
+      test-db: {condition: service_healthy}
+
+volumes:
+  postgres-data:
+
+secrets:
+  postgres: {file: ./.local/secrets/postgres.txt}
+  migration_owner: {file: ./.local/secrets/migration_owner.txt}
+  api_runtime: {file: ./.local/secrets/api_runtime.txt}
+  worker_runtime: {file: ./.local/secrets/worker_runtime.txt}

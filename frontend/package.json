@@ -1,0 +1,31 @@
+{
+  "name": "soc-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": "24.20.0", "npm": "11.19.0" },
+  "packageManager": "npm@11.19.0",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "postbuild": "node scripts/prepare-standalone.cjs",
+    "start": "node scripts/start.cjs",
+    "lint": "eslint .",
+    "test": "node --test tests/smoke.test.mjs",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.2.3",
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "typescript-eslint": "8.71.2",
+    "typescript": "5.9.3"
+  }
+}

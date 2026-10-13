@@ -285,7 +285,10 @@ UI ต้องแสดงสถานะว่าง กำลังวิเ�
 
 สำหรับ MVP สามารถใช้ backend หนึ่งชุดกับ worker และฐานข้อมูลเดียว ยังไม่จำเป็นต้องแบ่งเป็น microservices
 
-เทคโนโลยี ภาษา framework ผู้ให้บริการ AI และผู้ให้บริการ hosting ยังไม่ได้เลือก README นี้จึงไม่กำหนดคำสั่งติดตั้งหรือ environment variable ที่ยังไม่มีโค้ดรองรับ
+Stack เลือก Next.js App Router/TypeScript + FastAPI/Python + PostgreSQL แล้วตาม architecture
+ข้อ 01 มี scaffold และ [คู่มือเริ่มงาน](getting-started.md); provider/hosting ยังไม่เลือก
+กติกา exam ใช้ [SRS](srs.md): submit แยก training finish, Instructor อ่านเฉลยหลัง submit,
+ผู้เรียนได้เฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม
 
 ## 14. โครงสร้างข้อมูลเบื้องต้น
 
