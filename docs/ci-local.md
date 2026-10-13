@@ -2,7 +2,8 @@
 
 Workflow อยู่ที่ [.github/workflows/ci.yml](../.github/workflows/ci.yml)
 local commands/config และ [GitHub run](https://github.com/IMLV1/SOC/actions/runs/38396418296) ผ่านแล้ว
-เปิด [PR #3](https://github.com/IMLV1/SOC/pull/3) โดยไม่ merge; **branch protection ยังไม่ได้ตั้ง** เพราะ API ตอบ 403 ว่า private repository ต้องใช้แพ็กเกจที่รองรับ
+[PR #3](https://github.com/IMLV1/SOC/pull/3) ถูก merge จาก GitHub ระหว่างการตรวจ โดย agent ไม่ได้สั่ง merge
+**branch protection ยังไม่ได้ตั้ง** เพราะ API ตอบ 403 ว่า private repository ต้องใช้แพ็กเกจที่รองรับ
 ผลตรวจอยู่ใน [step-03-verification.md](step-03-verification.md)
 
 ## ขอบเขตที่ implement

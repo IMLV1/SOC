@@ -38,7 +38,7 @@ Backend มี upstream HTTPX/Starlette deprecation warning เดิม 1 ร�
 ## GitHub verification ที่รันจริง
 
 - Commit 3dfb57b เก็บงานข้อ 02/03; 13cbf3a รวม ancestry ของ main ที่เคย revert scaffold โดยคง f1 tree เพื่อให้ PR มีระบบครบ ไม่แก้ main
-- [PR #3](https://github.com/IMLV1/SOC/pull/3) f1 → main เปิดไว้ ไม่ merge
+- [PR #3](https://github.com/IMLV1/SOC/pull/3) f1 → main ถูก merge จาก GitHub ระหว่างการบันทึกหลักฐาน โดย agent ไม่ได้สั่ง merge; merge SHA d9a92de1bf902f49e230d159d809bc96b0a965a4
 - [รอบแรก](https://github.com/IMLV1/SOC/actions/runs/38395949531): prototype/frontend/integration ผ่าน; backend ล้มใน import smoke และ ci-gate ล้มตามจริง
 - แก้ import smoke ให้ใช้ alias api (import worker เคย bind ชื่อ app ทับ FastAPI instance) ใน commit 12bedb6; ไม่ใช่ test assertion ที่ถูกลดความเข้มงวด
 - [รอบผ่าน](https://github.com/IMLV1/SOC/actions/runs/38396418296), SHA 12bedb63dff11da98e262452bb87650dd68a124b: prototype/backend/frontend/integration/ci-gate success ทั้งหมด รวม setup/cache/artifact steps
