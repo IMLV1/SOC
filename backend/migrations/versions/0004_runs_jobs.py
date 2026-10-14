@@ -10,9 +10,11 @@ depends_on = None
 DDL = """
 CREATE TABLE app.runs (
  id uuid PRIMARY KEY, owner_user_id uuid NOT NULL REFERENCES app.users(id),
- status text NOT NULL CHECK (status IN ('created','running','paused','reviewing','completing','completed','failed')),
+ status text NOT NULL
+ CHECK (status IN ('created','running','paused','reviewing','completing','completed','failed')),
  seed integer NOT NULL CHECK (seed BETWEEN 0 AND 2147483647),
- elapsed_ms bigint NOT NULL DEFAULT 0 CHECK (elapsed_ms >= 0), resumed_at timestamptz,
+ elapsed_ms bigint NOT NULL DEFAULT 0 CHECK (elapsed_ms >= 0),
+ resumed_at timestamptz,
  release_cursor bigint NOT NULL DEFAULT 0 CHECK (release_cursor >= 0),
  duration_ms integer NOT NULL CHECK (duration_ms > 0),
  analysis_mode text NOT NULL DEFAULT 'mock' CHECK (analysis_mode = 'mock'),
@@ -26,7 +28,8 @@ CREATE INDEX runs_owner_page ON app.runs(owner_user_id,created_at DESC,id);
 CREATE INDEX runs_expiry ON app.runs(expires_at);
 CREATE TABLE app.scenario_instances (
  id uuid PRIMARY KEY, run_id uuid NOT NULL REFERENCES app.runs(id),
- scenario_id uuid NOT NULL REFERENCES app.scenarios(id), ordinal integer NOT NULL CHECK (ordinal BETWEEN 1 AND 5),
+ scenario_id uuid NOT NULL REFERENCES app.scenarios(id),
+ ordinal integer NOT NULL CHECK (ordinal BETWEEN 1 AND 5),
  UNIQUE(run_id,id), UNIQUE(run_id,ordinal), UNIQUE(run_id,scenario_id)
 );
 CREATE TABLE app.run_versions (
@@ -46,7 +49,8 @@ CREATE TABLE app.events (
  id uuid PRIMARY KEY, run_id uuid NOT NULL, scenario_instance_id uuid NOT NULL,
  fixture_event_key text NOT NULL, release_seq bigint NOT NULL CHECK (release_seq > 0),
  event_time timestamptz NOT NULL, ingested_at timestamptz NOT NULL DEFAULT now(),
- source text NOT NULL CHECK (source IN ('authentication','web','file_access','change_management','baseline')),
+ source text NOT NULL
+ CHECK (source IN ('authentication','web','file_access','change_management','baseline')),
  asset_id text, username text, src_ip inet, request_json jsonb, response_json jsonb,
  log_json jsonb NOT NULL, content_hash text NOT NULL CHECK (content_hash ~ '^[0-9a-f]{64}$'),
  UNIQUE(run_id,id), UNIQUE(run_id,release_seq),

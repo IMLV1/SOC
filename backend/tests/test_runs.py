@@ -81,18 +81,26 @@ def test_event_api_filters_cursor_and_time_range(migrated, monkeypatch):
                 run, _ = await start_run(session, user_id, selection, uuid4())
             run_id = UUID(run["id"])
             async with worker.sessions() as session, session.begin():
-                await session.execute(text("""UPDATE app.runs SET
+                await session.execute(
+                    text("""UPDATE app.runs SET
                     resumed_at=clock_timestamp()-interval '6 seconds' WHERE id=:run"""),
-                    {"run": run_id})
+                    {"run": run_id},
+                )
             await process_one(worker, "filter-worker")
             owner = Database(migrated("migration_owner"))
             try:
                 async with owner.sessions() as session, session.begin():
-                    await session.execute(text("""INSERT INTO app.auth_sessions
+                    await session.execute(
+                        text("""INSERT INTO app.auth_sessions
                         (id,user_id,token_hash,csrf_hash,expires_at)
                         VALUES (:id,:user,:token,:csrf,clock_timestamp()+interval '1 day')"""),
-                        {"id": uuid4(), "user": user_id, "token": auth.digest(token),
-                         "csrf": auth.digest(auth.csrf(token))})
+                        {
+                            "id": uuid4(),
+                            "user": user_id,
+                            "token": auth.digest(token),
+                            "csrf": auth.digest(auth.csrf(token)),
+                        },
+                    )
             finally:
                 await owner.close()
             return run_id, token
@@ -126,13 +134,21 @@ def test_event_api_filters_cursor_and_time_range(migrated, monkeypatch):
         assert filtered.status_code == 200, filtered.text
         assert all(item["source"] == "authentication" for item in filtered.json()["data"])
         start = datetime.fromisoformat(page.json()["data"][0]["event_time"])
-        bounded = client.get(base, params={"from": start.isoformat(),
-                                           "to": (start + timedelta(seconds=2)).isoformat()})
+        bounded = client.get(
+            base,
+            params={"from": start.isoformat(), "to": (start + timedelta(seconds=2)).isoformat()},
+        )
         assert bounded.status_code == 200, bounded.text
-        assert all(start <= datetime.fromisoformat(item["event_time"]) <
-                   start + timedelta(seconds=2) for item in bounded.json()["data"])
-        assert client.get(base, params={"from": datetime.now(UTC).isoformat(),
-                                        "to": start.isoformat()}).status_code == 422
+        assert all(
+            start <= datetime.fromisoformat(item["event_time"]) < start + timedelta(seconds=2)
+            for item in bounded.json()["data"]
+        )
+        assert (
+            client.get(
+                base, params={"from": datetime.now(UTC).isoformat(), "to": start.isoformat()}
+            ).status_code
+            == 422
+        )
 
 
 @pytest.mark.integration
@@ -172,24 +188,39 @@ def test_release_pause_resume_and_reclaim_without_duplicates(migrated):
                 # An immediate resume wake-up can be too early for the next event.
                 # It must queue a second wake-up at the same cursor, not collide
                 # with its own idempotency key and strand the run.
-                assert await session.scalar(text("""SELECT count(*) FROM app.jobs
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*) FROM app.jobs
                     WHERE run_id=:run AND type='release_events' AND status='queued'
                     AND dedupe_key LIKE :prefix"""),
-                    {"run": run_id, "prefix": f"release:{run_id}:3:1:%"}) >= 1
+                        {"run": run_id, "prefix": f"release:{run_id}:3:1:%"},
+                    )
+                    >= 1
+                )
             async with worker.sessions() as session, session.begin():
-                await session.execute(text("""UPDATE app.runs SET
+                await session.execute(
+                    text("""UPDATE app.runs SET
                     resumed_at=clock_timestamp()-interval '5 seconds' WHERE id=:run"""),
-                    {"run": run_id})
-                await session.execute(text("""UPDATE app.jobs SET available_at=clock_timestamp()
+                    {"run": run_id},
+                )
+                await session.execute(
+                    text("""UPDATE app.jobs SET available_at=clock_timestamp()
                     WHERE run_id=:run AND type='release_events' AND status='queued'"""),
-                    {"run": run_id})
+                    {"run": run_id},
+                )
             for _ in range(10):
                 if not await process_one(worker, "restart-worker"):
                     break
             async with worker.sessions() as session:
                 assert await session.scalar(text("SELECT count(*) FROM app.events")) > 1
-                assert await session.scalar(text("""SELECT count(*)-count(DISTINCT release_seq)
-                    FROM app.events WHERE run_id=:run"""), {"run": run_id}) == 0
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*)-count(DISTINCT release_seq)
+                    FROM app.events WHERE run_id=:run"""),
+                        {"run": run_id},
+                    )
+                    == 0
+                )
         finally:
             await api.close()
             await worker.close()

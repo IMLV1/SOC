@@ -41,7 +41,8 @@ CREATE TABLE app.quota_reservations (
  analysis_id uuid NOT NULL REFERENCES app.analyses(id),
  ledger_id uuid NOT NULL REFERENCES app.quota_ledgers(id),
  reserved_tokens bigint NOT NULL DEFAULT 0 CHECK (reserved_tokens >= 0),
- actual_tokens bigint,status text NOT NULL CHECK (status IN ('reserved','consumed','released','unknown')),
+ actual_tokens bigint,
+ status text NOT NULL CHECK (status IN ('reserved','consumed','released','unknown')),
  created_at timestamptz NOT NULL DEFAULT now(),settled_at timestamptz,
  UNIQUE(analysis_id,ledger_id)
 );

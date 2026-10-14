@@ -14,8 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 target = ROOT / "docs/openapi.yaml"
 contract = yaml.safe_load(target.read_text(encoding="utf-8"))
 actual = app.openapi()
-requirements = {"Runs": "FR-004", "Tickets": "FR-006", "Analysis": "FR-008",
-                "Instructor": "FR-010"}
+requirements = {"Runs": "FR-004", "Tickets": "FR-006", "Analysis": "FR-008", "Instructor": "FR-010"}
 
 for path, methods in actual["paths"].items():
     destination = contract["paths"].setdefault(path, {})

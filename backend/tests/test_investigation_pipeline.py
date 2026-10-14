@@ -121,12 +121,20 @@ def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
                     )
                 ).one()
                 assert row.status == "timed_out" and row.error_code == "PROVIDER_TIMEOUT"
-                released = await session.scalar(text("""SELECT count(*) FROM app.quota_reservations
-                    WHERE analysis_id=:id AND status='released'"""), {"id": first})
+                released = await session.scalar(
+                    text("""SELECT count(*) FROM app.quota_reservations
+                    WHERE analysis_id=:id AND status='released'"""),
+                    {"id": first},
+                )
                 assert released == 2
             async with api.sessions() as session, session.begin():
                 retry = await enqueue_analysis(
-                    session, run_id, user_id, "test:timeout", "frozen-hash", [event_id],
+                    session,
+                    run_id,
+                    user_id,
+                    "test:timeout",
+                    "frozen-hash",
+                    [event_id],
                     retry_of=first,
                 )
             job = await claim(worker, "analysis-test")
@@ -135,15 +143,20 @@ def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
             assert await settle(worker, job)
             async with api.sessions() as session:
                 retry_row = (
-                    await session.execute(text("""SELECT status,error_code,retry_of,result_json
-                        FROM app.analyses WHERE id=:id"""), {"id": retry})
+                    await session.execute(
+                        text("""SELECT status,error_code,retry_of,result_json
+                        FROM app.analyses WHERE id=:id"""),
+                        {"id": retry},
+                    )
                 ).one()
                 assert retry_row.status == "invalid_output"
                 assert retry_row.error_code == "INVALID_PROVIDER_OUTPUT"
                 assert retry_row.retry_of == first and retry_row.result_json is None
-                refs = await session.scalar(text("""SELECT count(*) FROM app.analysis_evidence
+                refs = await session.scalar(
+                    text("""SELECT count(*) FROM app.analysis_evidence
                     WHERE analysis_id=:id AND event_id=:event"""),
-                    {"id": retry, "event": event_id})
+                    {"id": retry, "event": event_id},
+                )
                 assert refs == 1
                 assert await session.scalar(text("SELECT count(*) FROM app.assessments")) == 0
         finally:
@@ -179,11 +192,17 @@ async def issue_session(pg, user_id):
     owner = Database(pg("migration_owner"))
     try:
         async with owner.sessions() as session, session.begin():
-            await session.execute(text("""INSERT INTO app.auth_sessions
+            await session.execute(
+                text("""INSERT INTO app.auth_sessions
                 (id,user_id,token_hash,csrf_hash,expires_at)
                 VALUES (:id,:user,:token,:csrf,clock_timestamp()+interval '1 day')"""),
-                {"id": uuid4(), "user": user_id, "token": auth.digest(token),
-                 "csrf": auth.digest(auth.csrf(token))})
+                {
+                    "id": uuid4(),
+                    "user": user_id,
+                    "token": auth.digest(token),
+                    "csrf": auth.digest(auth.csrf(token)),
+                },
+            )
     finally:
         await owner.close()
     return token
@@ -233,26 +252,33 @@ def test_http_retry_keeps_old_analysis_and_snapshot(migrated, monkeypatch):
         assert detail.json()["data"]["status"] == "invalid_output"
         key = str(uuid4())
         path = f"/api/v1/runs/{run_id}/analyses/{analysis_id}/retry"
-        headers = {"X-CSRF-Token": client.get("/api/v1/auth/csrf").json()["data"]["csrf_token"],
-                   "Idempotency-Key": key}
-        result = client.post(path, json={"expected_version": detail.json()["data"]["version"]},
-                             headers=headers)
+        headers = {
+            "X-CSRF-Token": client.get("/api/v1/auth/csrf").json()["data"]["csrf_token"],
+            "Idempotency-Key": key,
+        }
+        result = client.post(
+            path, json={"expected_version": detail.json()["data"]["version"]}, headers=headers
+        )
         assert result.status_code == 202, result.text
         new = result.json()["data"]
         assert new["retry_of"] == str(analysis_id) and new["status"] == "queued"
         assert new["evidence_ids"] == [str(event_id)]
-        repeated = client.post(path, json={"expected_version": detail.json()["data"]["version"]},
-                               headers=headers)
+        repeated = client.post(
+            path, json={"expected_version": detail.json()["data"]["version"]}, headers=headers
+        )
         assert repeated.status_code == 202 and repeated.json()["data"]["id"] == new["id"]
         page = client.get(f"/api/v1/runs/{run_id}/analyses", params={"limit": 1})
         assert page.status_code == 200 and page.json()["meta"]["next_cursor"]
-        next_page = client.get(f"/api/v1/runs/{run_id}/analyses",
-                               params={"limit": 1, "cursor": page.json()["meta"]["next_cursor"]})
+        next_page = client.get(
+            f"/api/v1/runs/{run_id}/analyses",
+            params={"limit": 1, "cursor": page.json()["meta"]["next_cursor"]},
+        )
         assert next_page.status_code == 200
         assert next_page.json()["data"][0]["id"] != page.json()["data"][0]["id"]
-        mixed = client.get(f"/api/v1/runs/{run_id}/analyses",
-                           params={"status": "succeeded",
-                                   "cursor": page.json()["meta"]["next_cursor"]})
+        mixed = client.get(
+            f"/api/v1/runs/{run_id}/analyses",
+            params={"status": "succeeded", "cursor": page.json()["meta"]["next_cursor"]},
+        )
         assert mixed.status_code == 400
         old = client.get(f"/api/v1/runs/{run_id}/analyses/{analysis_id}")
         assert old.json()["data"]["status"] == "invalid_output"
@@ -274,38 +300,57 @@ def test_instructor_ticket_scope_and_no_disposition_forgery(migrated, monkeypatc
                 event_id = await session.scalar(text("SELECT id FROM app.events LIMIT 1"))
             async with api.sessions() as session, session.begin():
                 ticket = await create_ticket(
-                    session, run_id, user_id,
-                    TicketCreate(title="Instructor review", severity="low",
-                                 evidence_ids=[event_id], reason="manual review"),
+                    session,
+                    run_id,
+                    user_id,
+                    TicketCreate(
+                        title="Instructor review",
+                        severity="low",
+                        evidence_ids=[event_id],
+                        reason="manual review",
+                    ),
                     uuid4(),
                 )
             for number in (1, 2):
                 async with api.sessions() as session, session.begin():
-                    await create_note(session, run_id, ticket["id"], user_id,
+                    await create_note(
+                        session,
+                        run_id,
+                        ticket["id"],
+                        user_id,
                         NoteCreate(body=f"Observation {number}", evidence_ids=[event_id]),
-                        uuid4())
+                        uuid4(),
+                    )
             assigned, unrelated = uuid4(), uuid4()
             async with owner.sessions() as session, session.begin():
                 for identity in (assigned, unrelated):
-                    await session.execute(text("""INSERT INTO app.users
+                    await session.execute(
+                        text("""INSERT INTO app.users
                         (id,normalized_email,display_name,password_hash,role,status)
                         VALUES (:id,:email,'Instructor','$argon2id$fixture',
                                 'instructor','active')"""),
-                        {"id": identity, "email": f"{identity}@example.test"})
-                await session.execute(text("""INSERT INTO app.instructor_assignments
+                        {"id": identity, "email": f"{identity}@example.test"},
+                    )
+                await session.execute(
+                    text("""INSERT INTO app.instructor_assignments
                     (instructor_user_id,analyst_user_id) VALUES (:teacher,:student)"""),
-                    {"teacher": assigned, "student": user_id})
-            return (run_id, ticket["id"], user_id,
-                    await issue_session(migrated, user_id),
-                    await issue_session(migrated, assigned),
-                    await issue_session(migrated, unrelated))
+                    {"teacher": assigned, "student": user_id},
+                )
+            return (
+                run_id,
+                ticket["id"],
+                user_id,
+                await issue_session(migrated, user_id),
+                await issue_session(migrated, assigned),
+                await issue_session(migrated, unrelated),
+            )
         finally:
             await api.close()
             await worker.close()
             await owner.close()
 
-    run_id, ticket_id, analyst_id, analyst_token, assigned_token, unrelated_token = (
-        asyncio.run(setup())
+    run_id, ticket_id, analyst_id, analyst_token, assigned_token, unrelated_token = asyncio.run(
+        setup()
     )
     monkeypatch.setattr("app.main.database_url", lambda role: migrated(role))
     monkeypatch.setenv("AUTH_ORIGINS", "http://testserver")
@@ -313,8 +358,10 @@ def test_instructor_ticket_scope_and_no_disposition_forgery(migrated, monkeypatc
     path = f"/api/v1/admin/runs/{run_id}/tickets/{ticket_id}"
     with TestClient(app, headers={"Origin": "http://testserver"}) as client:
         client.cookies.set(auth.SESSION, analyst_token)
-        tickets = client.get(f"/api/v1/runs/{run_id}/tickets",
-                             params={"q": "Instructor", "severity": "low", "status": "open"})
+        tickets = client.get(
+            f"/api/v1/runs/{run_id}/tickets",
+            params={"q": "Instructor", "severity": "low", "status": "open"},
+        )
         assert tickets.status_code == 200, tickets.text
         assert [item["id"] for item in tickets.json()["data"]] == [str(ticket_id)]
         assert tickets.json()["meta"]["next_cursor"] is None
@@ -328,17 +375,23 @@ def test_instructor_ticket_scope_and_no_disposition_forgery(migrated, monkeypatc
         note_id = notes_page.json()["data"][0]["id"]
         versions = client.get(f"{notes_path}/{note_id}/versions", params={"limit": 1})
         assert versions.status_code == 200 and len(versions.json()["data"]) == 1
-        timeline = client.get(f"/api/v1/runs/{run_id}/tickets/{ticket_id}/timeline",
-                              params={"limit": 1})
+        timeline = client.get(
+            f"/api/v1/runs/{run_id}/tickets/{ticket_id}/timeline", params={"limit": 1}
+        )
         assert timeline.status_code == 200, timeline.text
         assert timeline.json()["data"][0]["kind"] in {"audit", "event"}
         assert timeline.json()["meta"]["next_cursor"]
-        more = client.get(f"/api/v1/runs/{run_id}/tickets/{ticket_id}/timeline",
-                          params={"limit": 1,
-                                  "cursor": timeline.json()["meta"]["next_cursor"]})
+        more = client.get(
+            f"/api/v1/runs/{run_id}/tickets/{ticket_id}/timeline",
+            params={"limit": 1, "cursor": timeline.json()["meta"]["next_cursor"]},
+        )
         assert more.status_code == 200 and more.json()["data"]
-        assert client.get(f"/api/v1/runs/{run_id}/tickets",
-                          params={"severity": "critical"}).json()["data"] == []
+        assert (
+            client.get(f"/api/v1/runs/{run_id}/tickets", params={"severity": "critical"}).json()[
+                "data"
+            ]
+            == []
+        )
         client.cookies.set(auth.SESSION, unrelated_token)
         assert client.get(path).status_code == 404
         client.cookies.set(auth.SESSION, assigned_token)
@@ -347,40 +400,65 @@ def test_instructor_ticket_scope_and_no_disposition_forgery(migrated, monkeypatc
         assert client.get(f"/api/v1/runs/{run_id}/tickets").status_code == 404
         csrf = client.get("/api/v1/auth/csrf").json()["data"]["csrf_token"]
         headers = {"X-CSRF-Token": csrf}
-        raised = client.patch(path, json={"expected_version": 1, "severity": "high",
-                                          "reason": "prioritize"}, headers=headers)
+        raised = client.patch(
+            path,
+            json={"expected_version": 1, "severity": "high", "reason": "prioritize"},
+            headers=headers,
+        )
         assert raised.status_code == 200, raised.text
         assert raised.json()["data"]["severity"] == "high"
-        investigating = client.patch(path, json={"expected_version": 2,
-                                                 "status": "investigating",
-                                                 "reason": "review"}, headers=headers)
+        investigating = client.patch(
+            path,
+            json={"expected_version": 2, "status": "investigating", "reason": "review"},
+            headers=headers,
+        )
         assert investigating.status_code == 200, investigating.text
-        denied = client.patch(path, json={"expected_version": 3, "status": "resolved",
-                                          "reason": "no learner conclusion"}, headers=headers)
+        denied = client.patch(
+            path,
+            json={"expected_version": 3, "status": "resolved", "reason": "no learner conclusion"},
+            headers=headers,
+        )
         assert denied.status_code == 422
         assert denied.json()["error"]["code"] == "ASSESSMENT_REQUIRED"
+
     async def assess_and_finish():
         api = Database(migrated("api_runtime"))
         try:
             async with api.sessions() as session, session.begin():
-                await patch_ticket(session, run_id, ticket_id, analyst_id,
-                    TicketPatch(expected_version=3, disposition="undetermined",
-                                reason="need more evidence"))
+                await patch_ticket(
+                    session,
+                    run_id,
+                    ticket_id,
+                    analyst_id,
+                    TicketPatch(
+                        expected_version=3, disposition="undetermined", reason="need more evidence"
+                    ),
+                )
         finally:
             await api.close()
+
     asyncio.run(assess_and_finish())
     with TestClient(app, headers={"Origin": "http://testserver"}) as client:
         client.cookies.set(auth.SESSION, analyst_token)
-        history = client.get(f"/api/v1/runs/{run_id}/tickets/{ticket_id}/assessments",
-                             params={"limit": 1})
+        history = client.get(
+            f"/api/v1/runs/{run_id}/tickets/{ticket_id}/assessments", params={"limit": 1}
+        )
         assert history.status_code == 200 and history.json()["data"][0]["revision"] == 1
     with TestClient(app, headers={"Origin": "http://testserver"}) as client:
         client.cookies.set(auth.SESSION, assigned_token)
         headers = {"X-CSRF-Token": client.get("/api/v1/auth/csrf").json()["data"]["csrf_token"]}
-        resolved = client.patch(path, json={"expected_version": 4, "status": "resolved",
-                                            "reason": "human assessment present"}, headers=headers)
+        resolved = client.patch(
+            path,
+            json={
+                "expected_version": 4,
+                "status": "resolved",
+                "reason": "human assessment present",
+            },
+            headers=headers,
+        )
         assert resolved.status_code == 200, resolved.text
         assert resolved.json()["data"]["latest_assessment"]["disposition"] == "undetermined"
+
     async def finish():
         api = Database(migrated("api_runtime"))
         try:
@@ -388,12 +466,16 @@ def test_instructor_ticket_scope_and_no_disposition_forgery(migrated, monkeypatc
                 await finish_run(session, run_id, analyst_id, 1)
         finally:
             await api.close()
+
     asyncio.run(finish())
     with TestClient(app, headers={"Origin": "http://testserver"}) as client:
         client.cookies.set(auth.SESSION, assigned_token)
         headers = {"X-CSRF-Token": client.get("/api/v1/auth/csrf").json()["data"]["csrf_token"]}
-        locked = client.patch(path, json={"expected_version": 5, "severity": "low",
-                                          "reason": "too late"}, headers=headers)
+        locked = client.patch(
+            path,
+            json={"expected_version": 5, "severity": "low", "reason": "too late"},
+            headers=headers,
+        )
         assert locked.status_code == 409 and locked.json()["error"]["code"] == "RUN_READ_ONLY"
 
 
@@ -544,7 +626,12 @@ def test_ticket_note_history_conflict_and_finish_lock(migrated):
             with pytest.raises(AuthError) as wrong_owner:
                 async with api.sessions() as session, session.begin():
                     await mutate_note(
-                        session, run_id, ticket_id, note_id, uuid4(), "delete",
+                        session,
+                        run_id,
+                        ticket_id,
+                        note_id,
+                        uuid4(),
+                        "delete",
                         DeleteInput(expected_version=2, reason="not owner"),
                     )
             assert wrong_owner.value.status == 404
@@ -578,20 +665,33 @@ def test_ticket_note_history_conflict_and_finish_lock(migrated):
             assert ticket["latest_assessment"]["revision"] == 1
             async with api.sessions() as session, session.begin():
                 deleted = await delete_or_restore_ticket(
-                    session, run_id, ticket_id, user_id,
-                    DeleteInput(expected_version=ticket["version"], reason="review parent"), False,
+                    session,
+                    run_id,
+                    ticket_id,
+                    user_id,
+                    DeleteInput(expected_version=ticket["version"], reason="review parent"),
+                    False,
                 )
             with pytest.raises(AuthError) as deleted_parent:
                 async with api.sessions() as session, session.begin():
                     await mutate_note(
-                        session, run_id, ticket_id, note_id, user_id, "delete",
+                        session,
+                        run_id,
+                        ticket_id,
+                        note_id,
+                        user_id,
+                        "delete",
                         DeleteInput(expected_version=2, reason="parent removed"),
                     )
             assert deleted_parent.value.code == "TICKET_DELETED"
             async with api.sessions() as session, session.begin():
                 await delete_or_restore_ticket(
-                    session, run_id, ticket_id, user_id,
-                    DeleteInput(expected_version=deleted["version"], reason="restore parent"), True,
+                    session,
+                    run_id,
+                    ticket_id,
+                    user_id,
+                    DeleteInput(expected_version=deleted["version"], reason="restore parent"),
+                    True,
                 )
             async with api.sessions() as session:
                 assert await session.scalar(text("SELECT count(*) FROM app.note_versions")) == 2

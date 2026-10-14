@@ -60,10 +60,15 @@ def meta(request: Request) -> AuthMeta:
 
 @router.get("", response_model=TicketList, operation_id="tickets_list")
 async def list_tickets(
-    run_id: UUID, request: Request, deleted: str = "exclude",
-    q: str | None = Query(None, max_length=200), severity: str | None = None,
-    status: str | None = None, disposition: str | None = None,
-    cursor: str | None = None, limit: int = Query(50, ge=1, le=100),
+    run_id: UUID,
+    request: Request,
+    deleted: str = "exclude",
+    q: str | None = Query(None, max_length=200),
+    severity: str | None = None,
+    status: str | None = None,
+    disposition: str | None = None,
+    cursor: str | None = None,
+    limit: int = Query(50, ge=1, le=100),
 ) -> TicketList:
     if deleted not in {"exclude", "include", "only"}:
         raise auth.AuthError(422, "VALIDATION_ERROR")
@@ -72,11 +77,18 @@ async def list_tickets(
     if status is not None and status not in VALID_TRANSITIONS:
         raise auth.AuthError(422, "VALIDATION_ERROR")
     if disposition is not None and disposition not in {
-        "true_positive", "false_positive", "undetermined"
+        "true_positive",
+        "false_positive",
+        "undetermined",
     }:
         raise auth.AuthError(422, "VALIDATION_ERROR")
-    filters = {"deleted": deleted, "q": q, "severity": severity,
-               "status": status, "disposition": disposition}
+    filters = {
+        "deleted": deleted,
+        "q": q,
+        "severity": severity,
+        "status": status,
+        "disposition": disposition,
+    }
     cursor_at, cursor_id = decode_cursor(cursor, filters)
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.require_user(session, request)
@@ -99,10 +111,18 @@ async def list_tickets(
             AND (CAST(:cursor_at AS timestamptz) IS NULL OR
                  (t.created_at,t.id)<(CAST(:cursor_at AS timestamptz),CAST(:cursor_id AS uuid)))
             ORDER BY t.created_at DESC,t.id DESC LIMIT :limit"""),
-                    {"run": run_id, "deleted": deleted, "severity": severity,
-                     "status": status, "disposition": disposition, "q": q,
-                     "search": f"%{q}%" if q else None,
-                     "cursor_at": cursor_at, "cursor_id": cursor_id, "limit": limit + 1},
+                    {
+                        "run": run_id,
+                        "deleted": deleted,
+                        "severity": severity,
+                        "status": status,
+                        "disposition": disposition,
+                        "q": q,
+                        "search": f"%{q}%" if q else None,
+                        "cursor_at": cursor_at,
+                        "cursor_id": cursor_id,
+                        "limit": limit + 1,
+                    },
                 )
             )
             .mappings()
@@ -112,10 +132,12 @@ async def list_tickets(
         items = [TicketView.model_validate(await ticket_view(session, row)) for row in visible]
     next_cursor = (
         encode_cursor(visible[-1]["created_at"], visible[-1]["id"], filters)
-        if len(rows) > limit else None
+        if len(rows) > limit
+        else None
     )
-    return TicketList(data=items, meta=PageMeta(request_id=request.state.request_id,
-                                               next_cursor=next_cursor))
+    return TicketList(
+        data=items, meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor)
+    )
 
 
 @router.post("", response_model=TicketEnvelope, status_code=201, operation_id="tickets_create")
@@ -135,10 +157,14 @@ async def detail(run_id: UUID, ticket_id: UUID, request: Request) -> TicketEnvel
     return TicketEnvelope(data=TicketView.model_validate(data), meta=meta(request))
 
 
-@router.get("/{ticket_id}/timeline", response_model=TicketTimelineList,
-            operation_id="tickets_timeline")
+@router.get(
+    "/{ticket_id}/timeline", response_model=TicketTimelineList, operation_id="tickets_timeline"
+)
 async def ticket_timeline(
-    run_id: UUID, ticket_id: UUID, request: Request, cursor: str | None = None,
+    run_id: UUID,
+    ticket_id: UUID,
+    request: Request,
+    cursor: str | None = None,
     limit: int = Query(50, ge=1, le=100),
 ) -> TicketTimelineList:
     filters = {"ticket_id": str(ticket_id)}
@@ -148,7 +174,9 @@ async def ticket_timeline(
         await get_owned_run(session, run_id, user["id"])
         await ticket_row(session, run_id, ticket_id)
         rows = (
-            (await session.execute(text("""WITH history AS (
+            (
+                await session.execute(
+                    text("""WITH history AS (
                 SELECT e.id,e.ingested_at AS occurred_at,'event' AS kind,
                        e.source AS action,e.id AS event_id
                 FROM app.ticket_events te JOIN app.events e
@@ -168,18 +196,28 @@ async def ticket_timeline(
             WHERE CAST(:cursor_at AS timestamptz) IS NULL OR
                   (occurred_at,id)<(CAST(:cursor_at AS timestamptz),CAST(:cursor_id AS uuid))
             ORDER BY occurred_at DESC,id DESC LIMIT :limit"""),
-             {"run": run_id, "ticket": ticket_id, "cursor_at": cursor_at,
-              "cursor_id": cursor_id, "limit": limit + 1}))
-            .mappings().all()
+                    {
+                        "run": run_id,
+                        "ticket": ticket_id,
+                        "cursor_at": cursor_at,
+                        "cursor_id": cursor_id,
+                        "limit": limit + 1,
+                    },
+                )
+            )
+            .mappings()
+            .all()
         )
         visible = rows[:limit]
         items = [TicketTimelineEntry.model_validate(dict(row)) for row in visible]
     next_cursor = (
         encode_cursor(visible[-1]["occurred_at"], visible[-1]["id"], filters)
-        if len(rows) > limit else None
+        if len(rows) > limit
+        else None
     )
-    return TicketTimelineList(data=items,
-        meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor))
+    return TicketTimelineList(
+        data=items, meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor)
+    )
 
 
 @router.patch("/{ticket_id}", response_model=TicketEnvelope, operation_id="tickets_patch")
@@ -216,8 +254,11 @@ async def restore(
     "/{ticket_id}/assessments", response_model=AssessmentList, operation_id="assessments_list"
 )
 async def assessments(
-    run_id: UUID, ticket_id: UUID, request: Request,
-    cursor: int | None = Query(None, ge=0), limit: int = Query(50, ge=1, le=100),
+    run_id: UUID,
+    ticket_id: UUID,
+    request: Request,
+    cursor: int | None = Query(None, ge=0),
+    limit: int = Query(50, ge=1, le=100),
 ) -> AssessmentList:
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.require_user(session, request)
@@ -230,23 +271,30 @@ async def assessments(
             disposition,reason,created_at FROM app.assessments
             WHERE run_id=:run AND ticket_id=:ticket AND revision>:cursor
             ORDER BY revision LIMIT :limit"""),
-                    {"run": run_id, "ticket": ticket_id,
-                     "cursor": cursor or 0, "limit": limit + 1},
+                    {"run": run_id, "ticket": ticket_id, "cursor": cursor or 0, "limit": limit + 1},
                 )
             )
             .mappings()
             .all()
         )
     visible = rows[:limit]
-    return AssessmentList(data=[AssessmentView.model_validate(dict(row)) for row in visible],
-        meta=PageMeta(request_id=request.state.request_id,
-                      next_cursor=str(visible[-1]["revision"]) if len(rows) > limit else None))
+    return AssessmentList(
+        data=[AssessmentView.model_validate(dict(row)) for row in visible],
+        meta=PageMeta(
+            request_id=request.state.request_id,
+            next_cursor=str(visible[-1]["revision"]) if len(rows) > limit else None,
+        ),
+    )
 
 
 @router.get("/{ticket_id}/notes", response_model=NoteList, operation_id="notes_list")
 async def list_notes(
-    run_id: UUID, ticket_id: UUID, request: Request, deleted: bool = False,
-    cursor: str | None = None, limit: int = Query(50, ge=1, le=100),
+    run_id: UUID,
+    ticket_id: UUID,
+    request: Request,
+    deleted: bool = False,
+    cursor: str | None = None,
+    limit: int = Query(50, ge=1, le=100),
 ) -> NoteList:
     filters = {"ticket_id": str(ticket_id), "deleted": deleted}
     cursor_at, cursor_id = decode_cursor(cursor, filters)
@@ -263,8 +311,14 @@ async def list_notes(
             AND (CAST(:cursor_at AS timestamptz) IS NULL OR
                  (created_at,id)>(CAST(:cursor_at AS timestamptz),CAST(:cursor_id AS uuid)))
             ORDER BY created_at,id LIMIT :limit"""),
-                    {"run": run_id, "ticket": ticket_id, "deleted": deleted,
-                     "cursor_at": cursor_at, "cursor_id": cursor_id, "limit": limit + 1},
+                    {
+                        "run": run_id,
+                        "ticket": ticket_id,
+                        "deleted": deleted,
+                        "cursor_at": cursor_at,
+                        "cursor_id": cursor_id,
+                        "limit": limit + 1,
+                    },
                 )
             )
             .mappings()
@@ -274,10 +328,12 @@ async def list_notes(
         items = [NoteView.model_validate(await note_view(session, row)) for row in visible]
     next_cursor = (
         encode_cursor(visible[-1]["created_at"], visible[-1]["id"], filters)
-        if len(rows) > limit else None
+        if len(rows) > limit
+        else None
     )
-    return NoteList(data=items,
-        meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor))
+    return NoteList(
+        data=items, meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor)
+    )
 
 
 @router.post(
@@ -338,8 +394,12 @@ async def restore_note(
     operation_id="note_versions_list",
 )
 async def note_versions(
-    run_id: UUID, ticket_id: UUID, note_id: UUID, request: Request,
-    cursor: int | None = Query(None, ge=0), limit: int = Query(50, ge=1, le=100),
+    run_id: UUID,
+    ticket_id: UUID,
+    note_id: UUID,
+    request: Request,
+    cursor: int | None = Query(None, ge=0),
+    limit: int = Query(50, ge=1, le=100),
 ) -> VersionList:
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.require_user(session, request)
@@ -352,8 +412,7 @@ async def note_versions(
             actor_user_id,created_at FROM app.note_versions
             WHERE run_id=:run AND note_id=:note AND version>:cursor
             ORDER BY version LIMIT :limit"""),
-                    {"run": run_id, "note": note_id,
-                     "cursor": cursor or 0, "limit": limit + 1},
+                    {"run": run_id, "note": note_id, "cursor": cursor or 0, "limit": limit + 1},
                 )
             )
             .mappings()
@@ -374,9 +433,13 @@ async def note_versions(
             )
             view = {key: value for key, value in row.items() if key != "id"}
             items.append(NoteVersionView.model_validate(view | {"evidence_ids": list(ids)}))
-    return VersionList(data=items,
-        meta=PageMeta(request_id=request.state.request_id,
-                      next_cursor=str(rows[limit - 1]["version"]) if len(rows) > limit else None))
+    return VersionList(
+        data=items,
+        meta=PageMeta(
+            request_id=request.state.request_id,
+            next_cursor=str(rows[limit - 1]["version"]) if len(rows) > limit else None,
+        ),
+    )
 
 
 async def assigned_run(session: AsyncSession, request: Request, run_id: UUID) -> Mapping[str, Any]:

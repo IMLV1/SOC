@@ -20,8 +20,10 @@ async def run(check: bool) -> int:
     try:
         while True:
             ready = await check_database(database, "worker_runtime")
-            print(json.dumps({"component": "worker", "database_ready": ready,
-                              "queue_ready": ready}), flush=True)
+            print(
+                json.dumps({"component": "worker", "database_ready": ready, "queue_ready": ready}),
+                flush=True,
+            )
             if check or not ready:
                 return 0 if ready else 2
             await heartbeat(database, worker_id)
@@ -37,9 +39,7 @@ async def run(check: bool) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="SOC durable job worker"
-    )
+    parser = argparse.ArgumentParser(description="SOC durable job worker")
     parser.add_argument(
         "--check", action="store_true", help="Check entrypoint without claiming jobs"
     )

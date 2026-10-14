@@ -28,8 +28,11 @@ def meta(request: Request) -> AuthMeta:
 
 @router.get("", response_model=AnalysisList, operation_id="analyses_list")
 async def list_analyses(
-    run_id: UUID, request: Request, status: str | None = None,
-    ticket_id: UUID | None = None, cursor: str | None = None,
+    run_id: UUID,
+    request: Request,
+    status: str | None = None,
+    ticket_id: UUID | None = None,
+    cursor: str | None = None,
     limit: int = Query(50, ge=1, le=100),
 ) -> AnalysisList:
     allowed = {
@@ -60,8 +63,14 @@ async def list_analyses(
             AND (CAST(:cursor_at AS timestamptz) IS NULL OR
                  (a.created_at,a.id)<(CAST(:cursor_at AS timestamptz),CAST(:cursor_id AS uuid)))
             ORDER BY a.created_at DESC,a.id DESC LIMIT :limit"""),
-                    {"run": run_id, "status": status, "ticket": ticket_id,
-                     "cursor_at": cursor_at, "cursor_id": cursor_id, "limit": limit + 1},
+                    {
+                        "run": run_id,
+                        "status": status,
+                        "ticket": ticket_id,
+                        "cursor_at": cursor_at,
+                        "cursor_id": cursor_id,
+                        "limit": limit + 1,
+                    },
                 )
             )
             .mappings()
@@ -71,10 +80,12 @@ async def list_analyses(
         items = [AnalysisView.model_validate(await analysis_view(session, row)) for row in visible]
     next_cursor = (
         encode_cursor(visible[-1]["created_at"], visible[-1]["id"], filters)
-        if len(rows) > limit else None
+        if len(rows) > limit
+        else None
     )
-    return AnalysisList(data=items, meta=PageMeta(request_id=request.state.request_id,
-                                                 next_cursor=next_cursor))
+    return AnalysisList(
+        data=items, meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor)
+    )
 
 
 @router.get("/{analysis_id}", response_model=AnalysisEnvelope, operation_id="analyses_get")

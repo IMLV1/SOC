@@ -84,8 +84,10 @@ async def create(body: TrainingSelection, request: Request) -> RunEnvelope:
 
 @router.get("", response_model=RunList, operation_id="runs_list")
 async def list_runs(
-    request: Request, status: str | None = None, cursor: str | None = None,
-    limit: int = Query(50, ge=1, le=100)
+    request: Request,
+    status: str | None = None,
+    cursor: str | None = None,
+    limit: int = Query(50, ge=1, le=100),
 ) -> RunList:
     if status is not None and status not in {
         "created",
@@ -110,8 +112,13 @@ async def list_runs(
                 AND (CAST(:cursor_at AS timestamptz) IS NULL OR
                      (created_at,id)<(CAST(:cursor_at AS timestamptz),CAST(:cursor_id AS uuid)))
                 ORDER BY created_at DESC,id DESC LIMIT :limit"""),
-                    {"owner": user["id"], "status": status, "cursor_at": cursor_at,
-                     "cursor_id": cursor_id, "limit": limit + 1},
+                    {
+                        "owner": user["id"],
+                        "status": status,
+                        "cursor_at": cursor_at,
+                        "cursor_id": cursor_id,
+                        "limit": limit + 1,
+                    },
                 )
             )
             .mappings()
@@ -119,10 +126,15 @@ async def list_runs(
         )
         now = await server_time(session)
     visible = rows[:limit]
-    next_cursor = encode_cursor(visible[-1]["created_at"], visible[-1]["id"],
-                                {"status": status}) if len(rows) > limit else None
-    return RunList(data=[RunView.model_validate(run_view(row, now)) for row in visible],
-                   meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor))
+    next_cursor = (
+        encode_cursor(visible[-1]["created_at"], visible[-1]["id"], {"status": status})
+        if len(rows) > limit
+        else None
+    )
+    return RunList(
+        data=[RunView.model_validate(run_view(row, now)) for row in visible],
+        meta=PageMeta(request_id=request.state.request_id, next_cursor=next_cursor),
+    )
 
 
 @router.get("/{run_id}", response_model=RunEnvelope, operation_id="runs_get")
