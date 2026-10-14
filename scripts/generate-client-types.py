@@ -38,6 +38,8 @@ def ts(schema: dict) -> str:
     kind = schema.get("type")
     if kind == "object":
         if not schema.get("properties"):
+            if isinstance(schema.get("additionalProperties"), dict):
+                return f"Record<string, {ts(schema['additionalProperties'])}>"
             return "Record<string, never>"
         required = schema.get("required", [])
         return (
@@ -54,6 +56,8 @@ def ts(schema: dict) -> str:
         return kind
     if kind in ("integer", "number"):
         return "number"
+    if kind is None:
+        return "unknown"
     raise ValueError(f"Unsupported approved schema: {schema}")
 
 

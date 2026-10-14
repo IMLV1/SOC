@@ -239,7 +239,16 @@ def test_secure_cookie_and_challenge_replay(clients, monkeypatch):
     assert response.status_code == 403
 
 
-def test_login_rate_limit_is_shared_and_no_demo_mutations(clients):
+def test_login_rate_limit_is_shared_and_no_demo_mutations(clients, monkeypatch):
+    # Keep every request in the same limiter bucket even if the test crosses a minute.
+    fixed_now = datetime.now(UTC)
+
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return fixed_now if tz is UTC else fixed_now.astimezone(tz)
+
+    monkeypatch.setattr(auth, "datetime", FixedDatetime)
     client, _ = clients
     token = csrf(client)
     for _ in range(10):

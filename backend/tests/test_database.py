@@ -79,6 +79,30 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "audit_logs",
             "auth_rate_limits",
             "scenarios",
+            "runs",
+            "scenario_instances",
+            "run_versions",
+            "run_completions",
+            "events",
+            "jobs",
+            "worker_heartbeats",
+            "idempotency_keys",
+            "detections",
+            "detection_evidence",
+            "alerts",
+            "tickets",
+            "ticket_events",
+            "ticket_alerts",
+            "assessments",
+            "notes",
+            "note_evidence",
+            "note_versions",
+            "note_version_evidence",
+            "analyses",
+            "analysis_evidence",
+            "analysis_attempts",
+            "quota_reservations",
+            "ticket_analyses",
         }
 
     asyncio.run(scenario())
@@ -318,7 +342,7 @@ def test_api_ready_and_worker_with_runtime_credentials(migrated, monkeypatch):
     )
     assert result.returncode == 0
     assert '"database_ready": true' in result.stdout
-    assert '"queue_ready": false' in result.stdout
+    assert '"queue_ready": true' in result.stdout
     monkeypatch.setenv("DB_PASSWORD_FILE", str(directory / "migration_owner.txt"))
     with TestClient(app) as client:
         response = client.get("/health/ready")
