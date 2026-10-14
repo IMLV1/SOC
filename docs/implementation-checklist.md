@@ -120,7 +120,7 @@ run/exam endpoints ยังไม่เปิด; gate จริงอยู่
 
 ### 06 — Durable jobs และ simulation runner
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 05; SOC-006
+- [x] เสร็จและตรวจรับแล้ว — หลัง 05; SOC-006; ผ่าน local PostgreSQL/integration และ restart runner วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 06: เพิ่ม runs/instances/versions/events/jobs/idempotency และ Python worker
@@ -134,7 +134,7 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 07 — Vertical slice UI: Run → Event explorer
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 06; SOC-007/008
+- [x] เสร็จและตรวจรับแล้ว — หลัง 06; SOC-007/008; ผ่าน browser E2E แบบลงมือจริงที่ 375/768/1440 วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 07: เชื่อม Next.js กับ run list/start/pause/resume และ Event explorer ผ่าน typed API client
@@ -147,7 +147,7 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 08 — Detection, anomaly และ correlation
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 07; SOC-009
+- [x] เสร็จและตรวจรับแล้ว — หลัง 07; SOC-009; ผ่าน fixture/dedup/cross-run tests และตรวจ alert จริงใน UI วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 08: implement versioned rules/anomaly/correlation, detections/evidence และ alerts
@@ -160,7 +160,7 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 09 — Ticket/Note CRUD, assessment และประวัติ
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 08; SOC-010/013
+- [x] เสร็จและตรวจรับแล้ว — หลัง 08; SOC-010/013; ผ่าน HTTP/integration และตรวจ UI 409 แบบสองแท็บ วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 09: implement ticket detail/manual create/update/delete/restore, assessment revisions
@@ -173,7 +173,7 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 10 — AI pipeline ด้วย mock ที่ทดสอบได้
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 09; SOC-011
+- [x] เสร็จและตรวจรับแล้ว — หลัง 09; SOC-011; ผ่าน mock/HTTP retry/UI และ quota/error tests วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 10: สร้าง AnalysisProvider, frozen evidence snapshots, analyses/attempts และ async jobs

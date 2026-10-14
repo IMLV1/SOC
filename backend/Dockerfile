@@ -21,7 +21,8 @@ CMD ["python", "-m", "app.scenarios.seed"]
 
 FROM seed AS test
 USER root
+ENV UV_HTTP_TIMEOUT=120
 RUN uv sync --frozen
 COPY tests ./tests
 USER soc
-CMD ["python", "-m", "pytest", "tests/test_database.py", "tests/test_auth.py", "tests/test_scenarios.py", "-q", "-p", "no:cacheprovider"]
+CMD ["python", "-m", "pytest", "tests/test_database.py", "tests/test_auth.py", "tests/test_scenarios.py", "tests/test_runs.py", "tests/test_investigation_pipeline.py", "-q", "-p", "no:cacheprovider"]

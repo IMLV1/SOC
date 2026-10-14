@@ -35,12 +35,20 @@ def test_health_does_not_claim_database_readiness() -> None:
     assert ready.headers["cache-control"] == "no-store"
 
 
-@pytest.mark.parametrize("path", ["/api/v1/runs", "/api/v1/attempts/example/submit"])
+@pytest.mark.parametrize("path", ["/api/v1/attempts/example/submit"])
 def test_draft_routes_are_not_exposed(path: str) -> None:
     with TestClient(app) as client:
         response = client.post(path, json={"password": "do-not-reflect"})
     assert response.status_code == 404
     assert set(response.json()) == {"error", "meta"}
+    assert "do-not-reflect" not in response.text
+
+
+def test_training_run_route_validates_without_reflecting_secrets() -> None:
+    with TestClient(app) as client:
+        response = client.post("/api/v1/runs", json={"password": "do-not-reflect"})
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
     assert "do-not-reflect" not in response.text
 
 

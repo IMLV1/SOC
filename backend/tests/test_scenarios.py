@@ -269,11 +269,11 @@ def test_catalog_and_selection_cannot_admit_disabled_demo_or_exam(migrated, monk
             "records/export",
         ):
             assert forbidden not in response.text
-        for path in ("/api/v1/runs", f"/api/v1/levels/{uuid4()}/attempts"):
+        for path, expected in (("/api/v1/runs", 422), (f"/api/v1/levels/{uuid4()}/attempts", 404)):
             reply = client.post(
                 path, json={"scenario_ids": [str(enabled)], "mode": "exam", "answer_key": "NO-ECHO"}
             )
-            assert reply.status_code == 404 and "NO-ECHO" not in reply.text
+            assert reply.status_code == expected and "NO-ECHO" not in reply.text
         assert client.post("/api/v1/scenarios", json={}).status_code == 405
         for path in (
             "/fixtures/ground-truth/training.json",

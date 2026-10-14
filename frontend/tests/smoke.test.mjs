@@ -33,8 +33,8 @@ test("same-origin health proxy preserves liveness and configured readiness", asy
   assert.equal(ready.headers.get("cache-control"), "no-store");
 });
 
-test("draft domain routes reach backend but remain unavailable", async () => {
-  const response = await fetch(`${origin}/api/v1/runs`, { method: "POST" });
-  assert.equal(response.status, 404);
-  assert.equal((await response.json()).error.code, "NOT_FOUND");
+test("run routes reach backend and require a session", async () => {
+  const response = await fetch(`${origin}/api/v1/runs`);
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).error.code, "AUTH_REQUIRED");
 });

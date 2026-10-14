@@ -20,7 +20,7 @@ export default function ScenariosPage() {
   return <main className="account-page">
     <p className="eyebrow">TRAINING CATALOG</p>
     <h1>สถานการณ์ฝึก</h1>
-    <p>ดูหัวข้อและเป้าหมายการฝึกได้โดยไม่ต้องเข้าสู่ระบบ การเริ่มรอบฝึกยังไม่พร้อม และยังไม่เปิดให้สอบจริง</p>
+    <p>ดูหัวข้อและเป้าหมายการฝึกได้โดยไม่ต้องเข้าสู่ระบบ เข้าสู่ระบบเพื่อเริ่มรอบฝึก ข้อสอบจริงยังไม่เปิด</p>
     {loading ? <p role="status">กำลังโหลดสถานการณ์…</p> : error ?
       <p role="alert">โหลดสถานการณ์ไม่สำเร็จ <button onClick={() => { setLoading(true); setError(false); setRetry(value => value + 1); }}>ลองใหม่</button></p> :
       items.length === 0 ? <p>ยังไม่มีสถานการณ์ที่เปิดให้ดู</p> :
@@ -28,7 +28,7 @@ export default function ScenariosPage() {
         <h2>{item.title}</h2>
         <p>เวอร์ชัน {item.version} · {({ beginner: "เริ่มต้น", intermediate: "กลาง", advanced: "ชำนาญ" })[item.difficulty]} · {item.duration_ms / 1000} วินาที</p>
         <ul>{item.learning_objectives.map(objective => <li key={objective}>{objective}</li>)}</ul>
-        <p>ยังเริ่มรอบไม่ได้</p>
+        <p><Link href="/runs">ไปหน้ารอบฝึก</Link></p>
       </article>)}</div>}
     <Link href="/demo">ดูตัวอย่างการอ่าน request และ response</Link>
   </main>;

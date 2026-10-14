@@ -51,6 +51,10 @@ class AuthMeta(Strict):
     request_id: str
 
 
+class PageMeta(AuthMeta):
+    next_cursor: str | None = None
+
+
 class UserEnvelope(Strict):
     data: UserView
     meta: AuthMeta
