@@ -6,7 +6,7 @@ test("Guest catalog shows public metadata without exam controls", async ({ page 
     await page.goto("/scenarios");
     await expect(page.getByRole("heading", { name: "สถานการณ์ฝึก" })).toBeVisible();
     await expect(page.getByText("ข้อสอบจริงยังไม่เปิด", { exact: false })).toBeVisible();
-    expect(await page.locator("article").count()).toBe(1);
+    await expect(page.locator("article")).toHaveCount(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
   const response = await page.request.get("/api/v1/scenarios");
