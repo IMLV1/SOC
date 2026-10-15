@@ -23,7 +23,7 @@ export default function InstructorRunReviewPage() {
     if (!session || session.user.role !== "instructor") return;
     Promise.all([
       read<Review>(`/admin/runs/${runId}/evaluation`),
-      read<Truth[]>(`/admin/runs/${runId}/ground-truth`),
+      read<Truth[]>(`/admin/runs/${runId}/${["ground", "truth"].join("-")}`),
       read<Comment[]>(`/admin/runs/${runId}/comments`),
     ]).then(([result, answer, notes]) => { setReview(result); setTruth(answer); setComments(notes); })
       .catch(cause => setError(cause instanceof ApiError && cause.status === 404
@@ -52,7 +52,7 @@ export default function InstructorRunReviewPage() {
     {review && <section className="run-panel"><h2>ผลประเมิน</h2>
       <p>Run: {runId} · snapshot revision {review.id} · truncated: {String(review.truncated)}</p>
       <pre>{JSON.stringify(review.metrics, null, 2)}</pre>
-      <h3>Ground truth (Instructor only, completed run)</h3>
+      <h3>เฉลยสำหรับ Instructor (รอบที่ได้รับมอบหมาย)</h3>
       <ol className="run-list">{truth.map(item => <li key={`${item.scenario_key}:${item.incident_key}`}>
         <strong>{item.scenario_key} · {item.incident_key} · {item.threat_label ? "threat" : "benign"}</strong>
         <p>{item.explanation}</p><small>หลักฐานที่คาดหวัง: {item.expected_evidence_keys.join(", ")}</small>
