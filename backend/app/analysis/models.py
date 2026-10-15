@@ -34,11 +34,32 @@ class AnalysisResult(Strict):
     recommended_checks: list[str]
 
 
+class ProviderUsage(Strict):
+    mode: Literal["mock", "real"]
+    input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+    total_tokens: int = Field(ge=0)
+    pricing_tier: Literal["mock", "free"]
+
+
+class ProviderResponseError(ValueError):
+    """Safe output-validation error retaining provider-reported usage metadata."""
+
+    def __init__(self, code: str, usage: ProviderUsage) -> None:
+        super().__init__(code)
+        self.usage = usage
+
+
+class ProviderOutput(Strict):
+    result: AnalysisResult
+    usage: ProviderUsage
+
+
 class AnalysisView(Strict):
     id: UUID
     run_id: UUID
     retry_of: UUID | None
-    mode: Literal["mock"]
+    mode: Literal["mock", "real"]
     model_id: str
     prompt_version: str
     status: Literal[

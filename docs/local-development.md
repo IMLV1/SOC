@@ -9,7 +9,8 @@ PostgreSQL 17.11, SQLAlchemy async/asyncpg, Alembic one-shot, roles/grants,
 readiness, provisioning CLI และ Compose สำหรับ API/worker/Next.js
 ข้อ 04 เพิ่ม auth routes และ auth_rate_limits แล้ว ดู [คู่มือ auth](auth-development.md)
 ข้อ 05 เพิ่ม training catalog/private truth และ seed one-shot ดู [คู่มือ](scenario-development.md)
-ยังไม่มี jobs/runner, exam หรือ RAG schema; ตารางด้านล่างอธิบาย foundation ตอนข้อ 02
+ข้อ 06–10 เพิ่ม runner/detection/investigation/analysis; exam และ RAG ยังไม่เปิด
+ตารางด้านล่างอธิบาย database foundation ตอนข้อ 02
 quota limits ต้องระบุโดย operator ไม่กำหนด default policy ของผลิตภัณฑ์แทนผู้ใช้
 
 | ส่วน | สิ่งที่มี |
@@ -46,10 +47,11 @@ POSIX ใช้ `.local` 0700; ไฟล์ภายใน read-only และ�
 Windows ใช้ ACL ของโฟลเดอร์ผู้ใช้ เก็บ `.local` ส่วนตัว ไม่อัปโหลดเป็น artifact
 อย่าลบ/สร้าง secrets ใหม่เมื่อมี volume เก่าโดยคาดว่ารหัส postgres ใน volume จะเปลี่ยนเอง
 
-ลำดับปัจจุบัน: db healthy → bootstrap → migrate exit 0 → seed exit 0 → API/worker → frontend
+ลำดับปัจจุบัน: db healthy → bootstrap → migrate exit 0 → seed exit 0 → API/worker/evaluator → frontend
 bootstrap/migrate เป็น one-shot; exit 0 คือสำเร็จ ไม่ใช่ service ล่ม
 bootstrap เท่านั้นเห็น admin/role secrets; migrate/provision เห็น owner secret;
-API เห็นเฉพาะ api_runtime, worker เฉพาะ worker_runtime และ frontend ไม่มี DB secret
+API เห็นเฉพาะ api_runtime, worker เฉพาะ worker_runtime, evaluator เฉพาะ evaluator_runtime
+และ frontend ไม่มี DB secret
 ไม่มี migration ใน Uvicorn/worker startup
 
 - [UI](http://127.0.0.1:3000), [API docs](http://127.0.0.1:8000/docs)
@@ -71,6 +73,32 @@ docker compose up -d
 
 down ปกติคง named volume; ไม่ใช้ `down -v` เว้นแต่ตั้งใจลบข้อมูล local ทั้งหมด
 Dockerfiles นี้เป็น local foundation ยังไม่ใช่ production release/backup/restore
+
+## Gemini Free Tier สำหรับ training จำลองในเครื่อง
+
+ค่าเริ่มต้นเป็น `mock`. เปิด real analysis เฉพาะหลังยืนยัน Free Tier แบบไม่ผูก billing
+ใน project ที่เลือก; real run จะ pin provider/model ตอนเริ่ม และ run เก่ายังคง config เดิม
+ข้อมูล Free Tier อาจถูกใช้ปรับปรุงบริการ จึงส่งได้เฉพาะ synthetic training fixtures
+ห้ามส่ง ground truth, credentials หรือข้อมูลผู้เรียนจริง. Embedding/RAG และ exam ไม่ได้เปิด
+
+สร้าง `.env` จาก template เมื่อไฟล์ยังไม่มี แล้วตั้งค่าต่อไปนี้ใน `.env`:
+
+```dotenv
+SOC_AI_PROVIDER=gemini_free
+GEMINI_PROJECT_TIER_CONFIRMED=free_no_billing
+GEMINI_SYNTHETIC_DATA_ONLY=true
+GEMINI_CHAT_MODEL=gemini-3.5-flash-lite
+```
+
+เก็บ key แบบไม่ใส่เครื่องหมายคำพูดใน `.local/secrets/gemini_api_key.txt` เท่านั้น
+อย่าใส่ key ใน `.env`, frontend, shell history หรือคำสั่งที่พิมพ์ลง log
+Compose ส่งไฟล์นี้เป็น secret ให้ `worker` service เท่านั้น; API ตรวจ config แต่ไม่มีไฟล์ key
+จากนั้นรัน `docker compose up -d --build` และเปิด [http://127.0.0.1:3000/runs](http://127.0.0.1:3000/runs)
+analysis ใน UI ระบุ `mode=real`; mock ยังคงอยู่เมื่อใช้ `.env` ค่าเริ่มต้น
+
+ถ้า project/key/model ใช้ไม่ได้ ระบบแสดง analysis failed/invalid-output ตามสถานะจริง
+ไม่มี fallback ไป model ที่เสียเงิน. Rate card/global cost cap, 429 backoff และ production secret store
+ยังรอ; ห้ามใช้จริงใน production. หากเปลี่ยนกลับ mock ให้ตั้ง `SOC_AI_PROVIDER=mock` ก่อนเริ่ม run ใหม่
 
 ## Provisioning / seed
 
@@ -145,8 +173,10 @@ uv run --frozen python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 worker ใช้อีก shell กับ env ชุดเดียวกัน แต่ DB_PASSWORD_FILE ชี้ worker_runtime.txt
-แล้ว `uv run --frozen python -m app.worker` หรือ `--check` สำหรับ one-shot check
-รายงาน DB foundation ทุก 30 วินาที, `queue_ready=false`; ยังไม่มี jobs/lease/DB heartbeat จนข้อ 06
+แล้ว `uv run --frozen python -m app.worker` หรือ `--check` สำหรับ one-shot check.
+Evaluator ใช้ process แยก: DB_PASSWORD_FILE ชี้ evaluator_runtime.txt แล้วรัน
+`uv run --frozen python -m app.evaluation`; `--check` ตรวจ credentials/migration โดยไม่ claim jobs.
+Evaluator role อ่าน private ground truth และเขียน evaluation snapshots ได้; API/browser ไม่มีสิทธิ์อ่านตารางเฉลยโดยตรง.
 Ctrl+C เพื่อหยุด ส่วน frontend ใช้ npm run dev/build/start ตามคู่มือเดิม
 เมื่อตั้ง DB แล้วให้ตั้ง `SOC_EXPECT_READY_STATUS=200` ก่อน npm test ใน frontend;
 กรณีไม่ตั้ง DB ใช้ค่าเริ่มต้น 503 การ smoke ต้องตรงสภาพระบบจริง

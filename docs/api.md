@@ -20,7 +20,7 @@ Implementation ที่เลือกคือ FastAPI + Pydantic สำหร
 - ID เป็น UUID; ตัวอย่าง `run_id`, `event_id`, `ticket_id` ในตารางหมายถึง UUID ของ resource จริง ไม่ใช่รหัส TKT ที่แสดงใน UI
 - เวลาเป็น UTC ISO 8601 เช่น `2026-10-12T10:00:00Z`; `elapsed_ms` คือเวลาจำลอง
 - Enum ใช้ lowercase: severity=`low|medium|high|critical`; role=`analyst|instructor`
-- Ticket status=`open|investigating|resolved|closed`; disposition=`true_positive|benign_positive|false_positive|undetermined` หรือ null หากยังไม่ประเมิน
+- Ticket status=`open|investigating|resolved|closed`; human disposition=`true_positive|false_positive|undetermined` หรือ null หากยังไม่ประเมิน (`benign_positive` ยังไม่เปิดใน ticket API เพราะ scoring contract ยังไม่สรุป)
 - Run status=`created|running|paused|reviewing|completing|completed|failed`
 - Analysis status=`queued|running|succeeded|failed|invalid_output|quota_exceeded|timed_out|cancelled`; mode=`mock|real`
 - Client ใช้ cookie session (`credentials: include`) ไม่ส่ง user_id เพื่อเลือกเจ้าของข้อมูล และไม่เก็บ session token ใน localStorage
@@ -301,43 +301,36 @@ Retry ได้เฉพาะ failed/timed_out/invalid_output/quota_exceeded �
 
 | Method | Endpoint | ผลลัพธ์ |
 |---|---|---|
-| GET | `/runs/{run_id}/evaluation` | ก่อน finish:409 EVALUATION_LOCKED; completing:202 pending; completed:200 snapshot |
-| GET | `/runs/{run_id}/ground-truth` | 200 เฉพาะเจ้าของรอบที่ completed; ก่อนนั้น 409 GROUND_TRUTH_LOCKED |
-| POST | `/admin/experiments` | dataset_run_id, modes=[A,B,C], config_versions; 202 batch ID |
-| GET | `/admin/experiments/{experiment_id}` | 200 arm statuses, dataset hash, versions, metrics และข้อจำกัด |
+| POST | `/runs/{run_id}/finish` | 202; freeze release/assessment cutoffs แล้วเข้า `completing`; retry คืน resource เดิม |
+| GET | `/runs/{run_id}/evaluation` | 409 `EVALUATION_PENDING` ระหว่างรอ/ก่อนมี snapshot; 200 หลัง `completed` |
+| GET | `/runs/{run_id}/ground-truth` | 200 เฉพาะเจ้าของ training run ที่ `completed`; ก่อนนั้น 409 `GROUND_TRUTH_LOCKED`; exam ไม่มี route นี้ |
+| GET | `/runs/{run_id}/export` | JSON snapshot สำหรับเจ้าของเมื่อ `completed`; ไม่มี private truth |
+| GET | `/admin/runs` | เฉพาะ Instructor; รายการรอบของผู้เรียนที่ได้รับมอบหมาย |
+| GET | `/admin/runs/{run_id}/evaluation` | เฉพาะ Instructor ที่ได้รับมอบหมาย; status/metrics/versions |
+| GET | `/admin/runs/{run_id}/ground-truth` | เฉพาะ Instructor ที่ได้รับมอบหมาย; truth ที่ pin ไว้ระหว่าง training และหลัง evaluation พร้อม audit |
+| GET/POST | `/admin/runs/{run_id}/comments` | อ่าน/เพิ่ม Instructor comment; POST ใช้ CSRF; ไม่แก้ assessment หรือนักเรียน note |
+| POST | `/admin/runs/{run_id}/experiments` | เฉพาะ assigned Instructor และ completed run; A=legacy rules detector, B=pinned rules/anomaly detector, C=`unavailable` จน global provider/budget controls พร้อม |
 
-Experiment source ต้อง completed และมีสิทธิ์กำกับ ห้ามดึงคำตอบผู้ฝึกหรือเฉลยเข้าข้อมูล detector/AI ใช้ complete dataset หรือระบุ truncated=true ชัดเจนรอบที่จบก่อน schedule ครบ งาน C จริงที่ยังไม่ต่อ provider ต้องเป็น unavailable ไม่ใช้ mock ทดแทนใน benchmark
+Evaluation GET คืน metadata, cutoffs, dataset hash, `truncated`, deterministic detection metrics และ versions; snapshot เต็มดาวน์โหลดผ่าน JSON export. Human metrics ระบุ `status=unavailable` และ `HUMAN_SCORING_POLICY_UNDECIDED`; ยังไม่คำนวณคะแนน learner เพราะ rubric/scoring policy ยังไม่ได้รับอนุมัติ. Detection denominator มาจาก detections ไม่ใช่ manual tickets; soft-deleted ticket จึงไม่ทำให้ detection หายจากผล.
 
-Evaluation payload ประกอบด้วย:
+Experiment source ต้อง completed และมีสิทธิ์กำกับ. A/B ใช้ frozen event/truth snapshot เดียวกันและเรียก detector implementation จริง; ไม่รับ scenario label เข้า detector. C ไม่ใช้ mock แทน provider จริง. รอบที่จบก่อน schedule ครบมี `truncated=true`.
 
-- run_id, revision, status, released_event_count, release_cutoff, assessment_cutoff, truncated
-- scenario_results: human_answer, ground_truth_label, evidence_complete, correct, ticket_deleted
-- detection_metrics: unit=`incident_group`, tp/fp/fn/tn, precision, recall, null_reason
-- human_metrics: correct_count, total_groups, undetermined_count; แยก manual tickets ที่ยังไม่จับคู่กับ incident
-- ai: mode, succeeded/failed counts, measured_usage, measured_cost หรือ null
-- versions และ dataset_hash เพื่อทำซ้ำได้
+Operator provision Instructor account, quota และ assignment ผ่าน `python -m app.db.provision`; ไม่มี public endpoint สำหรับยกระดับ role หรือเปลี่ยน quota. Exam evaluation/ground-truth routes ยัง default-deny และไม่ใช้ training serializer.
 
-Human score และ detector metrics ใช้คนละแหล่งข้อมูล Deleted ticket ไม่ทำให้ incident หายจากผล รายละเอียดการนับและเหตุผลที่ B/C อาจมี detection metrics เท่ากันอยู่ใน [Architecture §11](architecture.md#11-การประเมิน-abc)
+รายละเอียด A/B matching และ denominator อยู่ใน [Architecture §11](architecture.md#11-การประเมิน-abc)
 
 ## 11. Admin / Instructor
 
 | Method | Endpoint | Input / Query | ผลสำเร็จ |
 |---|---|---|---|
-| GET | `/admin/users` | q?, status?, cursor?, limit? | 200 safe user fields |
-| PATCH | `/admin/users/{user_id}` | expected_version, status=active/disabled, reason | 200; disabled revoke sessions ใน transaction เดียว |
-| PATCH | `/admin/users/{user_id}/quota` | expected_version, daily_runs, daily_ai_requests, reason | 200; ไม่ reset การใช้เดิม |
-| GET | `/admin/runs` | owner_user_id?, status?, cursor?, limit? | 200 supervised runs |
-| GET | `/admin/runs/{run_id}` | — | 200 run metadata |
-| GET | `/admin/runs/{run_id}/events` | filters เหมือน events ปกติ | 200 released evidence เท่านั้น |
-| GET | `/admin/runs/{run_id}/events/{event_id}` | — | 200 redacted event detail |
-| GET | `/admin/runs/{run_id}/tickets` | filters เหมือน tickets ปกติ | 200 tickets |
-| GET | `/admin/runs/{run_id}/tickets/{ticket_id}` | — | 200 assessment/notes/evidence/analysis ที่ใช้ review |
-| PATCH | `/admin/runs/{run_id}/tickets/{ticket_id}` | expected_version, severity?, status?, reason | 200; ไม่รับ title/disposition/assessment/note |
-| GET | `/admin/runs/{run_id}/ground-truth` | — | training อ่านก่อนจบได้; exam ต้อง submitted แล้ว; assignment + privileged handler + access audit |
-| GET | `/admin/runs/{run_id}/evaluation` | — | status contract เหมือน evaluation ปกติ |
-| GET | `/admin/runs/{run_id}/audit` | cursor?, limit? | 200 review/change history |
-| GET | `/admin/runs/{run_id}/comments` | cursor?, limit? | 200 instructor comments |
-| POST | `/admin/runs/{run_id}/comments` | body 1–2,000 chars | 201 comment พร้อม author |
+| GET | `/admin/runs` | — | 200 เฉพาะ assigned runs |
+| GET | `/admin/runs/{run_id}/evaluation` | — | 200 frozen evaluation; 409 pending |
+| GET | `/admin/runs/{run_id}/ground-truth` | — | assigned Instructor อ่าน pinned training truth ก่อน finish/หลัง completed พร้อม access audit; exam route ยังไม่มี |
+| GET | `/admin/runs/{run_id}/comments` | — | 200 Instructor comments ของ assigned run |
+| POST | `/admin/runs/{run_id}/comments` | body 1–2,000 chars + CSRF | 201 comment พร้อม author และ audit |
+| POST | `/admin/runs/{run_id}/experiments` | completed run ที่ได้รับ assignment | A/B detector result และ C unavailable; เก็บผล experiment แยก |
+
+บัญชี Instructor, quota และ assignment ใช้ operator provisioning (`python -m app.db.provision`) ในขั้นนี้; ไม่มี public endpoint ให้ยกระดับ role หรือเปลี่ยน quota. Training truth version ถูก pin ต่อ `run_versions` ตอนเริ่ม run. Evaluation จะ drain detection/analysis jobs สูงสุด 60 วินาที, ยกเลิก/fence งานที่มาช้าหลัง deadline แล้วบันทึก snapshot immutable. Detector metrics ใช้ detections ไม่ใช้ manual ticket; การลบ ticket ไม่เปลี่ยน denominator. Human scoring ยัง N/A พร้อม `HUMAN_SCORING_POLICY_UNDECIDED` จนกว่าจะอนุมัตินโยบาย; Instructor routes ไม่มี mutation สำหรับ assessment/note.
 
 อ่าน review data ของผู้เรียนผ่าน Instructor routes ให้มี access audit ห้ามเปลี่ยน role ผ่าน user PATCH ส่วนการ bootstrap Instructor ใช้คำสั่งฝั่ง server ที่ทีมทำใน Phase 1 และไม่เปิด public API
 

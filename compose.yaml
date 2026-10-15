@@ -73,6 +73,11 @@ services:
       DB_PASSWORD_FILE: /run/secrets/api_runtime
       AUTH_COOKIE_SECURE: "false"
       AUTH_ORIGINS: http://127.0.0.1:${SOC_WEB_PORT:-3000},http://localhost:${SOC_WEB_PORT:-3000}
+      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
+      GEMINI_PROJECT_TIER_CONFIRMED: ${GEMINI_PROJECT_TIER_CONFIRMED:-}
+      GEMINI_SYNTHETIC_DATA_ONLY: ${GEMINI_SYNTHETIC_DATA_ONLY:-true}
+      GEMINI_API_KEY_FILE: /run/secrets/gemini_api_key
+      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-gemini-3.5-flash-lite}
     secrets: [api_runtime]
     ports: ["127.0.0.1:${SOC_API_PORT:-8000}:8000"]
     depends_on:
@@ -93,11 +98,35 @@ services:
     environment:
       <<: *db-env
       DB_PASSWORD_FILE: /run/secrets/worker_runtime
-    secrets: [worker_runtime]
+      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
+      GEMINI_PROJECT_TIER_CONFIRMED: ${GEMINI_PROJECT_TIER_CONFIRMED:-}
+      GEMINI_SYNTHETIC_DATA_ONLY: ${GEMINI_SYNTHETIC_DATA_ONLY:-true}
+      GEMINI_API_KEY_FILE: /run/secrets/gemini_api_key
+      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-gemini-3.5-flash-lite}
+    secrets: [worker_runtime, gemini_api_key]
     depends_on:
       seed: {condition: service_completed_successfully}
     healthcheck:
       test: [CMD, python, -m, app.worker, --check]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+
+  evaluator:
+    image: soc-worker:local
+    build:
+      context: ./backend
+      target: runner
+    restart: unless-stopped
+    command: [python, -m, app.evaluation]
+    environment:
+      <<: *db-env
+      DB_PASSWORD_FILE: /run/secrets/evaluator_runtime
+    secrets: [evaluator_runtime]
+    depends_on:
+      seed: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -m, app.evaluation, --check]
       interval: 30s
       timeout: 8s
       retries: 3
@@ -150,7 +179,13 @@ services:
       SOC_TEST_DB_NAME: soc_test_foundation
       SOC_TEST_SECRETS_DIR: /role-secrets
       SOC_TEST_ALLOW_RESET: "yes"
-    volumes: [./.local/secrets:/role-secrets:ro]
+    volumes:
+      - ./.local/secrets/postgres.txt:/role-secrets/postgres.txt:ro
+      - ./.local/secrets/migration_owner.txt:/role-secrets/migration_owner.txt:ro
+      - ./.local/secrets/api_runtime.txt:/role-secrets/api_runtime.txt:ro
+      - ./.local/secrets/worker_runtime.txt:/role-secrets/worker_runtime.txt:ro
+      - ./.local/secrets/evaluator_runtime.txt:/role-secrets/evaluator_runtime.txt:ro
+      - ./.local/secrets/retention_runtime.txt:/role-secrets/retention_runtime.txt:ro
     depends_on:
       test-db: {condition: service_healthy}
 
@@ -162,3 +197,5 @@ secrets:
   migration_owner: {file: ./.local/secrets/migration_owner.txt}
   api_runtime: {file: ./.local/secrets/api_runtime.txt}
   worker_runtime: {file: ./.local/secrets/worker_runtime.txt}
+  evaluator_runtime: {file: ./.local/secrets/evaluator_runtime.txt}
+  gemini_api_key: {file: ./.local/secrets/gemini_api_key.txt}

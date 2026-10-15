@@ -1,20 +1,26 @@
 import hashlib
+from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import text
 
 from app.analysis.service import enqueue_analysis
 from app.db.session import Database
-from app.detection.policy import evaluate
+from app.detection.policy import evaluate_pinned
+from app.worker.fencing import lock_domain, require_lease
 
 
-async def detect_run(database: Database, run_id: UUID) -> None:
+async def detect_run(
+    database: Database, run_id: UUID, *, job: dict[str, Any] | None = None
+) -> None:
     async with database.sessions() as session, session.begin():
+        if job is not None and not await lock_domain(session, job):
+            return
         # A run lock orders this after release and blocks completion snapshot races.
         run = (
             (
                 await session.execute(
-                    text("""SELECT id,owner_user_id FROM app.runs
+                    text("""SELECT id,owner_user_id,created_at FROM app.runs
             WHERE id=:run FOR UPDATE"""),
                     {"run": run_id},
                 )
@@ -27,9 +33,9 @@ async def detect_run(database: Database, run_id: UUID) -> None:
         rows = (
             (
                 await session.execute(
-                    text("""SELECT id,source,username,src_ip,
-            response_json,log_json,content_hash FROM app.events
-            WHERE run_id=:run ORDER BY release_seq"""),
+                    text("""SELECT id,source,username,src_ip,asset_id,event_time,
+            scenario_instance_id,response_json,log_json,content_hash
+            FROM app.events WHERE run_id=:run ORDER BY release_seq"""),
                     {"run": run_id},
                 )
             )
@@ -37,7 +43,21 @@ async def detect_run(database: Database, run_id: UUID) -> None:
             .all()
         )
         evidence = {row["id"]: row for row in rows}
-        for finding in evaluate([dict(row) for row in rows]):
+        versions = (
+            await session.execute(
+                text(
+                    """SELECT rule_version,baseline_version,correlation_version
+                    FROM app.run_versions WHERE run_id=:run"""
+                ),
+                {"run": run_id},
+            )
+        ).one()
+        detector_input = [
+            dict(row)
+            | {"offset_ms": int((row["event_time"] - run["created_at"]).total_seconds() * 1000)}
+            for row in rows
+        ]
+        for finding in evaluate_pinned(detector_input, *versions):
             digest = hashlib.sha256(
                 ":".join(evidence[item]["content_hash"] for item in finding.evidence_ids).encode()
             ).hexdigest()
@@ -121,3 +141,6 @@ async def detect_run(database: Database, run_id: UUID) -> None:
                 list(finding.evidence_ids),
                 ticket_id,
             )
+
+        if job is not None:
+            await require_lease(session, job)

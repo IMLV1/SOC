@@ -15,6 +15,8 @@ from app.db.config import database_url
 from app.db.health import check_database
 from app.db.session import Database
 from app.demo import router as demo_router
+from app.evaluation.routes import admin_router as instructor_evaluation_router
+from app.evaluation.routes import router as evaluation_router
 from app.http_models import (
     ErrorDetail,
     ErrorEnvelope,
@@ -53,6 +55,8 @@ app.include_router(run_router)
 app.include_router(ticket_router)
 app.include_router(admin_ticket_router)
 app.include_router(analysis_router)
+app.include_router(evaluation_router)
+app.include_router(instructor_evaluation_router)
 
 
 @app.middleware("http")

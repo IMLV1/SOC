@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import Field
 
-from app.analysis.models import AnalysisResult
+from app.analysis.models import AnalysisResult, ProviderOutput, ProviderUsage
 from app.auth.models import Strict
 
 
@@ -26,11 +26,15 @@ class AnalysisInput(Strict):
 
 
 class AnalysisProvider(Protocol):
-    async def analyze(self, data: AnalysisInput) -> dict[str, Any]: ...
+    mode: str
+
+    async def analyze(self, data: AnalysisInput) -> ProviderOutput | dict[str, Any]: ...
 
 
 class MockProvider:
-    async def analyze(self, data: AnalysisInput) -> dict[str, Any]:
+    mode = "mock"
+
+    async def analyze(self, data: AnalysisInput) -> ProviderOutput:
         kinds = [item.log.get("event_type") for item in data.evidence]
         read = "records_read" in kinds
         session = "session_created" in kinds
@@ -74,7 +78,16 @@ class MockProvider:
                 recommended_checks=["ตรวจ timeline, request/response และยืนยันกับเจ้าของกิจกรรม"],
             )
         )
-        return result.model_dump(mode="json")
+        return ProviderOutput(
+            result=result,
+            usage=ProviderUsage(
+                mode="mock",
+                input_tokens=0,
+                output_tokens=0,
+                total_tokens=0,
+                pricing_tier="mock",
+            ),
+        )
 
 
 def validate_citations(result: AnalysisResult, allowed: set[UUID]) -> None:

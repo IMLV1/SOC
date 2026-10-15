@@ -13,6 +13,7 @@ from app.db.session import Database
 from app.detection.worker import detect_run
 from app.runs.service import effective_ms, enqueue_release, server_time
 from app.scenarios.fixtures import FixtureEvent, content_hash, load_training_fixture
+from app.worker.fencing import lock_domain, require_lease
 
 FIXTURE_ROOT = Path(__file__).resolve().parents[2] / "fixtures/events/training"
 LEASE_SECONDS = 60
@@ -32,29 +33,13 @@ async def heartbeat(database: Database, worker_id: str, release_sha: str = "loca
 
 
 async def claim(database: Database, worker_id: str) -> dict[str, Any] | None:
+    await recover_runs(database)
     async with database.sessions() as session, session.begin():
         await session.execute(
             text("""UPDATE app.jobs SET status='failed',
             last_error='LEASE_EXHAUSTED',locked_by=NULL,lease_token=NULL,
             lease_expires_at=NULL,finished_at=clock_timestamp()
             WHERE status='running' AND attempts>=3 AND lease_expires_at<=clock_timestamp()""")
-        )
-        # Reconcile a running run left without a wake-up by an older worker or
-        # an interrupted deployment. Terminally failed release jobs are not
-        # retried here; MAX_ATTEMPTS remains the upper bound.
-        await session.execute(
-            text("""WITH stalled AS (
-                SELECT r.id,r.version,r.release_cursor FROM app.runs r
-                WHERE r.status='running'
-                  AND NOT EXISTS (SELECT 1 FROM app.jobs j
-                    WHERE j.run_id=r.id AND j.type='release_events'
-                      AND j.status IN ('queued','running','failed'))
-                ORDER BY r.created_at FOR UPDATE SKIP LOCKED LIMIT 5
-            ) INSERT INTO app.jobs(id,run_id,type,dedupe_key,payload,available_at)
-            SELECT gen_random_uuid(),id,'release_events',
-                   'recovery:'||id::text||':'||version::text||':'||release_cursor::text,
-                   jsonb_build_object('cursor',release_cursor),clock_timestamp()
-            FROM stalled ON CONFLICT(dedupe_key) DO NOTHING""")
         )
         row = (
             (
@@ -89,6 +74,28 @@ async def claim(database: Database, worker_id: str) -> dict[str, Any] | None:
         return dict(claimed)
 
 
+async def recover_runs(database: Database) -> None:
+    # Separate transaction: never retain a job lock while waiting for a run.
+    async with database.sessions() as session, session.begin():
+        # Reconcile a running run left without a wake-up by an older worker or
+        # an interrupted deployment. Terminally failed release jobs are not
+        # retried here; MAX_ATTEMPTS remains the upper bound.
+        await session.execute(
+            text("""WITH stalled AS (
+                SELECT r.id,r.version,r.release_cursor FROM app.runs r
+                WHERE r.status='running'
+                  AND NOT EXISTS (SELECT 1 FROM app.jobs j
+                    WHERE j.run_id=r.id AND j.type='release_events'
+                      AND j.status IN ('queued','running','failed'))
+                ORDER BY r.created_at FOR UPDATE SKIP LOCKED LIMIT 5
+            ) INSERT INTO app.jobs(id,run_id,type,dedupe_key,payload,available_at)
+            SELECT gen_random_uuid(),id,'release_events',
+                   'recovery:'||id::text||':'||version::text||':'||release_cursor::text,
+                   jsonb_build_object('cursor',release_cursor),clock_timestamp()
+            FROM stalled ON CONFLICT(dedupe_key) DO NOTHING""")
+        )
+
+
 async def extend_lease(database: Database, job_id: UUID, token: UUID) -> bool:
     async with database.sessions() as session, session.begin():
         changed = await session.scalar(
@@ -112,7 +119,7 @@ async def settle(database: Database, job: dict[str, Any], error: str | None = No
                 (:delay * interval '1 second') ELSE available_at END,
             finished_at=CASE WHEN :terminal THEN clock_timestamp() ELSE NULL END
             WHERE id=:id AND status='running' AND lease_token=:token
-            RETURNING id"""),
+            AND lease_expires_at>clock_timestamp() RETURNING id"""),
             {
                 "status": status,
                 "error": error,
@@ -130,14 +137,7 @@ async def release_events(database: Database, job: dict[str, Any]) -> None:
     if run_id is None:
         raise ValueError("Release job missing run")
     async with database.sessions() as session, session.begin():
-        # Check fencing within the same transaction as the domain writes.
-        valid = await session.scalar(
-            text("""SELECT 1 FROM app.jobs WHERE id=:id
-            AND status='running' AND lease_token=:token
-            AND lease_expires_at>clock_timestamp() FOR UPDATE"""),
-            {"id": job["id"], "token": job["lease_token"]},
-        )
-        if not valid:
+        if not await lock_domain(session, job):
             return
         row = (
             (
@@ -235,6 +235,8 @@ async def release_events(database: Database, job: dict[str, Any]) -> None:
                 session, run_id, cursor, now + timedelta(milliseconds=delay), int(row["version"])
             )
 
+        await require_lease(session, job)
+
 
 async def process_one(database: Database, worker_id: str) -> bool:
     job = await claim(database, worker_id)
@@ -244,7 +246,7 @@ async def process_one(database: Database, worker_id: str) -> bool:
         if job["type"] == "release_events":
             await release_events(database, job)
         elif job["type"] == "detect_events":
-            await detect_run(database, job["run_id"])
+            await detect_run(database, job["run_id"], job=job)
         elif job["type"] == "analyze_evidence":
             await analyze_job(database, job)
         else:

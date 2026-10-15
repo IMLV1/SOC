@@ -18,7 +18,7 @@ class RunView(Strict):
     server_time: datetime
     expires_at: datetime
     seed: int
-    analysis_mode: Literal["mock"]
+    analysis_mode: Literal["mock", "real"]
 
 
 class RunEnvelope(Strict):

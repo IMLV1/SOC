@@ -174,9 +174,9 @@ production client จนรายละเอียด request/response/authoriz
 | FR-006 / SOC-010/013 | UC-06 เจ้าของ mutable run → ticket CRUD/restore/assessment | run `/tickets/*`; Investigation | version race, reason, immutable revisions, soft delete ไม่ลบ denominator |
 | FR-007 / SOC-010 | UC-07 ผู้เขียนแก้ note ของตน | ticket `/notes/*`; Notes | cross-run refs/other-author/parent deleted ถูกปฏิเสธ; history คงอยู่ |
 | FR-008 / SOC-011/012 | UC-08 training owner อ่าน/retry analysis | run `/analyses/*`; Analysis | snapshot refs, quota, timeout/invalid_output, mode mock/real; exam hints denied |
-| FR-009 / SOC-014 | UC-09 training finish → pending → frozen evaluation/export | run `/evaluation`, `/ground-truth`, `/export`, `/audit` | cutoff/late result, null metrics เมื่อ denominator=0; exam ใช้ policy แยก |
-| FR-010 / SOC-015 | UC-10 assigned Instructor → account/quota/comments/review | `/admin/users*`, `/admin/runs*`; Admin | unassigned 404, Analyst admin 403, ไม่เขียนทับ learner answer; exam truth หลัง submit |
-| FR-011 / SOC-014 | UC-11 Instructor dataset completed → experiment A/B/C | `/admin/experiments*`; Experiments | same dataset/config, mock ไม่แทน C real, metrics แยก learning |
+| FR-009 / SOC-014 | UC-09 training finish → pending → frozen evaluation/export | `/runs/{run_id}/evaluation`, `/ground-truth`, `/export`; owner | owner อ่าน training truth หลัง completed; assigned Instructor อ่านก่อน finish/หลัง completed; cutoff/late result, null metrics เมื่อ denominator=0; exam ใช้ policy แยก |
+| FR-010 / SOC-015 | UC-10 assigned Instructor → account/quota/comments/review | operator `app.db.provision`; `/admin/runs*`; Instructor | account/quota/assignment ผ่าน CLI ที่มี audit; unassigned 404; Analyst admin 403; comments แยกจาก assessment/note; exam truth หลัง submit ยังไม่มี endpoint |
+| FR-011 / SOC-014 | UC-11 Instructor dataset completed → experiment A/B/C | `POST /admin/runs/{run_id}/experiments`; Experiments | A/B ใช้ detector จริงกับ frozen dataset เดียวกัน; C unavailable จน provider/budget controls พร้อม; metrics แยกจาก human scoring |
 | FR-012 / RAG-001–005 | UC-12 mutable training ticket → question → validated citations | ticket `/questions`, analysis `/sources/*`; Ask AI | revocation ทุก projection, retry frozen release, no_match ไม่เรียก chat |
 | FR-013 / learning LEARN-01/02 | UC-13 login → onboarding → step lessons → progress | `/learning-path`, `/me/learning-path`, `/lessons/*`; Learning | refresh ไม่หาย, versioned steps/order, completion ไม่เท่ากับผ่านสอบ |
 | FR-014 / learning LEARN-03/04 | UC-14 prerequisites ผ่าน → server เลือก case/attempt | `/levels/{level_id}/attempts`, `/attempts/{attempt_id}`; Exam | direct API bypass ไม่ได้, blind serializer ทุก route, demo fixture แยก |
@@ -252,13 +252,13 @@ PostgreSQL 17.11/digest ผ่าน local integration ตั้งแต่ข�
 | D-02 | retake จำนวนครั้ง/cooldown/quota/case rotation; active รวม pending/needs_review หรือไม่; pause/abort/expiry | attempt admission/index/lifecycle จริง |
 | D-03 | override pass→fail หลัง unlock: คงสิทธิ์/ถอนสิทธิ์/ผลต่อ attempt ระดับถัดไป; ผู้อนุมัติและการแจ้งผู้เรียน | review/unlock mutation จริง |
 | D-04 | feedback รายข้อเผยได้แค่ไหนโดยไม่เป็นเฉลยเต็ม; grading citation source access/withdrawal | learner result/export schema approval |
-| D-05 | chat/embedding provider, model/dimension/tokenizer, privacy, credentials ผ่าน secret store, งบและ rate card | real calls/benchmark/ingestion |
+| D-05 | เลือก Gemini Free Tier สำหรับ analysis เฉพาะ synthetic training events ใน local (15 ต.ค. 2026); ใช้ Gemini 3.5 Flash-Lite หลัง 2.5 Flash ตอบ 404 สำหรับ project ใหม่; embedding/RAG model, production privacy/secret store, paid budget/rate card ยังรอ | real calls เฉพาะ local synthetic; benchmark/ingestion/production ยังปิด |
 | D-06 | approved KB manifest/reviewer, hosting/PostgreSQL/pgvector, domain/registry/backup/release owner | corpus publish/deploy |
 | D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า และ promotion notification; quota ผู้สมัครใหม่ยืนยันแล้ว 10 runs/20 AI requests ต่อวัน UTC (14 ต.ค. 2026) ส่วน exam/retake ยัง pending | public learning rollout |
 
-ไม่มี default คะแนนผ่าน, auto-revoke unlock หรือ provider ที่เลือกให้เอง
+ไม่มี default คะแนนผ่านหรือ auto-revoke unlock. Gemini Free Tier ที่ระบุข้างต้นเป็นการตัดสินใจผู้ใช้สำหรับ local synthetic analysis เท่านั้น; ไม่ได้อนุมัติ embedding/RAG, benchmark หรือ production use.
 ข้อ 05 ใช้ [training-only catalog/seed และ exam default-deny policy](scenario-development.md)
 เพื่อปิดช่องก่อนเปิด run/exam จริง; ไม่อนุมัติ draft rubric/result/attempt schema โดยปริยาย
-AI/RAG และ exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
+RAG และ exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
 Approval เพิ่ม route: ตกลง policy/schema → เปลี่ยน operation เป็น approved → implement response
 allowlist/validation/permission → generated OpenAPI drift + behavior/integration tests → ติ๊ก checklist เฉพาะที่ผ่าน

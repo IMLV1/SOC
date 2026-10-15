@@ -1,6 +1,6 @@
 # Prototype alignment
 
-อัปเดต: 12 ตุลาคม 2026
+อัปเดต: 15 ตุลาคม 2026
 
 เทียบกับ [Architecture](architecture.md), [API contract](api.md) และ [Development plan](development-plan.md)
 
@@ -20,7 +20,7 @@
 | Export | ส่งออกได้ทุกสถานะ | Completed เท่านั้น | GET runs/{id}/export |
 | Clock | logout/refresh พักรอบ | logout ไม่พัก; catch up จาก wall time เมื่อกลับมา | architecture §7; ยังจำลองใน browser |
 | Concurrent runs | เริ่มรอบใหม่แล้วพักเก่าอัตโนมัติ | ปฏิเสธเมื่อมี running run ของบัญชีเดิม รวมตอน resume | runs create/resume + quota |
-| Run quota | นับทุกวันที่เคยใช้รวมกัน | นับเฉพาะวัน UTC ของบัญชี; ปรับ limit ไม่ reset usage | GET me/quota; admin quota PATCH |
+| Run quota | นับทุกวันที่เคยใช้รวมกัน | นับเฉพาะวัน UTC ของบัญชี; ปรับ limit ไม่ reset usage | GET me/quota; operator provisioning; ไม่มี public quota API |
 | Registration | สมัครแล้ว login ทันที | สมัครสำเร็จกลับ Login; role Analyst เท่านั้น | POST auth/register / login |
 | Evidence filters | keyword/source | เพิ่ม from/to ISO UTC, asset, username, IP และแบ่งหน้า | GET runs/{id}/events |
 | Timestamp | เวลา 21:00 คงที่ | UTC ของ event ผูกกับ startedAt; timeline แสดง Asia/Bangkok | api §1, §6 |
@@ -51,8 +51,8 @@
 | AI/RAG grading | ตรวจ 4 ข้อด้วย mock rubric; เหตุผลตรวจเพียงความยาว ไม่เข้าใจความหมายและไม่ค้น knowledge จริง | LEARN-03 และ [RAG §12](rag-langchain.md#12-learning-coach-และการประเมินเหตุผลหลังสอบ) |
 | Security/ownership | ตรวจ flow ฝั่ง client เท่านั้น localStorage แก้ได้ | SOC-003, SOC-010 |
 | Retention/audit | ไม่มี purge ตาม expires_at; audit ไม่ใช่ server append-only | SOC-010, SOC-016 |
-| Experiment | แสดง Not measured; ยังไม่มี A/B/C experiment execution หรือ provider usage จริง | SOC-014 |
-| Instructor | มี account/quota/review/comments; ยังไม่ใช่ admin REST หรือ ground-truth access audit ฝั่ง server | SOC-015 |
+| Experiment | แสดง Not measured; production A/B รัน detector จริงบน snapshot เดียวกัน, C คง unavailable จน global provider/budget controls พร้อม | POST admin/runs/{id}/experiments; SOC-014 |
+| Instructor | prototype role state เป็น local; production มี assigned-run evaluation/truth review, comments และ access audit; account/quota/assignment ใช้ operator CLI | `/admin/runs*`; SOC-015 |
 
 ข้อจำกัดเหล่านี้ไม่ใช่ข้อยกเว้นสำหรับระบบจริง ต้องทำให้ครบและผ่าน integration/E2E tests ก่อนนับ phase นั้นเสร็จ
 
