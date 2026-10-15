@@ -85,7 +85,21 @@ export default function TicketPage() {
       const updated = await write<Ticket>(`/runs/${runId}/tickets/${ticket.id}`,
         { expected_version: ticket.version, title, severity, status,
           ...(disposition ? { disposition } : {}), reason }, { method: "PATCH" });
-      setTicket(updated); setAssessments(await read<Assessment[]>(`/runs/${runId}/tickets/${ticket.id}/assessments`));
+      setTicket(updated);
+      // Render the revision returned atomically with the update before refreshing
+      // the history list, so the saved assessment is immediately visible.
+      if (disposition && updated.latest_assessment) {
+        setAssessments(current => [
+          ...current.filter(item => item.id !== updated.latest_assessment?.id),
+          updated.latest_assessment,
+        ].sort((left, right) => left.revision - right.revision));
+      }
+      const history = await read<Assessment[]>(`/runs/${runId}/tickets/${ticket.id}/assessments`);
+      setAssessments(current => {
+        const byId = new Map(current.map(item => [item.id, item]));
+        for (const item of history) byId.set(item.id, item);
+        return [...byId.values()].sort((left, right) => left.revision - right.revision);
+      });
       setReason(""); setDisposition("");
     } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
   }
