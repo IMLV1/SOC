@@ -28,17 +28,26 @@ def password_from_file(path: str) -> str:
     return password
 
 
+def runtime_password() -> str:
+    path = os.environ.get("DB_PASSWORD_FILE", "")
+    inline = os.environ.get("DB_PASSWORD", "")
+    if path and inline:
+        raise ValueError("Configure only one database password source.")
+    if path:
+        return password_from_file(path)
+    if len(inline) < 24 or "\x00" in inline:
+        raise ValueError("A database runtime secret is required (at least 24 characters).")
+    return inline
+
+
 def database_url(role: str) -> URL:
     if role not in (*ROLES, "postgres"):
         raise ValueError("Unsupported database role.")
-    # Per-process secret mount: API receives only its own file, never owner/evaluator secrets.
-    path = os.environ.get("DB_PASSWORD_FILE", "")
-    if not path:
-        raise ValueError("DB_PASSWORD_FILE is required.")
+    # Each process receives only its role's secret, never owner/evaluator credentials.
     return URL.create(
         "postgresql+asyncpg",
         username=role,
-        password=password_from_file(path),
+        password=runtime_password(),
         host=os.environ.get("DB_HOST", "127.0.0.1"),
         port=int(os.environ.get("DB_PORT", "5432")),
         database=os.environ.get("DB_NAME", "soc"),

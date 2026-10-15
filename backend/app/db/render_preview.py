@@ -65,6 +65,10 @@ async def prepare(directory: Path) -> None:
         f"DB_NAME={url.database}\nDB_PASSWORD_FILE=/etc/secrets/api_runtime.txt\n",
         encoding="utf-8",
     )
+    (directory / "api-secret.env").write_text(
+        "DB_PASSWORD=" + password_from_file(str(directory / "api_runtime.txt")) + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> None:

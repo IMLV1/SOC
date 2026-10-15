@@ -1,9 +1,10 @@
 import ssl
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import URL
 
-from app.db.config import tls_connect_args
+from app.db.config import runtime_password, tls_connect_args
 from app.main import app
 
 
@@ -12,6 +13,22 @@ def test_external_render_tls_checks_hostname_and_certificate():
     assert context.check_hostname is True
     assert context.verify_mode == ssl.CERT_REQUIRED
     assert tls_connect_args(URL.create("postgresql+asyncpg", host="localhost")) == {}
+
+
+def test_runtime_secret_requires_one_explicit_strong_source(monkeypatch, tmp_path):
+    monkeypatch.delenv("DB_PASSWORD_FILE", raising=False)
+    monkeypatch.setenv("DB_PASSWORD", "x" * 48)
+    assert runtime_password() == "x" * 48
+    secret = tmp_path / "runtime.txt"
+    secret.write_text("y" * 48)
+    monkeypatch.setenv("DB_PASSWORD_FILE", str(secret))
+    with pytest.raises(ValueError, match="only one"):
+        runtime_password()
+    monkeypatch.delenv("DB_PASSWORD")
+    assert runtime_password() == "y" * 48
+    monkeypatch.delenv("DB_PASSWORD_FILE")
+    with pytest.raises(ValueError, match="required"):
+        runtime_password()
 
 
 def test_auth_preview_refuses_background_work_without_database(monkeypatch):

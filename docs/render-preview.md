@@ -30,7 +30,18 @@ This verifies external TLS, creates independent role passwords, runs the same
 checksummed migrations and seeds the training catalog. Its output suppresses
 credentials and SQL. Managed-role compatibility must pass before deploying API.
 Copy nonsecret coordinates from generated `runtime.env` to API environment;
-add only `api_runtime.txt` using Render Secret Files. Do not upload owner/admin files.
+add only `api_runtime.txt` using Render Secret Files. Alternatively import generated
+ignored `api-secret.env` with Render's Add from .env file picker. This sets only
+`DB_PASSWORD` as an encrypted service environment secret; omit `DB_PASSWORD_FILE`.
+The API rejects conflicting sources and requires 24+ characters without defaults.
+Do not upload owner/admin files. Do not enable environment logging or echo secrets.
+
+Verification on 15 October 2026: managed database bootstrap, migration ledger
+readiness and catalog seed passed. API runtime cannot create app objects. Bootstrap
+rejects existing elevated roles instead of attempting superuser-only ALTER flags.
+Local regression: 52 unit/contract tests, 55 PostgreSQL integration tests, 11 browser
+E2E tests, 3 HTTP smoke tests, lint/typecheck/build and client asset guard passed.
+HTTPS signup/login/logout acceptance remains pending web-service deployment.
 
 Deploy API first. Set frontend `BACKEND_ORIGIN` to the actual HTTPS API public URL
 before its Docker build; Next rewrites compile this value during build.
