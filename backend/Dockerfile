@@ -13,9 +13,11 @@ USER soc
 CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM base AS runner
+COPY knowledge ./knowledge
 COPY fixtures/events/training ./fixtures/events/training
 
 FROM base AS seed
+COPY knowledge ./knowledge
 COPY fixtures ./fixtures
 CMD ["python", "-m", "app.scenarios.seed"]
 

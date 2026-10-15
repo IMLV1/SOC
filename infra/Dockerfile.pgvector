@@ -1,0 +1,5 @@
+# Extension artifacts are built for PostgreSQL major 17 on Debian bookworm.
+FROM pgvector/pgvector:0.8.2-pg17-bookworm@sha256:feb68f4f15446397d8cac7f4fe48fe4586de83160d1fc48b46283312d1a33966 AS vector
+FROM postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+COPY --from=vector /usr/lib/postgresql/17/lib/vector.so /usr/lib/postgresql/17/lib/vector.so
+COPY --from=vector /usr/share/postgresql/17/extension/vector* /usr/share/postgresql/17/extension/

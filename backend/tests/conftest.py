@@ -35,8 +35,11 @@ def pg():
         try:
             async with engine.begin() as conn:
                 # Constant schemas, in the explicitly opted-in test database only.
-                for schema in ("app", "private", "ops"):
+                for schema in ("app", "private", "ops", "kb"):
                     await conn.execute(text(f"DROP SCHEMA IF EXISTS {schema} CASCADE"))
+                await conn.execute(
+                    text("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public VERSION '0.8.2'")
+                )
         finally:
             await engine.dispose()
         await bootstrap(url("postgres"), directory)

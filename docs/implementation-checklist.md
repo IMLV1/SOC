@@ -234,7 +234,9 @@ HTTP smoke 3, Chromium E2E 11 ผ่าน. C จริงเป็น operator 
 
 ### 13 — Knowledge corpus, pgvector และ ingestion
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 10; ต่อจาก 12 ตามลำดับแนะนำ; RAG-001/002
+ผ่าน local/mock acceptance วันที่ 15 ต.ค. 2026: offline storage/ingestion/publish/revoke, scoped roles, golden/held-out และ run pin; ดู [ผลตรวจข้อ 13](step-13-verification.md). GitHub CI ของ branch นี้รอยืนยัน; real embeddings และ Ask AI ยังไม่เปิด.
+
+- [x] ผ่าน local/mock acceptance — หลัง 10; ต่อจาก 12 ตามลำดับแนะนำ; RAG-001/002
 
 ```text
 ทำข้อ 13 ตาม rag-langchain.md: เพิ่ม kb schema/pgvector, approved Markdown manifest,

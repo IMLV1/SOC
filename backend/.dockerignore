@@ -11,3 +11,6 @@
 !fixtures/
 !fixtures/**
 **/__pycache__/
+
+!knowledge/
+!knowledge/**
