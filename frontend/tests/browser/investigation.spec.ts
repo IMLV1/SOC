@@ -41,6 +41,7 @@ test("manual investigation uses API, preserves drafts on 409 and keeps note revi
   await expect(page.locator("p.run-alert[role='alert']")).toContainText("ร่างของคุณยังอยู่");
   await expect(page.getByLabel("หัวข้อ")).toHaveValue("Unsaved local draft");
   await page.getByRole("button", { name: "โหลดเวอร์ชันล่าสุด" }).click();
+  await expect(page.locator("p.run-alert[role='alert']")).toBeHidden();
   await expect(page.getByLabel("หัวข้อ")).toHaveValue("Unsaved local draft");
   await page.getByLabel("ประเมิน").selectOption("undetermined");
   await page.getByRole("button", { name: "บันทึก", exact: true }).click();

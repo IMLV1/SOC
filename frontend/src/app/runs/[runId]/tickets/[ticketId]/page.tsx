@@ -31,6 +31,7 @@ export default function TicketPage() {
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [noteEvidenceDrafts, setNoteEvidenceDrafts] = useState<Record<string, string[]>>({});
   const load = useCallback(async (preserveDraft = false) => {
+    setLoading(true);
     try {
       const currentRun = await read<Run>(`/runs/${runId}`);
       setRun(currentRun);
@@ -63,7 +64,7 @@ export default function TicketPage() {
     const timer = setTimeout(() => void load(), 0);
     return () => clearTimeout(timer);
   }, [session, load]);
-  const mutable = run && ["running", "paused", "reviewing"].includes(run.status);
+  const mutable = !loading && run && ["running", "paused", "reviewing"].includes(run.status);
   function errorMessage(error: unknown) {
     if (error instanceof ApiError && error.status === 409) return "ข้อมูลถูกแก้ไขหรือรอบถูกล็อกแล้ว ร่างของคุณยังอยู่ กดโหลดเวอร์ชันล่าสุดเพื่อตรวจเปรียบเทียบ";
     if (error instanceof ApiError && error.status === 401) return "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง";
@@ -88,10 +89,11 @@ export default function TicketPage() {
       setTicket(updated);
       // Render the revision returned atomically with the update before refreshing
       // the history list, so the saved assessment is immediately visible.
-      if (disposition && updated.latest_assessment) {
+      const savedAssessment = updated.latest_assessment;
+      if (disposition && savedAssessment) {
         setAssessments(current => [
-          ...current.filter(item => item.id !== updated.latest_assessment?.id),
-          updated.latest_assessment,
+          ...current.filter(item => item.id !== savedAssessment.id),
+          savedAssessment,
         ].sort((left, right) => left.revision - right.revision));
       }
       const history = await read<Assessment[]>(`/runs/${runId}/tickets/${ticket.id}/assessments`);
