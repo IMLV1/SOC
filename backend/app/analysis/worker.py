@@ -10,7 +10,8 @@ from uuid import UUID, uuid4
 from pydantic import ValidationError
 from sqlalchemy import text
 
-from app.analysis.gemini_provider import GeminiProvider
+from app.analysis.budget import reserve_call, settle_call
+from app.analysis.gemini_provider import GeminiProvider, ProviderRateLimited, request_body
 from app.analysis.models import AnalysisResult, ProviderOutput, ProviderResponseError, ProviderUsage
 from app.analysis.provider import AnalysisInput, AnalysisProvider, MockProvider, validate_citations
 from app.analysis.provider_config import load_config
@@ -73,6 +74,29 @@ async def analyze_job(
                 "max_output_tokens": 2048,
             }
         )
+        if row["mode"] == "real":
+            # UTF-8 bytes conservatively bound input tokens, including schema,
+            # with additional headroom for provider framing. Output is bounded.
+            token_bound = (
+                len(json.dumps(request_body(data), ensure_ascii=False).encode())
+                + 4096
+                + data.max_output_tokens
+            )
+            admitted = await reserve_call(session, analysis_id, row["model_id"], token_bound)
+            if not admitted:
+                await session.execute(
+                    text("""UPDATE app.analyses SET status='quota_exceeded',
+                    error_code='PROVIDER_BUDGET_OR_RATE_LIMIT',finished_at=clock_timestamp(),
+                    version=version+1 WHERE id=:id"""),
+                    {"id": analysis_id},
+                )
+                await session.execute(
+                    text("""UPDATE app.quota_reservations SET status='released',
+                    settled_at=clock_timestamp() WHERE analysis_id=:id AND status='reserved'"""),
+                    {"id": analysis_id},
+                )
+                await require_lease(session, job)
+                return
         await session.execute(
             text("""UPDATE app.analyses SET status='running',
             started_at=COALESCE(started_at,clock_timestamp()),version=version+1
@@ -118,6 +142,8 @@ async def analyze_job(
         result = output.result
         validate_citations(result, {item.id for item in data.evidence})
         result_json = result.model_dump_json()
+    except ProviderRateLimited:
+        status, error = "failed", "PROVIDER_RATE_LIMITED"
     except TimeoutError:
         status, error = "timed_out", "PROVIDER_TIMEOUT"
     except ProviderResponseError as exc:
@@ -131,6 +157,14 @@ async def analyze_job(
     async with database.sessions() as session, session.begin():
         if not await lock_domain(session, job):
             return
+        if row["mode"] == "real":
+            await settle_call(
+                session,
+                analysis_id,
+                int(usage.get("total_tokens", 0)),
+                rejected=error == "PROVIDER_RATE_LIMITED",
+                cooldown=60 if error == "PROVIDER_RATE_LIMITED" else 0,
+            )
         await session.execute(
             text("""UPDATE app.analyses SET status=:status,
             result_json=CAST(:result AS jsonb),error_code=:error,
@@ -157,6 +191,13 @@ async def analyze_job(
             },
         )
         total_tokens = int(usage.get("total_tokens", 0))
+        await session.execute(
+            text("""SELECT l.id FROM app.quota_ledgers l
+            JOIN app.quota_reservations q ON q.ledger_id=l.id
+            WHERE q.analysis_id=:id AND q.status='reserved'
+            ORDER BY l.scope_key,l.period_start FOR UPDATE OF l"""),
+            {"id": analysis_id},
+        )
         if total_tokens:
             await session.execute(
                 text("""UPDATE app.quota_ledgers SET consumed_tokens=consumed_tokens+:tokens,

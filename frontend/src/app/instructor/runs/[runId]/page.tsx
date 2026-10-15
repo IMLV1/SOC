@@ -57,7 +57,8 @@ export default function InstructorRunReviewPage() {
         <strong>{item.scenario_key} · {item.incident_key} · {item.label ? "threat" : "benign"}</strong>
         <p>{item.details}</p><small>หลักฐานที่คาดหวัง: {item.evidence.join(", ")}</small>
       </li>)}</ol>
-      <button disabled={busy} onClick={() => void experiment()}>รัน A/B detectors · C unavailable</button>
+      <button disabled={busy} onClick={() => void experiment()}>รัน A/B detectors</button>
+      <p className="run-muted">C จริงต้องให้ผู้ดูแลเรียกแยกภายใต้ provider budget; หน้านี้ยังไม่ส่งคำขอ AI จริง</p>
     </section>}
     <section className="run-panel"><h2>Instructor comments</h2>
       <label>Comment<textarea maxLength={2000} value={body} onChange={event => setBody(event.target.value)} /></label>

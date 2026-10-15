@@ -9,7 +9,7 @@ import { useSession } from "../session-provider";
 
 export default function RunsPage() {
   const router = useRouter();
-  const { session, loading: sessionLoading } = useSession();
+  const { session, loading: sessionLoading, preview } = useSession();
   const [cursor, setCursor] = useState<string | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioView[]>([]);
@@ -44,7 +44,7 @@ export default function RunsPage() {
     finally { setBusy(false); }
   }
   async function start() {
-    if (!selected) return;
+    if (!selected || preview) return;
     setBusy(true); setMessage("");
     try {
       const run = await write<Run>("/runs", { scenario_ids: [selected] }, { idempotencyKey: crypto.randomUUID() });
@@ -67,7 +67,7 @@ export default function RunsPage() {
             {scenarios.map(item => <option key={item.id} value={item.id}>{item.title} · {item.duration_ms / 1000} วินาที</option>)}
           </select>
         </label>
-        <button onClick={() => void start()} disabled={busy || !selected}>{busy ? "กำลังเริ่ม…" : "เริ่มรอบฝึก"}</button>
+        <button onClick={() => void start()} disabled={preview || busy || !selected}>{preview ? "Runner ยังไม่พร้อมบน preview" : busy ? "กำลังเริ่ม…" : "เริ่มรอบฝึก"}</button>
         <p className="run-muted">เริ่มได้ครั้งละหนึ่งรอบที่กำลังทำอยู่ · โหมด AI mock ไม่ใช่ผลประเมินจริง</p>
       </section>
       {message && <p role="alert" className="run-alert">{message} <button onClick={() => { setLoading(true); void load(); }}>ลองใหม่</button></p>}

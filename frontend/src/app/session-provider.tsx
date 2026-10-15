@@ -3,14 +3,14 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { ApiError, mutate, read, type SessionData } from "../lib/api";
 
-type State = { session: SessionData | null; loading: boolean; error: string; refresh: () => Promise<void> };
+type State = { session: SessionData | null; loading: boolean; error: string; refresh: () => Promise<void>; preview: boolean };
 const Context = createContext<State | null>(null);
 export function useSession() {
   const state = useContext(Context);
   if (!state) throw new Error("Session provider missing");
   return state;
 }
-export default function SessionProvider({ children }: { children: React.ReactNode }) {
+export default function SessionProvider({ children, preview = false }: { children: React.ReactNode; preview?: boolean }) {
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,7 +36,8 @@ export default function SessionProvider({ children }: { children: React.ReactNod
     try { await mutate<void>("/auth/logout", {}); ++generation.current; setSession(null); setError(""); setLoading(false); }
     catch { setError("ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง"); }
   }
-  return <Context.Provider value={{ session, loading, error, refresh }}>
+  return <Context.Provider value={{ session, loading, error, refresh, preview }}>
+    {preview && <p role="status" className="account-message">Free preview: ทดสอบสมัครสมาชิก/เข้าสู่ระบบและดูตัวอย่างได้ · ยังเริ่มรอบฝึกไม่ได้ เพราะไม่มี background runner · AI เป็น mock · ฐานข้อมูลชั่วคราว ห้ามใส่ข้อมูลจริง</p>}
     <nav className="account-nav" aria-label="บัญชี">
       <Link href="/">Sentinel</Link><Link href="/demo">ดูตัวอย่าง</Link>
       <Link href="/scenarios">สถานการณ์ฝึก</Link>

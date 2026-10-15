@@ -1,4 +1,5 @@
 import os
+import ssl
 from pathlib import Path
 
 from sqlalchemy import URL
@@ -10,6 +11,14 @@ ROLES = (
     "evaluator_runtime",
     "retention_runtime",
 )
+
+
+def tls_connect_args(url: URL) -> dict[str, ssl.SSLContext]:
+    # External Render connections require TLS. Use OS trusted CAs and hostname
+    # validation explicitly; asyncpg's verify-full string expects a root.crt file.
+    if url.host and url.host.endswith(".render.com"):
+        return {"ssl": ssl.create_default_context()}
+    return {}
 
 
 def password_from_file(path: str) -> str:

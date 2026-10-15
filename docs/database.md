@@ -1,5 +1,12 @@
 # SOC Platform — Database Design
 
+อัปเดตข้อ 12 (15 ต.ค. 2026): migration `0011_provider_budget` เพิ่ม `provider_policy`
+และ `provider_calls` สำหรับ rate card/global dispatch/token holds แยก generation component.
+Reservation owner เป็น analysis หรือ experiment arm อย่างใดอย่างหนึ่ง (XOR/unique FK).
+Lock run → child → provider policy → quota ledgers เรียง scope/period.
+Unknown hold คงอยู่ข้ามวัน; terminal usage reconcile ใช้ DB owner พร้อม audit reference/time.
+ดู policy ที่ผู้ใช้ยืนยันและผลจริงใน [ข้อ 12](step-12-verification.md).
+
 วันที่: 12 ตุลาคม 2026 · สถานะ: Logical schema และแนวทาง physical schema ที่เสนอ ยังไม่มี database/migrations ติดตั้งจริง
 
 อัปเดตข้อ 02 วันที่ 13 ต.ค.: auth foundation มี migration และทดสอบบน native PostgreSQL 17.11 แล้ว

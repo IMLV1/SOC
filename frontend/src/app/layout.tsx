@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="th"><body><SessionProvider>{children}</SessionProvider></body></html>;
+  return <html lang="th"><body><SessionProvider preview={process.env.SOC_PREVIEW_MODE === "auth_only"}>{children}</SessionProvider></body></html>;
 }

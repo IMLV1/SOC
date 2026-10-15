@@ -26,3 +26,6 @@ RUN uv sync --frozen
 COPY tests ./tests
 USER soc
 CMD ["python", "-m", "pytest", "tests/test_database.py", "tests/test_auth.py", "tests/test_scenarios.py", "tests/test_runs.py", "tests/test_investigation_pipeline.py", "-q", "-p", "no:cacheprovider"]
+
+# Default external build must be the API, never the test/fixture image.
+FROM base AS api

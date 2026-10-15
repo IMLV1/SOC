@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import URL, Connection, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.db.config import database_url
+from app.db.config import database_url, tls_connect_args
 
 BACKEND = Path(__file__).resolve().parents[2]
 MIGRATION_LOCK = 73102002
@@ -87,7 +87,7 @@ def upgrade(connection: Connection, release: str) -> None:
 
 
 async def migrate(url: URL, release: str = "local") -> None:
-    engine = create_async_engine(url, hide_parameters=True)
+    engine = create_async_engine(url, hide_parameters=True, connect_args=tls_connect_args(url))
     try:
         async with engine.begin() as connection:
             await connection.run_sync(upgrade, release)

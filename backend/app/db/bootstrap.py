@@ -7,11 +7,11 @@ from pathlib import Path
 from sqlalchemy import URL, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.db.config import ROLES, database_url, password_from_file
+from app.db.config import ROLES, database_url, password_from_file, tls_connect_args
 
 
 async def bootstrap(url: URL, secrets: Path) -> None:
-    engine = create_async_engine(url, hide_parameters=True)
+    engine = create_async_engine(url, hide_parameters=True, connect_args=tls_connect_args(url))
     try:
         async with engine.begin() as connection:
             await connection.execute(text("SELECT pg_advisory_xact_lock(73102001)"))
@@ -22,14 +22,22 @@ async def bootstrap(url: URL, secrets: Path) -> None:
                 )
                 if not exists:
                     await connection.execute(text(f'CREATE ROLE "{role}"'))
+                unsafe = await connection.scalar(
+                    text(
+                        "SELECT rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication "
+                        "OR rolbypassrls FROM pg_roles WHERE rolname=:role"
+                    ),
+                    {"role": role},
+                )
+                if unsafe:
+                    raise ValueError("Existing role has elevated privileges; refusing adoption.")
                 # Role identifiers are compile-time allowlisted. Password literal comes from PG.
                 literal = await connection.scalar(
                     text("SELECT quote_literal(:password)"),
                     {"password": password_from_file(str(secrets / f"{role}.txt"))},
                 )
                 await connection.exec_driver_sql(
-                    f'ALTER ROLE "{role}" WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE '
-                    f"NOINHERIT NOREPLICATION NOBYPASSRLS PASSWORD {literal}"
+                    f'ALTER ROLE "{role}" WITH LOGIN NOINHERIT PASSWORD {literal}'
                 )
             db_name = await connection.scalar(text("SELECT quote_ident(current_database())"))
             await connection.exec_driver_sql(f"REVOKE ALL ON DATABASE {db_name} FROM PUBLIC")

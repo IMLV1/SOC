@@ -3,6 +3,8 @@ from collections.abc import AsyncIterator
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.db.config import tls_connect_args
+
 
 class Database:
     def __init__(self, url: URL) -> None:
@@ -15,6 +17,7 @@ class Database:
             max_overflow=5,
             pool_timeout=3,
             connect_args={
+                **tls_connect_args(url),
                 "timeout": 3,
                 "command_timeout": 5,
                 "server_settings": {"timezone": "UTC"},

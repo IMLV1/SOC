@@ -1,0 +1,19 @@
+{
+  "arm_id": "93200bc1-80d6-417e-b33d-60c3dd520d51",
+  "dataset_hash": "d2396ba47033098db8a1b2140ca443b231207e3974629b7bb2471ae01c46e714",
+  "response_sha256": "d598a5b59afde5babf8d6959746f6da857c08524b7749542ecd41593a36568f8",
+  "dispatched_at": "2026-10-15T05:24:33.053766Z",
+  "mode": "real",
+  "model": "gemini-3.5-flash-lite",
+  "policy_version": "gemini-free-2026-10-15-v1",
+  "reserved_tokens": 14313,
+  "input_tokens": 2402,
+  "output_tokens": 1324,
+  "actual_tokens": 3726,
+  "usage_status": "consumed",
+  "status": "completed",
+  "detector_metrics_match_B": true,
+  "pricing_tier": "free",
+  "synthetic_dataset": "S02",
+  "scope": "single bounded connectivity/structured-output experiment; no general AI quality claim"
+}

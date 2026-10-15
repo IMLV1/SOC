@@ -108,6 +108,8 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "instructor_run_comments",
             "experiment_batches",
             "experiment_arms",
+            "provider_policy",
+            "provider_calls",
         }
 
     asyncio.run(scenario())

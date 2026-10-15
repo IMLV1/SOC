@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from uuid import uuid4
@@ -65,6 +66,18 @@ async def request_context(
 ) -> Response:
     # Generate locally; never reflect an untrusted header or any request payload.
     request.state.request_id = str(uuid4())
+    if (
+        os.getenv("SOC_PREVIEW_MODE") == "auth_only"
+        and request.method in {"POST", "PATCH", "PUT", "DELETE"}
+        and request.url.path.startswith("/api/v1/")
+        and not request.url.path.startswith("/api/v1/auth/")
+    ):
+        response: Response = error_response(
+            request, 503, "PREVIEW_UNAVAILABLE", "Runner is unavailable on this preview."
+        )
+        response.headers["X-Request-ID"] = request.state.request_id
+        response.headers["Cache-Control"] = "no-store"
+        return response
     response = await call_next(request)
     response.headers["X-Request-ID"] = request.state.request_id
     response.headers["Cache-Control"] = "no-store"

@@ -216,10 +216,12 @@ GitHub CI ของ branch นี้ยังรอยืนยัน; C ยั�
 
 ### 12 — เชื่อม AI provider จริง
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 11; SOC-012/014
+- [x] ผ่าน local Free Tier acceptance — หลัง 11; SOC-012/014; 15 ต.ค. 2026; GitHub CI ของ branch นี้รอยืนยัน
 
 ข้อ 10 เชื่อม Gemini 3.5 Flash-Lite Free Tier แบบ local synthetic-only แล้ว; bounded S02 browser/API/worker flow ผ่าน
-ดู [รายการค้างข้อ 11–13](steps-11-13-follow-up.md); ข้อ 12 ยังไม่ครบ rate card/global caps, 429 policy และ experiment C
+ข้อ 12 เพิ่ม rate card/global caps, 429 cooldown, unknown reconciliation และ bounded C จริงแล้ว
+ดู [ผลตรวจข้อ 12](step-12-verification.md); PostgreSQL 55, backend unit/contract 49,
+HTTP smoke 3, Chromium E2E 11 ผ่าน. C จริงเป็น operator CLI; ยังไม่อ้าง production readiness.
 
 ```text
 ทำข้อ 12: เชื่อม provider/model ที่ฉันเลือกผ่าน adapter เดิม พร้อม runtime secrets และ usage mapping
