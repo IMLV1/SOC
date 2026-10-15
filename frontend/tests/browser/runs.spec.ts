@@ -21,9 +21,25 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   await page.getByRole("button", { name: "เริ่มรอบฝึก" }).click();
   await expect(page).toHaveURL(/\/runs\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name: "สำรวจเหตุการณ์" })).toBeVisible();
+  await expect(page.locator("section[aria-labelledby='alerts-title'] .run-list li").first())
+    .toBeVisible({ timeout: 50000 });
+  await expect(page.locator("section[aria-labelledby='alerts-title'] a").first()).toBeVisible();
+  const mockAnalysis = page.locator("section[aria-labelledby='tickets-title'] .run-list li")
+    .filter({ hasText: `mode=${process.env.SOC_AI_PROVIDER === "gemini_free" ? "real" : "mock"}` });
+  await expect(mockAnalysis.first()).toContainText("succeeded", { timeout: 50000 });
+  await expect(mockAnalysis.first()).toContainText(`mode=${process.env.SOC_AI_PROVIDER === "gemini_free" ? "real" : "mock"}`);
   await expect.poll(() => page.locator(".event-list button").count(), { timeout: 20000 }).toBeGreaterThan(0);
   await page.locator(".event-list button").first().click();
   await expect(page.getByRole("heading", { name: "Request" })).toBeVisible();
+  await page.getByLabel("Asset", { exact: true }).fill("PORTAL-01");
+  await expect.poll(() => page.locator(".event-list button").count()).toBeGreaterThan(0);
+  await page.locator(".event-list button").first().click();
+  await page.reload();
+  await expect(page.getByLabel("Asset", { exact: true })).toHaveValue("PORTAL-01");
+  await expect(page.getByRole("heading", { name: "Request" })).toBeVisible();
+  await page.getByLabel("Asset", { exact: true }).fill("");
+  await expect.poll(() => page.locator(".event-list button").count()).toBeGreaterThan(0);
+  await page.locator(".event-list button").first().click();
   await expect(page.getByRole("heading", { name: "Response" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Log" })).toBeVisible();
   await page.getByRole("button", { name: "พักรอบ" }).click();

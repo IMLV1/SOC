@@ -199,9 +199,9 @@ created/running/paused/reviewing/completing → failed
 
 ## 8. Detection, queue และความทนทาน
 
-Rule v1 เริ่มจาก login failed >=10 ครั้ง/5 นาที และ request ที่ตรง fixture policy; anomaly v1 ใช้ baseline ที่เตรียมจากข้อมูลปกติ เช่น file reads มากกว่า threshold ที่ระบุไว้ใน versioned config การพบ flag ในชื่อ scenario ไม่ถือเป็นการตรวจจับจริง
+Run ใหม่ตรึง `rules-v2` / `baseline-v2` / `correlation-v2` และ config snapshot ไว้ใน `run_versions`; run เก่าที่ตรึง v1 ยังอ่านด้วย implementation v1 เดิม. Rules v2 แจ้ง login failed อย่างน้อย 10 ครั้งภายใน 5 นาที และ scanner อย่างน้อย 4 ครั้งภายใน 5 นาที; blocked request สร้าง low-severity alert ที่ระบุชัดว่าไม่มีหลักฐานการเข้าถึงสำเร็จ. Anomaly v2 ต้องมี baseline ที่ปล่อยแล้ว, records-read อย่างน้อย 3 เหตุการณ์ใน 60 วินาที และปริมาณ records อย่างน้อย 8 เท่าของ baseline (baseline reads/min × 100 records/read). การพบ flag ในชื่อ scenario ไม่ถือว่าเป็นการตรวจจับจริง
 
-Correlation ใช้ account/session + asset + time window; IP อย่างเดียวไม่เพียงพอ แสดงกฎการรวมและ evidence refs ทุกครั้ง Rule ที่พบการโจมตีถูกปฏิเสธสร้าง ticket ได้โดยไม่อ้างว่าถูกเจาะสำเร็จ
+Correlation v2 จำกัดด้วย scenario instance, account, session, asset และ time window; IP อย่างเดียวไม่เพียงพอ. Detection query อ่านเฉพาะ released events ภายใน run ที่กำลังตรวจ และ composite foreign keys กัน evidence ข้าม run. แสดงเหตุผลและ evidence refs ทุกครั้ง; การพบ request ที่ถูกปฏิเสธสร้าง ticket ได้โดยไม่อ้างว่าถูกเจาะสำเร็จ
 
 เก็บ jobs ร่วม transaction ของข้อมูลต้นทาง ทำให้ API ไม่บันทึกข้อมูลแล้วลืม enqueue Worker claim งานด้วย row lock และ lease ที่หมดอายุได้ ใช้ `FOR UPDATE SKIP LOCKED` สำหรับคิวเท่านั้น ไม่ใช้เป็น query เพื่อคำนวณผลประเมินที่ต้องครบทุกแถว ดู [PostgreSQL SELECT](https://www.postgresql.org/docs/current/sql-select.html)
 

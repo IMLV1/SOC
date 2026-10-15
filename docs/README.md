@@ -27,10 +27,15 @@ Stack ที่เลือก: **Next.js + TypeScript · FastAPI + Python · Po
 แนะนำให้อ่าน scope → learning path → architecture → API/database → CI/CD → development plan ก่อนเริ่ม implementation
 
 มี scaffold frontend/API health และ worker entrypoint จากข้อ 01 แล้ว พร้อม SRS/OpenAPI เริ่มต้น
-ข้อ 02 มี database foundation/migration/roles แล้ว; auth เสร็จในข้อ 04 ส่วน runner/exam/provider ยังไม่ implement
+ข้อ 02 มี database foundation/migration/roles แล้ว; auth เสร็จในข้อ 04; ข้อ 06–10 มี runner/investigation/analysis
 Compose build/up, integration tests และ named-volume persistence ผ่านแล้ว
 ข้อ 03 เพิ่ม CI/local checks แล้ว ดู [คู่มือ](ci-local.md) และ [ผลตรวจ](step-03-verification.md)
 GitHub CI ข้อ 03 ผ่านแล้ว แต่ required check/branch protection ติดข้อจำกัดแพ็กเกจ private repository
 ข้อ 04 เพิ่ม auth/me และ Guest snapshot ดู [คู่มือ](auth-development.md) และ [ผลตรวจ](step-04-verification.md)
 ข้อ 05 เพิ่ม training catalog/server fixtures/private truth และ exam projection policy
-ดู [คู่มือ](scenario-development.md) และ [ผลตรวจ](step-05-verification.md); ยังไม่เปิด runner/exam
+ข้อ 07 run list/controls/Event explorer รวม filters/cursor/URL state ผ่าน local แล้ว
+ดู [ผลตรวจและวิธีเปิด](step-07-verification.md); GitHub CI ของ changes ล่าสุดรอยืนยัน
+ข้อ 08 เพิ่ม versioned rules/anomaly/correlation, evidence, idempotent alerts/tickets และ alert UI; ดู [ผลตรวจ](step-06-10-verification.md); GitHub CI ของ changes ล่าสุดรอยืนยัน
+ข้อ 10 ใช้ Gemini Free Tier กับ synthetic training แบบ opt-in local; ดู [คู่มือ provider](local-development.md#gemini-free-tier-สำหรับ-training-จำลองในเครื่อง) และ [ผลตรวจ](step-06-10-verification.md)
+ข้อ 11 เพิ่ม immutable evaluation, isolated evaluator, Instructor review และ A/B detector experiments; ดู [ผลตรวจข้อ 11](step-11-verification.md). GitHub CI ของ changeset นี้ยังรอยืนยัน
+ดู [คู่มือ](scenario-development.md) และ [ผลตรวจ](step-05-verification.md); runner อยู่ข้อ 06–07 และ exam ยังปิด

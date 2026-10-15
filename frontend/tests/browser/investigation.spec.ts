@@ -1,0 +1,62 @@
+import { expect, test } from "@playwright/test";
+
+test("manual investigation uses API, preserves drafts on 409 and keeps note revisions/evidence", async ({ page, context }) => {
+  test.setTimeout(150000);
+  const email = `investigation-${Date.now()}@example.test`;
+  const password = `Test-only-${Date.now()}-password`;
+  await page.goto("/register");
+  await page.getByLabel("ชื่อที่แสดง").fill("Investigation Analyst");
+  await page.getByLabel("อีเมล", { exact: true }).fill(email);
+  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "สร้างบัญชี Analyst" }).click();
+  await expect(page.getByText("สมัครสำเร็จ กรุณาเข้าสู่ระบบด้วยบัญชีของคุณ")).toBeVisible();
+  await page.getByRole("link", { name: "ไปเข้าสู่ระบบ" }).click();
+  await page.getByLabel("อีเมล", { exact: true }).fill(email);
+  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await page.goto("/runs");
+  await page.getByRole("button", { name: "เริ่มรอบฝึก" }).click();
+  await expect(page).toHaveURL(/\/runs\/[0-9a-f-]+$/);
+  await expect.poll(() => page.locator(".event-list button").count(), { timeout: 50000 }).toBeGreaterThan(0);
+  await page.getByRole("link", { name: "สร้าง ticket จากหลักฐาน" }).click();
+  await page.getByLabel("หัวข้อ").fill("Browser manual investigation");
+  await page.locator("fieldset").first().locator("input[type=checkbox]").first().check();
+  await page.getByLabel("เหตุผล").fill("ตรวจหลักฐานจาก run ผ่านหน้า investigation จริง");
+  await page.getByRole("button", { name: "สร้าง ticket" }).click();
+  await expect(page.getByRole("heading", { name: "Browser manual investigation" })).toBeVisible();
+
+  const ticketUrl = page.url();
+  const otherTab = await context.newPage();
+  await otherTab.goto(ticketUrl);
+  await expect(otherTab.getByLabel("หัวข้อ")).toHaveValue("Browser manual investigation");
+  await otherTab.getByLabel("หัวข้อ").fill("Concurrent server edit");
+  await otherTab.getByLabel("เหตุผล").fill("บันทึกการแก้ไขจากแท็บที่สอง");
+  await otherTab.getByRole("button", { name: "บันทึก", exact: true }).click();
+  await expect(otherTab.getByRole("heading", { name: "Concurrent server edit" })).toBeVisible();
+
+  await page.getByLabel("หัวข้อ").fill("Unsaved local draft");
+  await page.getByLabel("เหตุผล").fill("ต้องเก็บ draft นี้เมื่อพบ version conflict");
+  await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+  await expect(page.locator("p.run-alert[role='alert']")).toContainText("ร่างของคุณยังอยู่");
+  await expect(page.getByLabel("หัวข้อ")).toHaveValue("Unsaved local draft");
+  await page.getByRole("button", { name: "โหลดเวอร์ชันล่าสุด" }).click();
+  await expect(page.locator("p.run-alert[role='alert']")).toBeHidden();
+  await expect(page.getByLabel("หัวข้อ")).toHaveValue("Unsaved local draft");
+  await page.getByLabel("ประเมิน").selectOption("undetermined");
+  await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+  await expect(page.getByText(/ครั้งที่ 1 · undetermined/)).toBeVisible();
+
+  await page.getByLabel("บันทึกใหม่").fill("Initial note with selected evidence");
+  await page.locator("fieldset").last().locator("input[type=checkbox]").first().check();
+  await page.getByRole("button", { name: "เพิ่มบันทึก" }).click();
+  await expect(page.getByText("Version 1 · ใช้งาน · หลักฐาน 1")).toBeVisible();
+  const note = page.locator(".note-card").last();
+  await note.locator("textarea").fill("Revised note with the same evidence");
+  await note.getByRole("button", { name: "แก้บันทึก" }).click();
+  await expect(note.getByText(/Version 2/)).toBeVisible();
+  await note.getByRole("link", { name: "ดูประวัติ" }).click();
+  await expect(page.getByText("Initial note with selected evidence")).toBeVisible();
+  await expect(page.getByText("Revised note with the same evidence")).toBeVisible();
+  await otherTab.close();
+});

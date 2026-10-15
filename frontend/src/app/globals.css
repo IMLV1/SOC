@@ -79,3 +79,5 @@ footer { padding-top: 40px; }
 .note-card { border-top: 1px solid var(--run-line); padding: 12px 0; }
 @media (max-width: 800px) { .evidence-layout { grid-template-columns: 1fr; } .run-summary { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 500px) { .run-list a { grid-template-columns: 1fr; gap: 2px; } .run-summary { grid-template-columns: 1fr; } .run-summary > div { border-right: 0; border-bottom: 1px solid var(--run-line); } .event-list button { grid-template-columns: 38px 1fr; } .event-list time { grid-column: 2; } }
+.event-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: .75rem; margin-block: 1rem; }
+.event-filters input { width: 100%; min-width: 0; box-sizing: border-box; }

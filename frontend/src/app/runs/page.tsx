@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError, read, write } from "../../lib/api";
+import { ApiError, read, readPage, write } from "../../lib/api";
 import type { ScenarioView } from "../../lib/api-types";
 import type { Run } from "../../lib/run-types";
 import { useSession } from "../session-provider";
@@ -10,6 +10,7 @@ import { useSession } from "../session-provider";
 export default function RunsPage() {
   const router = useRouter();
   const { session, loading: sessionLoading } = useSession();
+  const [cursor, setCursor] = useState<string | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioView[]>([]);
   const [selected, setSelected] = useState("");
@@ -18,7 +19,8 @@ export default function RunsPage() {
   const [message, setMessage] = useState("");
   const load = useCallback(async () => {
     try {
-      const [items, catalog] = await Promise.all([read<Run[]>("/runs"), read<ScenarioView[]>("/scenarios")]);
+      const [page, catalog] = await Promise.all([readPage<Run[]>("/runs"), read<ScenarioView[]>("/scenarios")]);
+      const items = page.data; setCursor(page.meta.next_cursor ?? null);
       setRuns(items); setScenarios(catalog);
       setSelected(current => current || catalog.find(item => item.title.includes("S02"))?.id || catalog[0]?.id || "");
       setMessage("");
@@ -31,6 +33,16 @@ export default function RunsPage() {
     const timer = setTimeout(() => void load(), 0);
     return () => clearTimeout(timer);
   }, [session, load]);
+  async function more() {
+    if (!cursor || busy) return;
+    setBusy(true);
+    try {
+      const page = await readPage<Run[]>(`/runs?cursor=${encodeURIComponent(cursor)}`);
+      setRuns(current => [...current, ...page.data.filter(item => !current.some(old => old.id === item.id))]);
+      setCursor(page.meta.next_cursor ?? null);
+    } catch (error) { setMessage(error instanceof ApiError && error.status === 401 ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง" : "โหลดหน้าถัดไปไม่สำเร็จ"); }
+    finally { setBusy(false); }
+  }
   async function start() {
     if (!selected) return;
     setBusy(true); setMessage("");
@@ -64,6 +76,7 @@ export default function RunsPage() {
           <ol className="run-list">{runs.map(item => <li key={item.id}><Link href={`/runs/${item.id}`}>
             <span className="run-status">{item.status}</span><span>{new Date(item.server_time).toLocaleString("th-TH")}</span><span>ความคืบหน้า {Math.round(item.elapsed_ms / item.duration_ms * 100)}%</span>
           </Link></li>)}</ol>}
+        {cursor && <button disabled={busy} onClick={() => void more()}>โหลดรอบเพิ่มเติม</button>}
       </section>
     </>}
   </main>;

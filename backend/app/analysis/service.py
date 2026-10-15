@@ -107,13 +107,25 @@ async def enqueue_analysis(
     retry_of: UUID | None = None,
 ) -> UUID:
     analysis_id = uuid4()
+    pinned = (
+        (
+            await session.execute(
+                text("""SELECT r.analysis_mode,rv.model_id,rv.prompt_version
+            FROM app.runs r JOIN app.run_versions rv ON rv.run_id=r.id
+            WHERE r.id=:run"""),
+                {"run": run_id},
+            )
+        )
+        .mappings()
+        .one()
+    )
     # Every logical request has a fresh attempt group, including API retries.
     await session.execute(
         text("""INSERT INTO app.analyses
         (id,run_id,correlation_key,evidence_hash,attempt_group,retry_of,
          mode,model_id,prompt_version,status)
         VALUES (:id,:run,:correlation,:hash,:group,:retry,
-                'mock','mock-v1','prompt-v1','queued')"""),
+                :mode,:model,:prompt,'queued')"""),
         {
             "id": analysis_id,
             "run": run_id,
@@ -121,6 +133,9 @@ async def enqueue_analysis(
             "hash": evidence_hash,
             "group": uuid4(),
             "retry": retry_of,
+            "mode": pinned["analysis_mode"],
+            "model": pinned["model_id"],
+            "prompt": pinned["prompt_version"],
         },
     )
     for event_id in evidence_ids:

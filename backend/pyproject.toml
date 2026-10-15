@@ -40,6 +40,9 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+"migrations/versions/0009_real_analysis_mode.py" = ["E501"]
+
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
 

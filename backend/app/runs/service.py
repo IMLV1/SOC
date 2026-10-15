@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import os
 import secrets
 from collections.abc import Mapping
 from datetime import datetime
@@ -11,7 +12,9 @@ from uuid import UUID, uuid4
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.analysis.provider_config import load_config
 from app.auth.service import AuthError
+from app.detection.policy import BASELINE_VERSION, CONFIG, CORRELATION_VERSION, RULE_VERSION
 from app.scenarios.models import TrainingSelection
 from app.scenarios.routes import select_training
 
@@ -116,16 +119,27 @@ async def start_run(
         raise AuthError(429, "RUN_QUOTA_EXCEEDED")
     now = await server_time(session)
     run_id = uuid4()
+    provider_config = load_config(os.environ)
+    analysis_mode = "mock" if provider_config.mode == "mock" else "real"
+    model_id = provider_config.chat_model
     seed = body.seed if body.seed is not None else secrets.randbelow(2147483648)
     duration = max(item.duration_ms for item in selected)
     await session.execute(
         text("""INSERT INTO app.runs
-            (id,owner_user_id,status,seed,resumed_at,duration_ms,expires_at)
+            (id,owner_user_id,status,seed,resumed_at,duration_ms,expires_at,analysis_mode)
             VALUES (:id,:owner,'running',:seed,CAST(:now AS timestamptz),:duration,
-                    CAST(:now AS timestamptz) + interval '30 days')"""),
-        {"id": run_id, "owner": owner_id, "seed": seed, "now": now, "duration": duration},
+                    CAST(:now AS timestamptz) + interval '30 days',:analysis_mode)"""),
+        {
+            "id": run_id,
+            "owner": owner_id,
+            "seed": seed,
+            "now": now,
+            "duration": duration,
+            "analysis_mode": analysis_mode,
+        },
     )
     fixture_hashes = []
+    truth_versions: dict[str, int] = {}
     for ordinal, item in enumerate(selected, 1):
         await session.execute(
             text("""INSERT INTO app.scenario_instances(id,run_id,scenario_id,ordinal)
@@ -137,18 +151,36 @@ async def start_run(
                 await session.scalar(text("SELECT app.training_fixture_hash(:id)"), {"id": item.id})
             )
         )
+        truth_versions[str(item.id)] = int(
+            await session.scalar(
+                text("SELECT app.training_truth_version(:scenario)"), {"scenario": item.id}
+            )
+            or 1
+        )
     await session.execute(
         text("""INSERT INTO app.run_versions
             (run_id,rule_version,baseline_version,correlation_version,ticket_policy_version,
-             prompt_version,model_id,fixture_hash,config_snapshot)
-            VALUES (:run,'rules-v1','baseline-v1','correlation-v1','ticket-v1',
-                    'prompt-v1','mock-v1',:hash,CAST(:config AS jsonb))"""),
+             prompt_version,model_id,fixture_hash,config_snapshot,ground_truth_versions)
+            VALUES (:run,:rule,:baseline,:correlation,'ticket-v1',
+                    'prompt-v1',:model,:hash,CAST(:config AS jsonb),
+                    CAST(:truth_versions AS jsonb))"""),
         {
             "run": run_id,
+            "rule": RULE_VERSION,
+            "baseline": BASELINE_VERSION,
+            "correlation": CORRELATION_VERSION,
+            "model": model_id,
             "hash": hashlib.sha256(":".join(fixture_hashes).encode()).hexdigest(),
             "config": json.dumps(
-                {"scenario_ids": [str(item.id) for item in selected], "seed": seed}
+                {
+                    "scenario_ids": [str(item.id) for item in selected],
+                    "seed": seed,
+                    "detector_config": CONFIG,
+                    "analysis_mode": analysis_mode,
+                    "model_id": model_id,
+                }
             ),
+            "truth_versions": json.dumps(truth_versions),
         },
     )
     await enqueue_release(session, run_id, 0, now, 1)

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, read, write } from "../../../../../lib/api";
-import type { Assessment, Event, Note, Run, Ticket } from "../../../../../lib/run-types";
+import type { Assessment, Event, Note, Run, Ticket, TicketTimelineEntry } from "../../../../../lib/run-types";
 import { useSession } from "../../../../session-provider";
 
 export default function TicketPage() {
@@ -16,6 +16,7 @@ export default function TicketPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [timeline, setTimeline] = useState<TicketTimelineEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -26,8 +27,11 @@ export default function TicketPage() {
   const [reason, setReason] = useState("");
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [newNote, setNewNote] = useState("");
+  const [newNoteEvidence, setNewNoteEvidence] = useState<string[]>([]);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [noteEvidenceDrafts, setNoteEvidenceDrafts] = useState<Record<string, string[]>>({});
   const load = useCallback(async (preserveDraft = false) => {
+    setLoading(true);
     try {
       const currentRun = await read<Run>(`/runs/${runId}`);
       setRun(currentRun);
@@ -35,17 +39,19 @@ export default function TicketPage() {
         const released = await read<Event[]>(`/runs/${runId}/events?limit=100`);
         setEvents(released);
       } else {
-        const [currentTicket, currentNotes, history] = await Promise.all([
+        const [currentTicket, currentNotes, history, currentTimeline] = await Promise.all([
           read<Ticket>(`/runs/${runId}/tickets/${ticketId}`),
           read<Note[]>(`/runs/${runId}/tickets/${ticketId}/notes?deleted=true`),
           read<Assessment[]>(`/runs/${runId}/tickets/${ticketId}/assessments`),
+          read<TicketTimelineEntry[]>(`/runs/${runId}/tickets/${ticketId}/timeline`),
         ]);
-        setTicket(currentTicket); setNotes(currentNotes); setAssessments(history);
+        setTicket(currentTicket); setNotes(currentNotes); setAssessments(history); setTimeline(currentTimeline);
         if (!preserveDraft) {
           setTitle(currentTicket.title); setSeverity(currentTicket.severity);
           setStatus(currentTicket.status);
           setDisposition("");
           setNoteDrafts(Object.fromEntries(currentNotes.map(item => [item.id, item.body])));
+          setNoteEvidenceDrafts(Object.fromEntries(currentNotes.map(item => [item.id, item.evidence_ids])));
         }
       }
       setMessage("");
@@ -58,7 +64,7 @@ export default function TicketPage() {
     const timer = setTimeout(() => void load(), 0);
     return () => clearTimeout(timer);
   }, [session, load]);
-  const mutable = run && ["running", "paused", "reviewing"].includes(run.status);
+  const mutable = !loading && run && ["running", "paused", "reviewing"].includes(run.status);
   function errorMessage(error: unknown) {
     if (error instanceof ApiError && error.status === 409) return "ข้อมูลถูกแก้ไขหรือรอบถูกล็อกแล้ว ร่างของคุณยังอยู่ กดโหลดเวอร์ชันล่าสุดเพื่อตรวจเปรียบเทียบ";
     if (error instanceof ApiError && error.status === 401) return "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง";
@@ -80,7 +86,22 @@ export default function TicketPage() {
       const updated = await write<Ticket>(`/runs/${runId}/tickets/${ticket.id}`,
         { expected_version: ticket.version, title, severity, status,
           ...(disposition ? { disposition } : {}), reason }, { method: "PATCH" });
-      setTicket(updated); setAssessments(await read<Assessment[]>(`/runs/${runId}/tickets/${ticket.id}/assessments`));
+      setTicket(updated);
+      // Render the revision returned atomically with the update before refreshing
+      // the history list, so the saved assessment is immediately visible.
+      const savedAssessment = updated.latest_assessment;
+      if (disposition && savedAssessment) {
+        setAssessments(current => [
+          ...current.filter(item => item.id !== savedAssessment.id),
+          savedAssessment,
+        ].sort((left, right) => left.revision - right.revision));
+      }
+      const history = await read<Assessment[]>(`/runs/${runId}/tickets/${ticket.id}/assessments`);
+      setAssessments(current => {
+        const byId = new Map(current.map(item => [item.id, item]));
+        for (const item of history) byId.set(item.id, item);
+        return [...byId.values()].sort((left, right) => left.revision - right.revision);
+      });
       setReason(""); setDisposition("");
     } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
   }
@@ -99,10 +120,12 @@ export default function TicketPage() {
     setBusy(true); setMessage("");
     try {
       const item = await write<Note>(`/runs/${runId}/tickets/${ticket.id}/notes`,
-        { body: newNote, evidence_ids: ticket.evidence_ids },
+        { body: newNote, evidence_ids: newNoteEvidence },
         { idempotencyKey: crypto.randomUUID() });
       setNotes(current => [...current, item]); setNewNote("");
       setNoteDrafts(current => ({ ...current, [item.id]: item.body }));
+      setNoteEvidenceDrafts(current => ({ ...current, [item.id]: item.evidence_ids }));
+      setNewNoteEvidence([]);
     } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
   }
   async function changeNote(note: Note, action: "edit" | "delete" | "restore") {
@@ -112,10 +135,12 @@ export default function TicketPage() {
       const path = `/runs/${runId}/tickets/${ticket.id}/notes/${note.id}`;
       const updated = await write<Note>(path + (action === "restore" ? "/restore" : ""),
         action === "edit" ? { expected_version: note.version, body: noteDrafts[note.id],
-                               evidence_ids: note.evidence_ids, reason: reason || "แก้ไขบันทึก" } :
+                               evidence_ids: noteEvidenceDrafts[note.id] ?? note.evidence_ids,
+                               reason: reason || "แก้ไขบันทึก" } :
                             { expected_version: note.version, reason: reason || "เปลี่ยนสถานะบันทึก" },
         { method: action === "edit" ? "PATCH" : action === "delete" ? "DELETE" : "POST" });
       setNotes(current => current.map(item => item.id === note.id ? updated : item));
+      setNoteEvidenceDrafts(current => ({ ...current, [note.id]: updated.evidence_ids }));
       setReason("");
     } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
   }
@@ -168,14 +193,33 @@ export default function TicketPage() {
             <p>Version {note.version} · {note.deleted_at ? "ถูกลบ" : "ใช้งาน"} · หลักฐาน {note.evidence_ids.length}</p>
             <textarea value={noteDrafts[note.id] ?? note.body} disabled={!mutable || !!note.deleted_at}
                       onChange={event => setNoteDrafts(current => ({ ...current, [note.id]: event.target.value }))} />
+            <fieldset disabled={!mutable || !!note.deleted_at}>
+              <legend>หลักฐานของบันทึก</legend>{ticket.evidence_ids.map(id => {
+                const event = events.find(item => item.id === id);
+                const selected = noteEvidenceDrafts[note.id] ?? note.evidence_ids;
+                return <label key={id}><input type="checkbox" checked={selected.includes(id)} onChange={change =>
+                  setNoteEvidenceDrafts(current => ({ ...current, [note.id]: change.target.checked ? [...selected, id] : selected.filter(value => value !== id) }))} />
+                  {event ? `#${event.release_seq} · ${event.source} · ${event.asset_id}` : id}</label>;
+              })}</fieldset>
             <div className="run-button-row">{note.deleted_at ? <button disabled={!mutable || busy} onClick={() => void changeNote(note, "restore")}>กู้คืน</button> : <>
               <button disabled={!mutable || busy} onClick={() => void changeNote(note, "edit")}>แก้บันทึก</button>
               <button disabled={!mutable || busy} onClick={() => void changeNote(note, "delete")}>ลบบันทึก</button></>}
             <Link href={`/runs/${runId}/tickets/${ticket.id}/notes/${note.id}/versions`}>ดูประวัติ</Link></div>
           </div>)}
           <label>บันทึกใหม่<textarea value={newNote} onChange={event => setNewNote(event.target.value)} maxLength={2000} disabled={!mutable || !!ticket.deleted_at} /></label>
+          <fieldset disabled={!mutable || !!ticket.deleted_at}>
+            <legend>เลือกหลักฐานของบันทึก</legend>{ticket.evidence_ids.map(id => {
+              const event = events.find(item => item.id === id);
+              return <label key={id}><input type="checkbox" checked={newNoteEvidence.includes(id)} onChange={change =>
+                setNewNoteEvidence(current => change.target.checked ? [...current, id] : current.filter(value => value !== id))} />
+                {event ? `#${event.release_seq} · ${event.source} · ${event.asset_id}` : id}</label>;
+            })}</fieldset>
           <button disabled={!mutable || busy || !!ticket.deleted_at || !newNote.trim()} onClick={() => void addNote()}>เพิ่มบันทึก</button>
         </section></div>
+        <section className="run-panel"><h2>Timeline</h2>
+          {timeline.length === 0 ? <p>ยังไม่มีประวัติ</p> : <ol>{timeline.map(item =>
+            <li key={`${item.kind}-${item.id}`}>{item.kind} · {item.action} · {new Date(item.occurred_at).toLocaleString("th-TH")}{item.event_id ? ` · event ${item.event_id}` : ""}</li>)}</ol>}
+        </section>
       </>}
     </>}
   </main>;

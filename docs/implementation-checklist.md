@@ -120,7 +120,17 @@ run/exam endpoints ยังไม่เปิด; gate จริงอยู่
 
 ### 06 — Durable jobs และ simulation runner
 
-- [x] เสร็จและตรวจรับแล้ว — หลัง 05; SOC-006; ผ่าน local PostgreSQL/integration และ restart runner วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
+- [x] ผ่าน local acceptance — หลัง 05; SOC-006; runner continuity, concurrent pause/release และ lease fencing ผ่านจริง 14 ต.ค. 2026; GitHub ของ changes นี้รอยืนยัน ดู [ผลตรวจ](step-06-10-verification.md)
+
+เกณฑ์ย่อย runner continuity ผ่านจริง 14 ต.ค.: API เริ่ม S02, logout และปิด Chromium แล้ว
+events ยังเพิ่ม; restart worker จนครบ 15 events/15 unique keys และ 37 jobs/37 unique dedupe keys
+ดู script [runner-continuity.cjs](../frontend/tests/runner-continuity.cjs) และหลักฐานในรายงาน
+
+- [x] API เริ่ม S02 แล้ว PostgreSQL มี released events
+- [x] Logout และปิด browser ไม่หยุด runner
+- [x] Restart worker แล้ว event/job ไม่ซ้ำ (15 unique events, 37 unique job dedupe keys)
+- [x] Concurrent pause/release race ผ่านจริง ทั้ง pause-first และ release-first บน PostgreSQL
+- [x] ลำดับ run ก่อน job/resource; recovery/claim transaction แยก; expired/reclaimed lease และ stale analysis output ถูกปฏิเสธ พร้อม rollback เมื่อ lease หมดกลาง transaction
 
 ```text
 ทำข้อ 06: เพิ่ม runs/instances/versions/events/jobs/idempotency และ Python worker
@@ -134,7 +144,9 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 07 — Vertical slice UI: Run → Event explorer
 
-- [x] เสร็จและตรวจรับแล้ว — หลัง 06; SOC-007/008; ผ่าน browser E2E แบบลงมือจริงที่ 375/768/1440 วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
+- [x] ผ่าน local acceptance — หลัง 06; SOC-007/008; generated DTO/filters/cursor/backoff และ Chromium E2E ผ่านจริง 14 ต.ค. 2026 ดู [ผลตรวจข้อ 07](step-07-verification.md); GitHub ของ changes นี้รอยืนยัน
+
+Local CI: PostgreSQL 45, HTTP smoke 3, Chromium 9; lint/typecheck/build/contract และ bundle guard ผ่าน
 
 ```text
 ทำข้อ 07: เชื่อม Next.js กับ run list/start/pause/resume และ Event explorer ผ่าน typed API client
@@ -147,7 +159,7 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 08 — Detection, anomaly และ correlation
 
-- [x] เสร็จและตรวจรับแล้ว — หลัง 07; SOC-009; ผ่าน fixture/dedup/cross-run tests และตรวจ alert จริงใน UI วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
+- [x] ผ่าน local acceptance — หลัง 07; SOC-009; rules/anomaly/correlation v2, S01–S05/normal traffic, duplicate jobs, cross-run evidence และหน้า alert ตรวจด้วย PostgreSQL/Chromium 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md); GitHub ของ changes นี้รอยืนยัน
 
 ```text
 ทำข้อ 08: implement versioned rules/anomaly/correlation, detections/evidence และ alerts
@@ -160,7 +172,7 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 09 — Ticket/Note CRUD, assessment และประวัติ
 
-- [x] เสร็จและตรวจรับแล้ว — หลัง 08; SOC-010/013; ผ่าน HTTP/integration และตรวจ UI 409 แบบสองแท็บ วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
+- [x] ผ่าน local acceptance — หลัง 08; SOC-010/013; PostgreSQL integration 6 tests, investigation browser E2E, typecheck/lint และ OpenAPI contract checks ผ่าน 14 ต.ค. 2026; disposition คง 3 ค่าไว้ตามข้อสรุปผู้ใช้ ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 09: implement ticket detail/manual create/update/delete/restore, assessment revisions
@@ -173,7 +185,7 @@ implement POST runs, pause/resume และ server clock ที่ปล่อ�
 
 ### 10 — AI pipeline ด้วย mock ที่ทดสอบได้
 
-- [x] เสร็จและตรวจรับแล้ว — หลัง 09; SOC-011; ผ่าน mock/HTTP retry/UI และ quota/error tests วันที่ 14 ต.ค. 2026 ดู [ผลตรวจ](step-06-10-verification.md)
+- [x] ผ่าน local acceptance — หลัง 09; SOC-011; mock และ real Gemini Free Tier S02 E2E, PostgreSQL timeout/usage/quota, migration 0008 immutable evidence และ 0009 real mode ผ่าน 15 ต.ค. 2026; GitHub CI ของ working changes รอยืนยัน ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 10: สร้าง AnalysisProvider, frozen evidence snapshots, analyses/attempts และ async jobs
@@ -186,7 +198,11 @@ implement GET analysis/retry และ UI statuses โดยแสดง mode=mo
 
 ### 11 — Evaluation, completion และ Instructor
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 10; SOC-014/015 บางส่วน
+- [x] ผ่าน local acceptance — หลัง 10; SOC-014/015 บางส่วน; 15 ต.ค. 2026
+
+ดู [ผลตรวจข้อ 11](step-11-verification.md): PostgreSQL integration 50, Chromium E2E 11,
+HTTP smoke 3 และ metrics/experiment/OpenAPI tests ผ่าน; lint/typecheck/mypy ผ่าน
+GitHub CI ของ branch นี้ยังรอยืนยัน; C ยัง unavailable และ human scoring เป็น N/A ตาม policy ที่ยังไม่อนุมัติ
 
 ```text
 ทำข้อ 11: implement finish → completing → completed, pipeline drain และ immutable evaluation snapshot
@@ -201,6 +217,9 @@ implement GET analysis/retry และ UI statuses โดยแสดง mode=mo
 ### 12 — เชื่อม AI provider จริง
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 11; SOC-012/014
+
+ข้อ 10 เชื่อม Gemini 3.5 Flash-Lite Free Tier แบบ local synthetic-only แล้ว; bounded S02 browser/API/worker flow ผ่าน
+ดู [รายการค้างข้อ 11–13](steps-11-13-follow-up.md); ข้อ 12 ยังไม่ครบ rate card/global caps, 429 policy และ experiment C
 
 ```text
 ทำข้อ 12: เชื่อม provider/model ที่ฉันเลือกผ่าน adapter เดิม พร้อม runtime secrets และ usage mapping

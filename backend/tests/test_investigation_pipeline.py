@@ -4,10 +4,10 @@ from uuid import UUID, uuid4
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DBAPIError, IntegrityError
 
-from app.analysis.models import AnalysisResult
-from app.analysis.provider import validate_citations
+from app.analysis.models import AnalysisResult, ProviderResponseError, ProviderUsage
+from app.analysis.provider import AnalysisInput, EvidenceItem, MockProvider, validate_citations
 from app.analysis.service import enqueue_analysis
 from app.analysis.worker import analyze_job
 from app.auth import service as auth
@@ -37,6 +37,9 @@ def fixture_rows(key):
         dict(
             id=uuid4(),
             source=item.source,
+            asset_id=item.asset_id,
+            offset_ms=item.event_offset_ms,
+            scenario_instance_id="fixture-instance",
             username=item.username,
             src_ip=item.src_ip,
             response_json=item.response.model_dump(),
@@ -62,6 +65,80 @@ def test_detectors_cover_s01_to_s05_without_truth_or_success_from_blocked():
     assert evaluate(fixture_rows("S02")[:1]) == []
 
 
+def test_detection_policy_threshold_windows_correlation_and_normal_traffic():
+    def event(
+        index,
+        kind,
+        offset,
+        *,
+        instance="one",
+        username="analyst",
+        ip="192.0.2.8",
+        asset="AUTH-01",
+        source="authentication",
+        status=200,
+        session=None,
+    ):
+        log = {"event_type": kind}
+        if session:
+            log["session_id"] = session
+        return {
+            "id": UUID(int=index),
+            "source": source,
+            "asset_id": asset,
+            "offset_ms": offset,
+            "scenario_instance_id": instance,
+            "username": username,
+            "src_ip": ip,
+            "response_json": {"status": status},
+            "log_json": log,
+        }
+
+    normal = [
+        event(100 + index, "page_view", index * 12_000, source="web", asset="PORTAL-01")
+        for index in range(5)
+    ]
+    normal.extend(
+        [
+            event(110, "login_failed", 100_000),
+            event(111, "login_failed", 500_000),
+            event(112, "session_created", 510_000, session="normal-session"),
+        ]
+    )
+    assert evaluate(normal) == []
+
+    sparse = [event(i + 1, "login_failed", i * 40_000) for i in range(10)]
+    assert not any(item.correlation_key.startswith("auth:") for item in evaluate(sparse))
+    within = [event(i + 1, "login_failed", i * 20_000) for i in range(10)]
+    blocked = event(11, "request_policy_denied", 190_000, source="web", status=403)
+    findings = evaluate(within + [blocked])
+    brute = next(item for item in findings if item.correlation_key.startswith("auth:"))
+    assert brute.severity == "medium"
+    assert (
+        blocked["id"]
+        in next(item for item in findings if item.title == "Blocked web request").evidence_ids
+    )
+    assert (
+        "ยังไม่มีหลักฐาน"
+        in next(item for item in findings if item.title == "Blocked web request").explanation
+    )
+
+    login = [event(i + 20, "login_failed", i * 10_000) for i in range(10)]
+    session = event(40, "session_created", 100_000, session="s-1")
+    unrelated = event(
+        41, "records_read", 110_000, source="file_access", asset="FILES-01", session="s-other"
+    )
+    unrelated["scenario_instance_id"] = "other"
+    unrelated["src_ip"] = "192.0.2.9"
+    valid = event(
+        42, "records_read", 120_000, source="file_access", asset="FILES-01", session="s-1"
+    )
+    findings = evaluate(login + [session, unrelated, valid])
+    impacted = next(item for item in findings if item.correlation_key.startswith("auth:"))
+    assert impacted.severity == "high" and valid["id"] in impacted.evidence_ids
+    assert unrelated["id"] not in impacted.evidence_ids
+
+
 def test_citation_must_be_inside_frozen_snapshot():
     allowed = uuid4()
     foreign = uuid4()
@@ -80,8 +157,44 @@ def test_citation_must_be_inside_frozen_snapshot():
         validate_citations(AnalysisResult.model_validate(base), {allowed})
 
 
+def test_mock_provider_is_deterministic_structured_and_cautious_about_blocked_requests():
+    evidence_id = uuid4()
+    data = AnalysisInput(
+        analysis_id=uuid4(),
+        evidence=[
+            EvidenceItem(
+                id=evidence_id,
+                source="web",
+                username=None,
+                request={"method": "GET", "path": "/admin"},
+                response={"status": 403},
+                log={"event_type": "request_policy_denied"},
+            )
+        ],
+        prompt_version="prompt-v1",
+        max_output_tokens=512,
+    )
+    provider = MockProvider()
+    first = asyncio.run(provider.analyze(data))
+    second = asyncio.run(provider.analyze(data))
+    result = first.result
+    assert first == second
+    assert result.evidence_refs == [evidence_id]
+    assert "ยังไม่พบหลักฐานว่าการเข้าถึงสำเร็จ" in result.summary
+    assert first.usage.mode == "mock" and first.usage.total_tokens == 0
+    validate_citations(result, {evidence_id})
+
+
 @pytest.mark.integration
-def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
+def test_real_timeout_is_unknown_and_invalid_output_usage_is_consumed_with_retry_snapshot(
+    migrated, monkeypatch
+):
+    monkeypatch.setenv("SOC_AI_PROVIDER", "gemini_free")
+    monkeypatch.setenv("GEMINI_PROJECT_TIER_CONFIRMED", "free_no_billing")
+    monkeypatch.setenv("GEMINI_SYNTHETIC_DATA_ONLY", "true")
+    monkeypatch.setenv("GEMINI_API_KEY_FILE", "/synthetic-test-only/not-read-by-injected-provider")
+    monkeypatch.setenv("GEMINI_CHAT_MODEL", "gemini-3.5-flash-lite")
+
     class SlowProvider:
         async def analyze(self, data):
             await asyncio.sleep(0.05)
@@ -89,7 +202,16 @@ def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
 
     class InvalidProvider:
         async def analyze(self, data):
-            return {"summary": "not a structured result"}
+            raise ProviderResponseError(
+                "INVALID_PROVIDER_OUTPUT",
+                ProviderUsage(
+                    mode="real",
+                    input_tokens=25,
+                    output_tokens=18,
+                    total_tokens=43,
+                    pricing_tier="free",
+                ),
+            )
 
     async def execute():
         user_id, selection = await prepare(migrated)
@@ -105,6 +227,12 @@ def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
             async with api.sessions() as session:
                 event_id = await session.scalar(text("SELECT id FROM app.events LIMIT 1"))
             assert event_id is not None
+            with pytest.raises(DBAPIError):
+                async with worker.sessions() as session, session.begin():
+                    await session.execute(
+                        text("UPDATE app.events SET log_json='{}'::jsonb WHERE id=:event"),
+                        {"event": event_id},
+                    )
             async with api.sessions() as session, session.begin():
                 first = await enqueue_analysis(
                     session, run_id, user_id, "test:timeout", "frozen-hash", [event_id]
@@ -121,12 +249,18 @@ def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
                     )
                 ).one()
                 assert row.status == "timed_out" and row.error_code == "PROVIDER_TIMEOUT"
-                released = await session.scalar(
-                    text("""SELECT count(*) FROM app.quota_reservations
-                    WHERE analysis_id=:id AND status='released'"""),
-                    {"id": first},
+                real_mode = await session.scalar(
+                    text("SELECT mode FROM app.analyses WHERE id=:id"), {"id": first}
                 )
-                assert released == 2
+                assert real_mode == "real"
+                reservations = (
+                    await session.execute(
+                        text("""SELECT status,actual_tokens FROM app.quota_reservations
+                        WHERE analysis_id=:id ORDER BY ledger_id"""),
+                        {"id": first},
+                    )
+                ).all()
+                assert reservations == [("unknown", None), ("unknown", None)]
             async with api.sessions() as session, session.begin():
                 retry = await enqueue_analysis(
                     session,
@@ -152,6 +286,19 @@ def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
                 assert retry_row.status == "invalid_output"
                 assert retry_row.error_code == "INVALID_PROVIDER_OUTPUT"
                 assert retry_row.retry_of == first and retry_row.result_json is None
+                consumed = await session.scalar(
+                    text("""SELECT count(*) FROM app.quota_reservations
+                    WHERE analysis_id=:id AND status='consumed' AND actual_tokens=43"""),
+                    {"id": retry},
+                )
+                assert consumed == 2
+                counted = await session.scalar(
+                    text("""SELECT count(*) FROM app.quota_ledgers q
+                    JOIN app.quota_reservations r ON r.ledger_id=q.id
+                    WHERE r.analysis_id=:id AND q.consumed_tokens>=43"""),
+                    {"id": retry},
+                )
+                assert counted == 2
                 refs = await session.scalar(
                     text("""SELECT count(*) FROM app.analysis_evidence
                     WHERE analysis_id=:id AND event_id=:event"""),
@@ -160,6 +307,62 @@ def test_mock_analysis_timeout_invalid_output_and_retry_snapshot(migrated):
                 assert refs == 1
                 assert await session.scalar(text("SELECT count(*) FROM app.assessments")) == 0
         finally:
+            await api.close()
+            await worker.close()
+
+    asyncio.run(execute())
+
+
+@pytest.mark.integration
+def test_analysis_quota_exhaustion_creates_no_reservation_or_job(migrated):
+    async def execute():
+        user_id, selection = await prepare(migrated)
+        owner = Database(migrated("migration_owner"))
+        api = Database(migrated("api_runtime"))
+        worker = Database(migrated("worker_runtime"))
+        try:
+            async with api.sessions() as session, session.begin():
+                run, _ = await start_run(session, user_id, selection, uuid4())
+            run_id = UUID(run["id"])
+            await release_all(api, worker, run_id)
+            async with api.sessions() as session:
+                event_id = await session.scalar(
+                    text("SELECT id FROM app.events WHERE run_id=:run LIMIT 1"),
+                    {"run": run_id},
+                )
+            async with owner.sessions() as session, session.begin():
+                await session.execute(
+                    text("UPDATE app.user_quotas SET daily_ai_requests=0 WHERE user_id=:user"),
+                    {"user": user_id},
+                )
+            async with api.sessions() as session, session.begin():
+                analysis_id = await enqueue_analysis(
+                    session, run_id, user_id, "quota:exhausted", "snapshot", [event_id]
+                )
+            async with api.sessions() as session:
+                row = (
+                    await session.execute(
+                        text("SELECT status,error_code FROM app.analyses WHERE id=:id"),
+                        {"id": analysis_id},
+                    )
+                ).one()
+                assert (row.status, row.error_code) == ("quota_exceeded", "QUOTA_EXCEEDED")
+                assert (
+                    await session.scalar(
+                        text("SELECT count(*) FROM app.quota_reservations WHERE analysis_id=:id"),
+                        {"id": analysis_id},
+                    )
+                    == 0
+                )
+                assert (
+                    await session.scalar(
+                        text("SELECT count(*) FROM app.jobs WHERE dedupe_key=:key"),
+                        {"key": f"analysis:{analysis_id}"},
+                    )
+                    == 0
+                )
+        finally:
+            await owner.close()
             await api.close()
             await worker.close()
 
@@ -250,6 +453,8 @@ def test_http_retry_keeps_old_analysis_and_snapshot(migrated, monkeypatch):
         detail = client.get(f"/api/v1/runs/{run_id}/analyses/{analysis_id}")
         assert detail.status_code == 200
         assert detail.json()["data"]["status"] == "invalid_output"
+        assert detail.json()["data"]["mode"] == "mock"
+        assert detail.json()["data"]["model_id"] == "mock-v1"
         key = str(uuid4())
         path = f"/api/v1/runs/{run_id}/analyses/{analysis_id}/retry"
         headers = {
@@ -262,11 +467,14 @@ def test_http_retry_keeps_old_analysis_and_snapshot(migrated, monkeypatch):
         assert result.status_code == 202, result.text
         new = result.json()["data"]
         assert new["retry_of"] == str(analysis_id) and new["status"] == "queued"
+        assert new["mode"] == "mock"
         assert new["evidence_ids"] == [str(event_id)]
         repeated = client.post(
             path, json={"expected_version": detail.json()["data"]["version"]}, headers=headers
         )
         assert repeated.status_code == 202 and repeated.json()["data"]["id"] == new["id"]
+        reservations = client.get(f"/api/v1/runs/{run_id}/analyses/{new['id']}")
+        assert reservations.status_code == 200 and reservations.json()["data"]["mode"] == "mock"
         page = client.get(f"/api/v1/runs/{run_id}/analyses", params={"limit": 1})
         assert page.status_code == 200 and page.json()["meta"]["next_cursor"]
         next_page = client.get(
@@ -509,6 +717,36 @@ def test_detection_is_idempotent_and_mock_never_edits_human_answer(migrated):
             run_id = UUID(run["id"])
             await release_all(api, worker, run_id)
             async with api.sessions() as session:
+                before_duplicate_jobs = (
+                    await session.scalar(text("SELECT count(*) FROM app.detections")),
+                    await session.scalar(text("SELECT count(*) FROM app.alerts")),
+                    await session.scalar(
+                        text("SELECT count(*) FROM app.tickets WHERE origin='automatic'")
+                    ),
+                )
+            async with worker.sessions() as session, session.begin():
+                for index in range(2):
+                    await session.execute(
+                        text("""INSERT INTO app.jobs
+                        (id,run_id,type,dedupe_key,payload,available_at)
+                        VALUES (:id,:run,'detect_events',:key,'{}'::jsonb,clock_timestamp())"""),
+                        {
+                            "id": uuid4(),
+                            "run": run_id,
+                            "key": f"test:duplicate-detector:{run_id}:{index}",
+                        },
+                    )
+            assert await process_one(worker, "duplicate-detector")
+            assert await process_one(worker, "duplicate-detector")
+            async with api.sessions() as session:
+                after_duplicate_jobs = (
+                    await session.scalar(text("SELECT count(*) FROM app.detections")),
+                    await session.scalar(text("SELECT count(*) FROM app.alerts")),
+                    await session.scalar(
+                        text("SELECT count(*) FROM app.tickets WHERE origin='automatic'")
+                    ),
+                )
+                assert after_duplicate_jobs == before_duplicate_jobs
                 assert await session.scalar(text("SELECT count(*) FROM app.events")) == 15
                 assert await session.scalar(text("SELECT count(*) FROM app.alerts")) > 0
                 assert await session.scalar(text("SELECT count(*) FROM app.tickets")) == 1
@@ -537,6 +775,7 @@ def test_detection_is_idempotent_and_mock_never_edits_human_answer(migrated):
             await detect_run(worker, run_id)
             async with api.sessions() as session:
                 assert await session.scalar(text("SELECT count(*) FROM app.detections")) == before
+                assert await session.scalar(text("SELECT count(*) FROM app.alerts")) > 0
             async with api.sessions() as session, session.begin():
                 ticket = await delete_or_restore_ticket(
                     session,
@@ -557,13 +796,164 @@ def test_detection_is_idempotent_and_mock_never_edits_human_answer(migrated):
             async with api.sessions() as session:
                 foreign_event = await session.scalar(text("SELECT id FROM app.events LIMIT 1"))
             with pytest.raises(IntegrityError):
-                async with api.sessions() as session, session.begin():
+                async with worker.sessions() as session, session.begin():
                     await session.execute(
                         text("""INSERT INTO app.ticket_events
                         (run_id,ticket_id,event_id) VALUES (:run,:ticket,:event)"""),
                         {"run": second_id, "ticket": ticket_id, "event": foreign_event},
                     )
+            async with api.sessions() as session:
+                foreign_detection = await session.scalar(
+                    text("SELECT id FROM app.detections WHERE run_id=:run LIMIT 1"),
+                    {"run": run_id},
+                )
+            with pytest.raises(IntegrityError):
+                async with worker.sessions() as session, session.begin():
+                    await session.execute(
+                        text("""INSERT INTO app.detection_evidence
+                        (run_id,detection_id,event_id) VALUES (:run,:detection,:event)"""),
+                        {"run": second_id, "detection": foreign_detection, "event": foreign_event},
+                    )
         finally:
+            await api.close()
+            await worker.close()
+
+    asyncio.run(execute())
+
+
+@pytest.mark.integration
+def test_s05_released_fixture_flows_through_anomaly_alert_and_automatic_ticket(migrated):
+    async def execute():
+        user_id, _ = await prepare(migrated)
+        owner = Database(migrated("migration_owner"))
+        api = Database(migrated("api_runtime"))
+        worker = Database(migrated("worker_runtime"))
+        try:
+            scenario = next(item for item, _, _ in load_seed(FIXTURES) if item.stable_key == "S05")
+            async with owner.sessions() as session, session.begin():
+                await session.execute(
+                    text("UPDATE app.scenarios SET enabled=true WHERE id=:id"),
+                    {"id": scenario.id},
+                )
+            async with api.sessions() as session, session.begin():
+                run, _ = await start_run(
+                    session,
+                    user_id,
+                    TrainingSelection(scenario_ids=[scenario.id], seed=505),
+                    uuid4(),
+                )
+            run_id = UUID(run["id"])
+            await release_all(api, worker, run_id)
+            async with api.sessions() as session:
+                assert (
+                    await session.scalar(
+                        text("SELECT count(*) FROM app.events WHERE run_id=:run"), {"run": run_id}
+                    )
+                    == 8
+                )
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*) FROM app.detections
+                    WHERE run_id=:run AND detector_type='anomaly'
+                      AND detector_version='baseline-v2'"""),
+                        {"run": run_id},
+                    )
+                    > 0
+                )
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*) FROM app.alerts a JOIN app.detections d
+                    ON d.run_id=a.run_id AND d.id=a.detection_id
+                    WHERE a.run_id=:run AND d.detector_type='anomaly'"""),
+                        {"run": run_id},
+                    )
+                    > 0
+                )
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*) FROM app.tickets t JOIN app.ticket_alerts ta
+                    ON ta.run_id=t.run_id AND ta.ticket_id=t.id
+                    WHERE t.run_id=:run AND t.origin='automatic'"""),
+                        {"run": run_id},
+                    )
+                    > 0
+                )
+                ticket_id = await session.scalar(
+                    text("SELECT id FROM app.tickets WHERE run_id=:run AND origin='automatic'"),
+                    {"run": run_id},
+                )
+                linked_alerts_before = await session.scalar(
+                    text("""SELECT count(*) FROM app.ticket_alerts
+                    WHERE run_id=:run AND ticket_id=:ticket"""),
+                    {"run": run_id, "ticket": ticket_id},
+                )
+                anomalies_before = await session.scalar(
+                    text("""SELECT count(*) FROM app.detections
+                    WHERE run_id=:run AND detector_type='anomaly'"""),
+                    {"run": run_id},
+                )
+            async with api.sessions() as session, session.begin():
+                removed = await delete_or_restore_ticket(
+                    session,
+                    run_id,
+                    ticket_id,
+                    user_id,
+                    DeleteInput(expected_version=1, reason="verify idempotent correlation"),
+                    False,
+                )
+            assert removed["deleted_at"] is not None
+            async with worker.sessions() as session, session.begin():
+                instance_id = await session.scalar(
+                    text("SELECT id FROM app.scenario_instances WHERE run_id=:run"),
+                    {"run": run_id},
+                )
+                await session.execute(
+                    text("""INSERT INTO app.events
+                    (id,run_id,scenario_instance_id,fixture_event_key,release_seq,event_time,
+                     source,asset_id,username,src_ip,request_json,response_json,log_json,content_hash)
+                    SELECT :event,r.id,:instance,'test-extra-read',9,
+                           r.created_at+interval '50 seconds','file_access','FILES-05',
+                           'reports.reader','198.51.100.55'::inet,
+                           jsonb_build_object('method','GET','path','/reports/batch/extra'),
+                           jsonb_build_object('status',200,'bytes_sent',128),
+                           jsonb_build_object('event_type','records_read',
+                             'session_id','SIM-T-505','records_read',700),
+                           repeat('a',64)
+                    FROM app.runs r WHERE r.id=:run"""),
+                    {"event": uuid4(), "instance": instance_id, "run": run_id},
+                )
+            await detect_run(worker, run_id)
+            async with api.sessions() as session:
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*) FROM app.detections
+                        WHERE run_id=:run AND detector_type='anomaly'"""),
+                        {"run": run_id},
+                    )
+                    > anomalies_before
+                )
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*) FROM app.tickets
+                        WHERE run_id=:run AND origin='automatic'"""),
+                        {"run": run_id},
+                    )
+                    == 1
+                )
+                assert await session.scalar(
+                    text("SELECT deleted_at IS NOT NULL FROM app.tickets WHERE id=:ticket"),
+                    {"ticket": ticket_id},
+                )
+                assert (
+                    await session.scalar(
+                        text("""SELECT count(*) FROM app.ticket_alerts
+                        WHERE run_id=:run AND ticket_id=:ticket"""),
+                        {"run": run_id, "ticket": ticket_id},
+                    )
+                    > linked_alerts_before
+                )
+        finally:
+            await owner.close()
             await api.close()
             await worker.close()
 

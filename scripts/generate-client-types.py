@@ -38,6 +38,8 @@ def ts(schema: dict) -> str:
     kind = schema.get("type")
     if kind == "object":
         if not schema.get("properties"):
+            if schema.get("additionalProperties") is True:
+                return "Record<string, unknown>"
             if isinstance(schema.get("additionalProperties"), dict):
                 return f"Record<string, {ts(schema['additionalProperties'])}>"
             return "Record<string, never>"

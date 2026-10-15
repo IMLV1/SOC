@@ -103,6 +103,11 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "analysis_attempts",
             "quota_reservations",
             "ticket_analyses",
+            "evaluations",
+            "evaluation_items",
+            "instructor_run_comments",
+            "experiment_batches",
+            "experiment_arms",
         }
 
     asyncio.run(scenario())
