@@ -43,3 +43,4 @@ def test_auth_preview_refuses_background_work_without_database(monkeypatch):
         assert client.get("/health/live").status_code == 200
         # Auth still enforces its origin guard instead of being hidden by preview mode.
         assert client.post("/api/v1/auth/login", json={}).status_code == 403
+        assert client.post("/api/v1/demo/events", json={}).status_code == 405

@@ -70,7 +70,7 @@ async def request_context(
         os.getenv("SOC_PREVIEW_MODE") == "auth_only"
         and request.method in {"POST", "PATCH", "PUT", "DELETE"}
         and request.url.path.startswith("/api/v1/")
-        and not request.url.path.startswith("/api/v1/auth/")
+        and not request.url.path.startswith(("/api/v1/auth/", "/api/v1/demo/"))
     ):
         response: Response = error_response(
             request, 503, "PREVIEW_UNAVAILABLE", "Runner is unavailable on this preview."
