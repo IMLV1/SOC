@@ -5,7 +5,9 @@ User approved signup/login + PostgreSQL; background work is disabled in auth-onl
 No paid workers/private services/disks or automatic deployment are included.
 
 Render workspace: My Workspace. Free PostgreSQL `soc-preview-db` created on 15 October
-2026, PostgreSQL 17, Singapore, expires 14 November 2026. Web services pending.
+2026, PostgreSQL 17, Singapore, expires 14 November 2026. Both web services are live:
+[SOC preview](https://soc-preview-web.onrender.com),
+[API readiness](https://soc-preview-api.onrender.com/health/ready).
 Proposed region: Singapore. Select Free explicitly for every service.
 
 | Setting | API | Frontend |
@@ -14,7 +16,7 @@ Proposed region: Singapore. Select Free explicitly for every service.
 | Branch | codex/step-12-provider-controls | codex/step-12-provider-controls |
 | Docker context | backend | frontend |
 | Dockerfile | backend/Dockerfile (final api target) | frontend/Dockerfile |
-| Health check | /health/live | /health/live (proxies API) |
+| Health check | /health/ready | /health/live (proxies API) |
 | AI provider | SOC_AI_PROVIDER=mock | no provider credential |
 | Auto-deploy | off | off |
 | Preview guard | SOC_PREVIEW_MODE=auth_only | SOC_PREVIEW_MODE=auth_only (build arg and runtime) |
@@ -41,7 +43,29 @@ readiness and catalog seed passed. API runtime cannot create app objects. Bootst
 rejects existing elevated roles instead of attempting superuser-only ALTER flags.
 Local regression: 52 unit/contract tests, 55 PostgreSQL integration tests, 11 browser
 E2E tests, 3 HTTP smoke tests, lint/typecheck/build and client asset guard passed.
-HTTPS signup/login/logout acceptance remains pending web-service deployment.
+HTTPS acceptance passed at 2026-10-15 11:23 UTC: 3 HTTP smoke tests and 3 browser
+tests (signup/login/refresh/logout, Secure+HttpOnly session, Guest demo at
+375/768/1440, disabled run-start UI and direct API queue-write refusal). A real
+preview test found the initial guard changed Guest's 405 to 503; the deployed API
+fix restores 405, with a regression assertion. API deployed commit `a85a3f9`;
+frontend deployed commit `d51ee9b` (frontend source unchanged by the API fix).
+GitHub App access verified as Only select repositories: IMLV1/SOC.
+PostgreSQL public ingress is blocked after bootstrap; API readiness remains 200
+through Render internal networking. API runtime cannot SELECT private.ground_truth.
+No owner/admin or Gemini credential was uploaded to either web service.
+
+Repeat the bounded acceptance from `frontend/` (creates disposable synthetic accounts):
+
+```powershell
+$env:SOC_SMOKE_ORIGIN='https://soc-preview-web.onrender.com'
+$env:SOC_EXPECT_READY_STATUS='200'
+$env:SOC_PREVIEW_MODE='auth_only'
+node --test tests/smoke.test.mjs
+npx playwright test tests/browser/auth.spec.ts tests/browser/preview.spec.ts
+```
+
+No GitHub CI result is claimed for this branch until a remote workflow actually runs.
+This preview uses mock AI and cannot exercise training execution/evaluation pipelines.
 
 Deploy API first. Set frontend `BACKEND_ORIGIN` to the actual HTTPS API public URL
 before its Docker build; Next rewrites compile this value during build.
