@@ -1,0 +1,24 @@
+{
+  "documents": [
+    {
+      "path": "approved/authentication.md",
+      "stable_key": "authentication",
+      "revision": "1",
+      "title": "authentication",
+      "language": "th-en",
+      "reviewer": "user-approved-local-mock-2026-10-15",
+      "license": "project-authored-test-content",
+      "sha256": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+    },
+    {
+      "path": "approved/blocked.md",
+      "stable_key": "blocked",
+      "revision": "1",
+      "title": "blocked",
+      "language": "th-en",
+      "reviewer": "user-approved-local-mock-2026-10-15",
+      "license": "project-authored-test-content",
+      "sha256": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+    }
+  ]
+}

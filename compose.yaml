@@ -13,7 +13,10 @@ x-db-env: &db-env
 
 services:
   db:
-    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    image: soc-postgres-vector:local
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.pgvector
     environment:
       POSTGRES_DB: soc
       POSTGRES_USER: postgres
@@ -35,6 +38,7 @@ services:
       <<: *db-env
       DB_PASSWORD_FILE: /run/secrets/postgres
       ROLE_SECRETS_DIR: /role-secrets
+      SOC_INSTALL_VECTOR: "yes"
     secrets: [postgres]
     volumes: [./.local/secrets:/role-secrets:ro]
     depends_on:
@@ -71,6 +75,7 @@ services:
     environment:
       <<: *db-env
       DB_PASSWORD_FILE: /run/secrets/api_runtime
+      SOC_KB_ENABLED: ${SOC_KB_ENABLED:-false}
       AUTH_COOKIE_SECURE: "false"
       AUTH_ORIGINS: http://127.0.0.1:${SOC_WEB_PORT:-3000},http://localhost:${SOC_WEB_PORT:-3000}
       SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
@@ -154,7 +159,10 @@ services:
       migrate: {condition: service_completed_successfully}
 
   test-db:
-    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    image: soc-postgres-vector:local
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.pgvector
     profiles: [test]
     environment:
       POSTGRES_DB: soc_test_foundation

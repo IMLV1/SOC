@@ -1,0 +1,23 @@
+{
+  "profile": "fake-hash-16-v1",
+  "golden": [
+    {
+      "query": "failed login records an unsuccessful authentication attempt",
+      "expected": "authentication"
+    },
+    {
+      "query": "blocked request enforcement response successful compromise",
+      "expected": "blocked"
+    }
+  ],
+  "held_out": [
+    {
+      "query": "การเข้าสู่ระบบล้มเหลว",
+      "expected": "authentication"
+    },
+    {
+      "query": "คำขอที่ถูกปฏิเสธ",
+      "expected": "blocked"
+    }
+  ]
+}

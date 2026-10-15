@@ -267,3 +267,13 @@ global 100 requests/วัน UTC, 200,000 tokens/วัน, 5 requests/rolling 
 RAG และ exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
 Approval เพิ่ม route: ตกลง policy/schema → เปลี่ยน operation เป็น approved → implement response
 allowlist/validation/permission → generated OpenAPI drift + behavior/integration tests → ติ๊ก checklist เฉพาะที่ผ่าน
+
+
+## ข้อ 13: offline knowledge storage (15 ตุลาคม 2026)
+
+Requirement RAG-001/002 ใช้ operator CLI admit/validate/publish/revoke ใน
+`app.knowledge` → kb schema / app.jobs; ไม่มี public ingestion หรือ API route เพิ่ม.
+Published release/config pin ใน run_versions เมื่อ SOC_KB_ENABLED=true;
+ค่าเริ่มต้น false คง run เก่าที่ไม่ใช้ RAG. Fake profile 16 มิติสำหรับ CI/local เท่านั้น.
+ผู้ใช้อนุมัติสองคู่มือทั่วไปใน backend/knowledge/manifest.json สำหรับ local/mock แล้ว.
+ดู [คู่มือ/หลักฐานข้อ 13](step-13-verification.md); triage/question/citations อยู่ข้อ 14.

@@ -183,6 +183,21 @@ async def start_run(
             "truth_versions": json.dumps(truth_versions),
         },
     )
+    if os.getenv("SOC_KB_ENABLED", "false") == "true":
+        active = (
+            await session.execute(
+                text("SELECT release_id FROM kb.active_release WHERE id=1 FOR UPDATE")
+            )
+        ).scalar_one()
+        active = await session.scalar(text("SELECT kb.current_release()"))
+        if active is None:
+            raise AuthError(503, "KNOWLEDGE_UNAVAILABLE")
+        await session.execute(
+            text("""UPDATE app.run_versions
+          SET knowledge_release_id=:release,retrieval_config_version='exact-fake16-v1'
+          WHERE run_id=:run"""),
+            {"release": active, "run": run_id},
+        )
     await enqueue_release(session, run_id, 0, now, 1)
     await session.execute(
         text("""UPDATE app.quota_ledgers SET run_count=run_count+1,version=version+1

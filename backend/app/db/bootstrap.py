@@ -15,6 +15,10 @@ async def bootstrap(url: URL, secrets: Path) -> None:
     try:
         async with engine.begin() as connection:
             await connection.execute(text("SELECT pg_advisory_xact_lock(73102001)"))
+            if os.getenv("SOC_INSTALL_VECTOR") == "yes":
+                await connection.execute(
+                    text("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public VERSION '0.8.2'")
+                )
             for role in ROLES:
                 exists = await connection.scalar(
                     text("SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname=:role)"),
@@ -39,13 +43,28 @@ async def bootstrap(url: URL, secrets: Path) -> None:
                 await connection.exec_driver_sql(
                     f'ALTER ROLE "{role}" WITH LOGIN NOINHERIT PASSWORD {literal}'
                 )
+            for group in ("knowledge_publisher", "knowledge_ingestor"):
+                if not await connection.scalar(
+                    text("SELECT 1 FROM pg_roles WHERE rolname=:r"), {"r": group}
+                ):
+                    await connection.execute(text(f'CREATE ROLE "{group}" NOLOGIN NOINHERIT'))
+            await connection.execute(text("GRANT knowledge_publisher TO migration_owner"))
+            await connection.execute(
+                text("GRANT knowledge_ingestor TO worker_runtime WITH INHERIT TRUE")
+            )
             db_name = await connection.scalar(text("SELECT quote_ident(current_database())"))
             await connection.exec_driver_sql(f"REVOKE ALL ON DATABASE {db_name} FROM PUBLIC")
             await connection.exec_driver_sql(
                 f"GRANT CONNECT ON DATABASE {db_name} TO " + ",".join(ROLES)
             )
             await connection.execute(text("REVOKE ALL ON SCHEMA public FROM PUBLIC"))
-            for schema in ("app", "private", "ops"):
+            await connection.execute(
+                text(
+                    "GRANT USAGE ON SCHEMA public TO migration_owner,worker_runtime,"
+                    "knowledge_publisher,knowledge_ingestor"
+                )
+            )
+            for schema in ("app", "private", "ops", "kb"):
                 await connection.execute(
                     text(f"CREATE SCHEMA IF NOT EXISTS {schema} AUTHORIZATION migration_owner")
                 )
