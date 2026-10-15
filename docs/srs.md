@@ -246,6 +246,11 @@ PostgreSQL 17.11/digest ผ่าน local integration ตั้งแต่ข�
 
 ## 8. Decision register — ยังไม่ตัดสินแทนผู้ใช้
 
+ข้อ 12 ได้ข้อยืนยันผู้ใช้ 15 ต.ค. 2026: Free Tier/no billing, budget 0 บาท,
+global 100 requests/วัน UTC, 200,000 tokens/วัน, 5 requests/rolling minute;
+รายผู้ใช้คง 20 requests/วัน. C จริงเป็น operator-triggered bounded synthetic experiment,
+คง detection metrics เดียวกับ B; ไม่อนุมัติ rubric หรือ human score เพิ่มจาก policy นี้.
+
 | ID | ต้องตัดสินใจ | กั้นงานใด |
 |---|---|---|
 | D-01 | rubric/version/น้ำหนัก/คะแนนผ่าน; severity/disposition ที่ยอมรับ; evidence completeness และความกำกวม | exam create/submit/grading จริง |

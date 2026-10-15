@@ -42,8 +42,13 @@ async def analysis_view(session: AsyncSession, row: Mapping[Any, Any]) -> dict[s
 
 
 async def reserve_quota(
-    session: AsyncSession, owner: UUID, run_id: UUID, analysis_id: UUID
+    session: AsyncSession,
+    owner: UUID,
+    run_id: UUID,
+    analysis_id: UUID,
+    experiment: bool = False,
 ) -> bool:
+    column = "experiment_arm_id" if experiment else "analysis_id"
     limit = await session.scalar(
         text("""SELECT daily_ai_requests FROM app.user_quotas
         WHERE user_id=:owner"""),
@@ -83,8 +88,8 @@ async def reserve_quota(
             {"id": ledger["id"]},
         )
         await session.execute(
-            text("""INSERT INTO app.quota_reservations
-            (id,run_id,analysis_id,ledger_id,reserved_tokens,status)
+            text(f"""INSERT INTO app.quota_reservations
+            (id,run_id,{column},ledger_id,reserved_tokens,status)
             VALUES (:id,:run,:analysis,:ledger,0,'reserved')"""),
             {
                 "id": uuid4(),

@@ -271,6 +271,13 @@ body 1–2,000 chars; evidence_ids 0–50 UUID ที่อยู่ใน ticke
 
 ## 9. Analysis API
 
+ข้อ 12 เพิ่ม provider controls โดยไม่เพิ่ม public endpoint:
+global 100 dispatches/วัน UTC, 200,000 tokens/วัน, rolling 5/minute,
+Free Tier/no billing และ cost cap 0. Analysis error codes เพิ่ม
+`PROVIDER_BUDGET_OR_RATE_LIMIT`, `PROVIDER_RATE_LIMITED`; อ่านผ่าน analysis DTO เดิม.
+429 ตั้ง shared cooldown 60 วินาที; manual retry ต้อง reserve ใหม่และไม่คืน unknown hold เดิม.
+Real C และ usage reconciliation เป็น explicit operator CLI ตาม [คู่มือข้อ 12](step-12-verification.md).
+
 | Method | Endpoint | Input / Response |
 |---|---|---|
 | GET | `/runs/{run_id}/analyses` | status?, ticket_id?, cursor?, limit? |

@@ -45,17 +45,27 @@ Human scoring อยู่ N/A (`HUMAN_SCORING_POLICY_UNDECIDED`); rubric, retak
 
 ## 12 — real adapter ใช้งาน local แล้ว; acceptance ข้อ 12 ยังไม่ครบ
 
+เริ่มงานต่อบน `codex/step-12-provider-controls` จาก main หลัง PR #10 merged;
+GitHub CI ของข้อ 01–11 ผ่านทั้ง 5 jobs ที่ commit `860e713` ใน
+[run 38666512966](https://github.com/IMLV1/SOC/actions/runs/38666512966).
+ปรับ network disconnect ให้เป็น ambiguous usage เช่น timeout เพื่อคง reservation
+เป็น unknown และไม่ retry provider อัตโนมัติ. ผู้ใช้ยืนยัน global 100 requests/วัน,
+200,000 tokens/วัน, 5 requests/นาที และงบ 0 บาทแล้ว.
+ดูผลตรวจล่าสุดใน [รายงานข้อ 12](step-12-verification.md).
+
 - [x] config ปฏิเสธ real mode หากไม่ยืนยัน no-billing, synthetic-only หรือ model ที่อนุมัติ
 - [x] runtime secret จำกัดให้ worker; API/browser ไม่ได้รับ key
 - [x] adapter ตรวจ Pydantic/citation; เก็บ token usage และคิด quota เมื่อ invalid JSON มี usage
 - [x] real timeout เก็บ reservation `unknown`; timeout/invalid output/retry integration ผ่าน PostgreSQL
 - [x] bounded real call จาก UI/API/worker ใช้ S02 synthetic fixture และ Gemini 3.5 Flash-Lite Free Tier
-- [ ] versioned rate card, component budget/reservation และ global caps
-- [ ] 429 policy/backoff และขอบเขต retries/idempotency สำหรับ provider
-- [ ] rate-limit/usage reconciliation failure และ production credential/privacy controls
-- [ ] experiment C จริงจากข้อ 11; benchmark ยังไม่ทำ
+- [x] versioned Free Tier rate card, generation reservations และ global caps; PostgreSQL concurrency ผ่าน
+- [x] 429 shared cooldown และ no automatic provider retry; typed adapter tests ผ่าน
+- [x] operator unknown-usage reconciliation สำหรับ terminal analyses; duplicate/negative/active checks
+- [x] bounded experiment C จริงหนึ่งชุด S02; เก็บ real output/usage แยก mock ตามรายงาน
+- [ ] production credential/privacy controls และการ reconcile ผ่าน provider reports อัตโนมัติ (นอก local acceptance)
 
-ข้อ 12 หลักยังไม่ผ่านจนกว่าจะปิดรายการค้างด้านบน; การ real E2E local ไม่ใช่ benchmark
+ข้อ 12 ตรวจรับเฉพาะ local Free Tier/synthetic/operator-triggered C; ไม่อ้าง production readiness
+หรือคุณภาพ AI ทั่วไปจากชุด S02 เดียว. GitHub CI ของ branch นี้ยังรอยืนยัน.
 
 ## 13 — storage/ingestion ยังต้องทำ
 

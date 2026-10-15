@@ -12,6 +12,10 @@ from app.analysis.provider import AnalysisInput
 from app.analysis.provider_config import ProviderConfig
 
 
+class ProviderRateLimited(RuntimeError):
+    """Safe explicit rejection; retry is a new budgeted logical request."""
+
+
 def _string() -> dict[str, Any]:
     return {"type": "STRING"}
 
@@ -140,7 +144,11 @@ class GeminiProvider:
             timeout=self.request_timeout,
         )
         if "smoke_error" in response:
-            if response["smoke_error"] == "TIMEOUT":
+            if response["smoke_error"] == "HTTP_429":
+                raise ProviderRateLimited("PROVIDER_RATE_LIMITED")
+            # A lost connection does not prove the provider did not process the
+            # request. Keep its reservation unknown, just like a timeout.
+            if response["smoke_error"] in {"TIMEOUT", "NETWORK_UNAVAILABLE"}:
                 raise TimeoutError("GEMINI_REQUEST_TIMEOUT")
             raise RuntimeError("GEMINI_REQUEST_FAILED")
         return parse_response(response)

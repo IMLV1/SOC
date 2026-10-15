@@ -97,3 +97,44 @@ def test_gemini_response_schema_is_revalidated():
             }
         )
     assert caught.value.usage.total_tokens == 70
+
+
+def test_lost_connection_is_ambiguous_and_never_retried(monkeypatch):
+    from pathlib import Path
+
+    import pytest
+
+    from app.analysis.provider_config import ProviderConfig
+
+    calls = []
+
+    def disconnected(*args, **kwargs):
+        calls.append(1)
+        return {"smoke_error": "NETWORK_UNAVAILABLE"}
+
+    monkeypatch.setattr("app.analysis.gemini_provider.call", disconnected)
+    config = ProviderConfig("gemini_free", "gemini-3.5-flash-lite", "unused", Path("unused"))
+    with pytest.raises(TimeoutError):
+        asyncio.run(GeminiProvider(config).analyze(analysis_input()))
+    assert len(calls) == 1
+
+
+def test_rate_limit_is_typed_without_upstream_body_or_automatic_retry(monkeypatch):
+    from pathlib import Path
+
+    import pytest
+
+    from app.analysis.gemini_provider import ProviderRateLimited
+    from app.analysis.provider_config import ProviderConfig
+
+    calls = []
+
+    def rejected(*args, **kwargs):
+        calls.append(1)
+        return {"smoke_error": "HTTP_429"}
+
+    monkeypatch.setattr("app.analysis.gemini_provider.call", rejected)
+    config = ProviderConfig("gemini_free", "gemini-3.5-flash-lite", "unused", Path("unused"))
+    with pytest.raises(ProviderRateLimited, match="^PROVIDER_RATE_LIMITED$"):
+        asyncio.run(GeminiProvider(config).analyze(analysis_input()))
+    assert len(calls) == 1

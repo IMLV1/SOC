@@ -8,6 +8,9 @@ case "${COMPOSE_PROJECT_NAME:-}" in
 esac
 : "${SOC_API_PORT:=18000}" "${SOC_WEB_PORT:=13000}" "${SOC_DB_PORT:=55438}"
 export SOC_API_PORT SOC_WEB_PORT SOC_DB_PORT
+# A developer's .env may enable the real provider. CI is always offline;
+# real acceptance uses the separate explicit operator command.
+export SOC_AI_PROVIDER=mock
 cleanup() {
   docker compose --profile test down --volumes --remove-orphans
 }
