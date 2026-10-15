@@ -8,7 +8,7 @@ import { useSession } from "../../../session-provider";
 
 type Review = { id: string; run_id: string; status: string; truncated: boolean; metrics: Record<string, unknown>; versions: Record<string, unknown> };
 type Comment = { id: string; instructor_user_id: string; body: string; created_at: string };
-type Truth = { scenario_key: string; incident_key: string; threat_label: boolean; expected_evidence_keys: string[]; explanation: string; truth_version: number };
+type Truth = { scenario_key: string; incident_key: string; label: boolean; evidence: string[]; details: string; version: number };
 
 export default function InstructorRunReviewPage() {
   const { runId } = useParams<{ runId: string }>();
@@ -54,8 +54,8 @@ export default function InstructorRunReviewPage() {
       <pre>{JSON.stringify(review.metrics, null, 2)}</pre>
       <h3>เฉลยสำหรับ Instructor (รอบที่ได้รับมอบหมาย)</h3>
       <ol className="run-list">{truth.map(item => <li key={`${item.scenario_key}:${item.incident_key}`}>
-        <strong>{item.scenario_key} · {item.incident_key} · {item.threat_label ? "threat" : "benign"}</strong>
-        <p>{item.explanation}</p><small>หลักฐานที่คาดหวัง: {item.expected_evidence_keys.join(", ")}</small>
+        <strong>{item.scenario_key} · {item.incident_key} · {item.label ? "threat" : "benign"}</strong>
+        <p>{item.details}</p><small>หลักฐานที่คาดหวัง: {item.evidence.join(", ")}</small>
       </li>)}</ol>
       <button disabled={busy} onClick={() => void experiment()}>รัน A/B detectors · C unavailable</button>
     </section>}

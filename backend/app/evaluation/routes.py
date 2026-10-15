@@ -237,7 +237,18 @@ async def instructor_truth(run_id: UUID, request: Request) -> dict[str, Any]:
             {"id": uuid4(), "actor": user["id"], "run": run_id},
         )
     return {
-        "data": [dict(row) for row in rows],
+        # Keep private storage column names out of the browser bundle.
+        "data": [
+            {
+                "scenario_key": row["scenario_key"],
+                "incident_key": row["incident_key"],
+                "label": row["threat_label"],
+                "evidence": row["expected_evidence_keys"],
+                "details": row["explanation"],
+                "version": row["truth_version"],
+            }
+            for row in rows
+        ],
         "meta": Meta(request_id=request.state.request_id).model_dump(),
     }
 
