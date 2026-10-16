@@ -52,3 +52,12 @@ test("link form preserves password draft on failed reauthentication and shows li
   await expect(page.getByText("เชื่อมบัญชี Google แล้ว ใช้ Google เข้าบัญชีเดิมได้")).toBeVisible();
   await expect(page.getByLabel("ยืนยันรหัสผ่าน SOC")).toHaveCount(0);
 });
+
+
+test("older preview API shows Google unavailable without a misleading retry message", async ({ page }) => {
+  await page.route("**/api/v1/auth/google/status", route => route.fulfill({ status: 404, json: { error: { code: "NOT_FOUND" } } }));
+  await page.goto("/login");
+  await expect(page.getByText("Google login ยังไม่เปิดใช้งานใน environment นี้")).toBeVisible();
+  await expect(page.getByRole("button", { name: "เข้าสู่ระบบด้วย Google" })).toHaveCount(0);
+  await expect(page.getByText("ตรวจสถานะ Google ไม่สำเร็จ กรุณาโหลดหน้าใหม่")).toHaveCount(0);
+});

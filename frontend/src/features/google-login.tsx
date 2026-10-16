@@ -18,7 +18,15 @@ export default function GoogleLogin({ account = false }: { account?: boolean }) 
       if (result === "link_required") setMessage("มีบัญชี SOC อีเมลนี้แล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่าน แล้วเชื่อม Google ที่หน้าบัญชี");
       if (result === "success") setMessage("เชื่อมต่อ Google สำเร็จ");
     })
-      .catch(() => { if (active) setMessage("ตรวจสถานะ Google ไม่สำเร็จ กรุณาโหลดหน้าใหม่"); });
+      .catch(error => {
+        if (!active) return;
+        // Older preview APIs do not expose Google routes yet.
+        if (error instanceof ApiError && error.status === 404) {
+          setStatus({ available: false, linked: false });
+          return;
+        }
+        setMessage("ตรวจสถานะ Google ไม่สำเร็จ กรุณาโหลดหน้าใหม่");
+      });
     return () => { active = false; };
   }, []);
   async function start(event?: React.FormEvent) {
