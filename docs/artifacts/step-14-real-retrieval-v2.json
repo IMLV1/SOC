@@ -1,0 +1,1469 @@
+{
+  "mode": "real",
+  "profile": "gemini-embedding-2-768-v1",
+  "release_id": "a2808f51-f9fa-5fbe-8e91-441a4345980a",
+  "suite_sha256": "79ff737a7ac5b2fab415cd1ddadde2fe669af11ce034a62bfef55c68354daded",
+  "status": "measured_pending_independent_relevance_review",
+  "human_reviewed": false,
+  "scope": "retrieval only, not no-RAG/RAG answer quality acceptance",
+  "embedding_batch_latency_ms": 1985,
+  "records": [
+    {
+      "id": "en-authentication-01",
+      "language": "en",
+      "query": "Can a newly authenticated session tell us the identity of the person using it?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.2757424773555117,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3757511787340172,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 15
+    },
+    {
+      "id": "en-authentication-02",
+      "language": "en",
+      "query": "Which account and device details help connect authentication records?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.25086765806158384,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3858275925085227,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 16
+    },
+    {
+      "id": "en-authentication-03",
+      "language": "en",
+      "query": "What uncertainty remains when a login is accepted?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.2703007492131616,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.32846076949226877,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-authentication-04",
+      "language": "en",
+      "query": "How can I explain a failed authentication attempt without overstating impact?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.23479978468403262,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.292822262858643,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-authentication-05",
+      "language": "en",
+      "query": "Why does an authenticated account not by itself establish an intruder?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.2526571841776599,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3367729996091675,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-authentication-06",
+      "language": "en",
+      "query": "How do I compare session activity and the time of authentication?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.26017254833512204,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.38844673003095365,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-authentication-07",
+      "language": "en",
+      "query": "Which facts about a login should be separated from assumptions?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.23719133054945107,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3298543092478048,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 15
+    },
+    {
+      "id": "en-authentication-08",
+      "language": "en",
+      "query": "Is creating a session sufficient evidence that sensitive records were viewed?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.24781867835730997,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3428045502777306,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-authentication-09",
+      "language": "en",
+      "query": "How should I relate an account to a session and an asset?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.30313289165478996,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.4048737336957843,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-authentication-10",
+      "language": "en",
+      "query": "What additional context is needed to interpret authentication success?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.21522095384833628,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.30030054149319574,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-01",
+      "language": "en",
+      "query": "Does enforcement of a deny policy establish that the action succeeded?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3022328407237529,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3323610025312148,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-02",
+      "language": "en",
+      "query": "How do I describe an attempted action stopped by a security control?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.22126012355330416,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.2717275344107192,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-03",
+      "language": "en",
+      "query": "Can I report an intrusion as successful when all I have is a denied response?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.2536671686470795,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.26744945867337133,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-04",
+      "language": "en",
+      "query": "Which unknowns should accompany a report about a rejected request?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.25717044728553173,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.35542739227793585,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-05",
+      "language": "en",
+      "query": "What is the significance of the enforcement response in a blocked transaction?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.2856512282594289,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.40748531952229305,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 16
+    },
+    {
+      "id": "en-blocked-06",
+      "language": "en",
+      "query": "Does a denied operation show actual loss of information?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.2997144073332646,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.31763809638694773,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-07",
+      "language": "en",
+      "query": "How should later events be used when interpreting a request rejection?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.25791672640788055,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3459850182496801,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-08",
+      "language": "en",
+      "query": "Why should a guide not be treated as proof of an actual intrusion?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.2725960557993542,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.28846147312559645,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-09",
+      "language": "en",
+      "query": "What can a rejected request prove about an attempted action?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.2362604856827747,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.304145061475385,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-blocked-10",
+      "language": "en",
+      "query": "Should a security analyst distinguish enforcement from attacker success?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.2774182292720261,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3146032707747358,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 0.5,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-unanswerable-01",
+      "language": "en",
+      "query": "Which planet has the greatest number of moons?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-unanswerable-02",
+      "language": "en",
+      "query": "What ingredients are used in sourdough bread?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-unanswerable-03",
+      "language": "en",
+      "query": "How is a violin tuned?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 16
+    },
+    {
+      "id": "en-unanswerable-04",
+      "language": "en",
+      "query": "When do cherry blossoms bloom in Kyoto?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "en-unanswerable-05",
+      "language": "en",
+      "query": "What is the boiling point of ethanol?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-01",
+      "language": "th",
+      "query": "เมื่อระบบออกเซสชันให้แล้ว เรารู้หรือยังว่าใครเป็นคนใช้งานจริง",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.29721096720813756,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3577724077308524,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-02",
+      "language": "th",
+      "query": "ควรนำข้อมูลบัญชีและอุปกรณ์มาเชื่อมกับบันทึกยืนยันตัวตนอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.303030358119444,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.4112278011388294,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-03",
+      "language": "th",
+      "query": "การลงชื่อเข้าใช้ผ่านแล้วยังมีเรื่องใดที่สรุปไม่ได้",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": 0,
+      "reciprocal_rank": 0,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-04",
+      "language": "th",
+      "query": "จะอธิบายการพิสูจน์ตัวตนที่ไม่ผ่านโดยไม่กล่าวเกินหลักฐานอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.40335946323356386,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-05",
+      "language": "th",
+      "query": "บัญชีผ่านการยืนยันแล้วแปลว่าพบผู้บุกรุกแน่นอนหรือไม่",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.35868736712624105,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3627155829285029,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 15
+    },
+    {
+      "id": "th-authentication-06",
+      "language": "th",
+      "query": "ควรเปรียบเทียบช่วงเวลาที่ตรวจตัวตนกับกิจกรรมของเซสชันอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3327663340467629,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-07",
+      "language": "th",
+      "query": "ข้อมูลที่พบในการเข้าระบบกับข้อสันนิษฐานควรแยกกันอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3425292830361184,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.39268079072867734,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-08",
+      "language": "th",
+      "query": "มีเซสชันใหม่อย่างเดียวเพียงพอจะยืนยันว่าอ่านข้อมูลสำคัญแล้วหรือไม่",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3337852361242143,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3743550514550673,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-09",
+      "language": "th",
+      "query": "การเชื่อมบัญชี เซสชัน และเครื่องที่ใช้งานช่วยตีความอะไรได้",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3025479206613765,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.39761599862813257,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-authentication-10",
+      "language": "th",
+      "query": "การลงชื่อเข้าใช้งานสำเร็จต้องอาศัยบริบทอะไรเพิ่มเพื่ออธิบายผลกระทบ",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.2805032635633977,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3407750326163703,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-01",
+      "language": "th",
+      "query": "นโยบายที่สั่งปฏิเสธคำขอเป็นหลักฐานว่าโจมตีสำเร็จแล้วหรือไม่",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.27728110050686516,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3462192255911334,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 16
+    },
+    {
+      "id": "th-blocked-02",
+      "language": "th",
+      "query": "จะรายงานความพยายามที่มาตรการความปลอดภัยหยุดไว้ได้อย่างไร",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3733065271281686,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.41734239248947025,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-03",
+      "language": "th",
+      "query": "มีเพียงคำตอบว่าปฏิเสธคำร้อง จะระบุว่าบุกรุกสำเร็จได้ไหม",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.2641629829746718,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.33640440433206176,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-04",
+      "language": "th",
+      "query": "เมื่อรายงานคำขอที่ไม่ผ่านการอนุญาตควรระบุสิ่งที่ยังไม่ทราบอะไรบ้าง",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.29961532655812073,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3802609300923355,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-05",
+      "language": "th",
+      "query": "ผลตอบกลับว่าระงับคำขอแล้วบอกถึงการบังคับใช้นโยบายอย่างไร",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3195464027332985,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-06",
+      "language": "th",
+      "query": "การกระทำที่ระบบห้ามไว้ยืนยันว่ามีข้อมูลสูญหายหรือยัง",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.40315126312129324,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-07",
+      "language": "th",
+      "query": "ควรอ่านเหตุการณ์ถัดไปอย่างไรหลังระบบปฏิเสธคำขอ",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.2905065648730173,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.37177125917151665,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-08",
+      "language": "th",
+      "query": "เหตุใดข้อความจากคู่มือจึงใช้พิสูจน์การบุกรุกในรอบนี้ไม่ได้",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3656070203535956,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3804384923502885,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-blocked-09",
+      "language": "th",
+      "query": "คำขอที่ถูกหยุดไว้แสดงอะไรเกี่ยวกับความพยายามของผู้ส่ง",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.3250211849871829,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.42424834407035794,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 16
+    },
+    {
+      "id": "th-blocked-10",
+      "language": "th",
+      "query": "นักวิเคราะห์ควรแยกผลการป้องกันออกจากความสำเร็จของผู้โจมตีหรือไม่",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [
+        {
+          "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+          "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+          "stable_key": "blocked",
+          "distance": 0.31183318232990365,
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        },
+        {
+          "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+          "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+          "stable_key": "authentication",
+          "distance": 0.3137653622067058,
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        }
+      ],
+      "recall_at_5": 1,
+      "reciprocal_rank": 1.0,
+      "no_match": false,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-unanswerable-01",
+      "language": "th",
+      "query": "ดาวเคราะห์ดวงใดมีดวงจันทร์มากที่สุด",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-unanswerable-02",
+      "language": "th",
+      "query": "ขนมปังซาวโดว์ใช้วัตถุดิบอะไรบ้าง",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-unanswerable-03",
+      "language": "th",
+      "query": "ตั้งสายไวโอลินต้องทำอย่างไร",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-unanswerable-04",
+      "language": "th",
+      "query": "ดอกซากุระในเกียวโตบานช่วงไหน",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 0
+    },
+    {
+      "id": "th-unanswerable-05",
+      "language": "th",
+      "query": "เอทานอลเดือดที่อุณหภูมิเท่าไร",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false,
+      "retrieved": [],
+      "recall_at_5": null,
+      "reciprocal_rank": null,
+      "no_match": true,
+      "retrieval_latency_ms": 15
+    }
+  ],
+  "context_catalog": [
+    {
+      "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+      "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a",
+      "body": "# Reading blocked requests / อ่านคำขอที่ถูกปฏิเสธ\n\nA blocked request demonstrates an attempted action and an enforcement response. It does not demonstrate successful compromise. Inspect related events and explain which outcomes remain unknown. A generic guide supports interpretation, not a factual claim about a particular incident.\n\nคำขอที่ถูกปฏิเสธไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ ตรวจเหตุการณ์ที่เกี่ยวข้องและระบุข้อมูลที่ยังขาด คู่มืออธิบายหลักการ ไม่ใช่หลักฐานว่าเหตุการณ์สำเร็จ\n",
+      "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+      "stable_key": "blocked"
+    },
+    {
+      "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+      "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f",
+      "body": "# Reading authentication evidence / อ่านหลักฐานการยืนยันตัวตน\n\nA failed login records an unsuccessful authentication attempt. A successful login records a session, but does not identify who controlled it. Correlate the account, session, asset and time before describing impact.\n\nการเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายาม ส่วนการเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา โดยแยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ\n",
+      "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+      "stable_key": "authentication"
+    }
+  ],
+  "threshold": 0.4321524661316025,
+  "metrics": {
+    "en": {
+      "answerable": 20,
+      "unanswerable": 5,
+      "recall_at_5": 1.0,
+      "mrr": 0.975,
+      "no_match_unanswerable": 5
+    },
+    "th": {
+      "answerable": 20,
+      "unanswerable": 5,
+      "recall_at_5": 0.95,
+      "mrr": 0.95,
+      "no_match_unanswerable": 5
+    }
+  },
+  "call": {
+    "id": "248b4237-e540-47a9-bf65-2a0e1dc670bb",
+    "operation_key": "rag14:heldout-v2:embeddings-20261016",
+    "model_id": "gemini-embedding-2",
+    "status": "consumed",
+    "actual_tokens": 772,
+    "reserved_tokens": 16121,
+    "telemetry_json": {
+      "error_code": null,
+      "latency_ms": 1953,
+      "input_tokens": 772,
+      "total_tokens": null,
+      "output_tokens": null,
+      "thinking_tokens": null
+    },
+    "dispatched_at": "2026-10-16 01:57:36.034872+00:00"
+  }
+}

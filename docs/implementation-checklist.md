@@ -250,7 +250,15 @@ provider embeddings จริงต้องผ่านการเลือก
 
 ### 14 — LangChain RAG และ Ask AI
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 12/13; RAG-003/004/005
+- [ ] เสร็จและตรวจรับแล้ว — หลัง 12/13; RAG-003/004/005; ยังไม่ผ่าน quality acceptance ดู [ผลตรวจข้อ 14](step-14-verification.md)
+- [x] Local API/UI, frozen citations/retry, revocation และ race/security regressions ผ่าน; CI ใช้ fake embeddings
+- [x] Real Free Tier smoke และ RAG/no-RAG pilot 50 คำถาม วัดแยกไทย/อังกฤษ เก็บ failures/call IDs/usage ตามจริง
+- [x] เพิ่ม model tokenizer preflight, shared dispatch cap, telemetry และ calibration release ใหม่; real smoke ผ่าน
+- [x] วัด retrieval v2 บน 50 คำถามใหม่แยก validation: TH Recall@5=0.95 / EN=1.00 ตาม developer labels; เก็บ baseline TH=0.80 ตามจริง
+- [x] ทำ agent self-review: relevance 100 คำถาม/claims 57 รายการ พร้อมเหตุผลและ unsupported cases; ไม่ใช่ human acceptance ดู [รายงาน self-review](step-14-agent-review.md)
+- [ ] ผู้ตรวจยืนยัน relevance/grounding (supported claims ≥90%) และ paired answer benchmark ของ release v2; ดู [คู่มือผู้ตรวจ](step-14-review-guide.md)
+- [ ] Reconcile unknown usage 6 calls ด้วยข้อมูล provider ที่ยืนยันได้
+- [ ] GitHub CI ของ changes ข้อ 14 — รอยืนยันบน GitHub
 
 ```text
 ทำข้อ 14: implement authorized retrieval → LangChain structured generation → citation validation

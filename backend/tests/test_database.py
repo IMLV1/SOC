@@ -73,6 +73,8 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "users",
             "auth_sessions",
             "auth_challenges",
+            "google_identities",
+            "google_flows",
             "user_quotas",
             "quota_ledgers",
             "instructor_assignments",
@@ -110,6 +112,10 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "experiment_arms",
             "provider_policy",
             "provider_calls",
+            "retrievals",
+            "retrieval_items",
+            "analysis_knowledge_refs",
+            "quota_components",
         }
 
     asyncio.run(scenario())

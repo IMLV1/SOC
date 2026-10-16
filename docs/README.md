@@ -39,3 +39,13 @@ GitHub CI ข้อ 03 ผ่านแล้ว แต่ required check/branch 
 ข้อ 10 ใช้ Gemini Free Tier กับ synthetic training แบบ opt-in local; ดู [คู่มือ provider](local-development.md#gemini-free-tier-สำหรับ-training-จำลองในเครื่อง) และ [ผลตรวจ](step-06-10-verification.md)
 ข้อ 11 เพิ่ม immutable evaluation, isolated evaluator, Instructor review และ A/B detector experiments; ดู [ผลตรวจข้อ 11](step-11-verification.md). GitHub CI ของ changeset นี้ยังรอยืนยัน
 ดู [คู่มือ](scenario-development.md) และ [ผลตรวจ](step-05-verification.md); runner อยู่ข้อ 06–07 และ exam ยังปิด
+
+ข้อ 14 เพิ่ม authorized retrieval, frozen citations และ Ask AI พร้อม source drawer;
+ดู [คู่มือ RAG](rag-development.md) และ [ผลตรวจ/ข้อจำกัด benchmark](step-14-verification.md).
+ค่าเริ่มต้นยังเป็น mock/RAG disabled; Render preview ไม่ถูกเปลี่ยนในงานนี้.
+
+- [คู่มือผู้ตรวจ relevance และ grounded claims ข้อ 14](step-14-review-guide.md)
+
+- [Agent self-review ข้อ 14 และข้อพบเรื่อง grounding/ภาษา](step-14-agent-review.md)
+
+- [เตรียม Google login/OAuth Client และสิ่งที่ยังไม่เปิดใช้งาน](google-login-setup.md)

@@ -1,0 +1,155 @@
+{
+  "mode": "real",
+  "scope": "validation-v2, not held-out; no threshold tuning from old held-out",
+  "status": "calibration_passed_not_heldout_acceptance",
+  "release_id": "a2808f51-f9fa-5fbe-8e91-441a4345980a",
+  "suite_sha256": "8594ce1b5fc82730de1b01942cade4eba3afd9a09c958ab9a62134f7d49d1dac",
+  "sample_count": 8,
+  "max_distance": 0.4321524661316025,
+  "calls": [
+    {
+      "id": "471cd752-bde1-492c-a3fd-1035f72b0cf7",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:0",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 12,
+      "reserved_tokens": 5477,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 593,
+        "input_tokens": 12,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:54:01.245938+00:00"
+    },
+    {
+      "id": "ba7fb884-42b6-4bd9-bfb5-1c8bdfc46b26",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:1",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 24,
+      "reserved_tokens": 5615,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 547,
+        "input_tokens": 24,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:54:01.863909+00:00"
+    },
+    {
+      "id": "e1792111-e4b8-402d-8a99-1efe49e51c49",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:2",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 11,
+      "reserved_tokens": 5470,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 594,
+        "input_tokens": 11,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:54:02.438123+00:00"
+    },
+    {
+      "id": "4091f1f3-f344-4f19-8bd8-dded37456c12",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:3",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 27,
+      "reserved_tokens": 5609,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 532,
+        "input_tokens": 27,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:54:03.052664+00:00"
+    },
+    {
+      "id": "568d099e-85ae-4021-a7aa-5d6e49b49714",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:4",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 8,
+      "reserved_tokens": 5441,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 594,
+        "input_tokens": 8,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:54:03.613150+00:00"
+    },
+    {
+      "id": "d1c5dc17-d55b-4a0e-afd8-b022c50f31d5",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:5",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 17,
+      "reserved_tokens": 5512,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 562,
+        "input_tokens": 17,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:55:01.372298+00:00"
+    },
+    {
+      "id": "a696522a-98a6-4b50-95c8-f196f7fdfd12",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:6",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 13,
+      "reserved_tokens": 5488,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 640,
+        "input_tokens": 13,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:55:01.961360+00:00"
+    },
+    {
+      "id": "7fa1b040-c115-4e6d-8bdd-50c25806e850",
+      "operation_key": "calibration:a2808f51-f9fa-5fbe-8e91-441a4345980a:eb4dfb353123bcfb93c23e236633ec67039e89fad2b1c6f377b991b81d4905d6:7",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "actual_tokens": 29,
+      "reserved_tokens": 5632,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 562,
+        "input_tokens": 29,
+        "total_tokens": null,
+        "output_tokens": null,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:55:02.613695+00:00"
+    }
+  ]
+}

@@ -10,6 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from app.analysis.routes import router as analysis_router
+from app.auth.google_routes import router as google_router
 from app.auth.routes import router as auth_router
 from app.auth.service import AuthError
 from app.db.config import database_url
@@ -29,6 +30,7 @@ from app.http_models import (
 )
 from app.investigation.routes import admin_router as admin_ticket_router
 from app.investigation.routes import router as ticket_router
+from app.knowledge.routes import router as rag_router
 from app.runs.routes import router as run_router
 from app.scenarios.routes import router as scenario_router
 
@@ -50,12 +52,14 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="SOC API", version="0.1.0", docs_url="/docs", redoc_url=None, lifespan=lifespan)
 app.include_router(auth_router)
+app.include_router(google_router)
 app.include_router(demo_router)
 app.include_router(scenario_router)
 app.include_router(run_router)
 app.include_router(ticket_router)
 app.include_router(admin_ticket_router)
 app.include_router(analysis_router)
+app.include_router(rag_router)
 app.include_router(evaluation_router)
 app.include_router(instructor_evaluation_router)
 

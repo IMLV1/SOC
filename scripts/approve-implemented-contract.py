@@ -16,6 +16,7 @@ contract = yaml.safe_load(target.read_text(encoding="utf-8"))
 actual = app.openapi()
 requirements = {
     "Runs": "FR-004",
+    "RAG": "FR-012",
     "Tickets": "FR-006",
     "Analysis": "FR-008",
     "Instructor": "FR-010",
@@ -39,9 +40,9 @@ for path, methods in actual["paths"].items():
 
 contract["components"]["schemas"].update(actual["components"]["schemas"])
 contract["info"]["description"] = (
-    "Steps 01–11: implemented operations are approved from FastAPI. "
+    "Steps 01–14: implemented operations are approved from FastAPI. "
     "Gemini analysis is Free Tier gated and synthetic-data only. "
     "Evaluation and Instructor review are training-only. "
-    "RAG, learning and exam operations remain draft."
+    "RAG supports pinned releases; learning and exam operations remain draft."
 )
 target.write_text(yaml.safe_dump(contract, allow_unicode=True, sort_keys=False), encoding="utf-8")

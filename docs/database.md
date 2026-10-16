@@ -368,3 +368,12 @@ submit ถือ user guard → idempotency → run → attempt ตาม SRS §
 exam_answers หนึ่งแถวต่อ attempt ป้องกันสองคำตอบจากหลายแท็บ Instructor อ่านเฉลยสอบหลัง submit
 ผู้เรียนได้เฉพาะ feedback ไม่ได้เฉลยเต็ม Instructor override เพิ่ม grading revision;
 ผลต่อ unlock/revoke ยังรอ policy ไม่ recompute จนถอนสิทธิ์โดยไม่ได้ตกลง
+
+
+## Google identity extension (migration 0018)
+
+`app.google_identities`: user_id PK/FK, issuer+subject UNIQUE; API SELECT/INSERT เท่านั้น ไม่ย้าย binding ด้วย email และไม่อนุญาต UPDATE/DELETE
+
+`app.google_flows`: state_hash PK, binding/session/nonce hashes, server-only PKCE verifier, purpose login/link, target user/session ของ link, expiry 5 นาที และ consumed_at Consume atomic ใน transaction แยกก่อน network และล้าง verifier; ตรวจ session/expiry ซ้ำก่อน commit identity/session Expired unconsumed flows ลบด้วย retention_runtime ก่อนลบ auth_sessions ที่อ้างถึงได้ Retention scheduler ยังเป็น backlog ไม่อ้างว่าลบอัตโนมัติแล้ว
+
+Google-only users มี password_hash=NULL Password registration ยัง hash Argon2id ตามเดิม การเปลี่ยนนี้ไม่เปิด password enrollment/reset; ไม่ใช้รหัสผ่านค่าเริ่มต้น Identity callbacks ใช้ transaction advisory guard 73102018 ก่อน user/session และ constraints ป้องกัน race ไม่เปลี่ยน lock order ของ runs/attempts/quota

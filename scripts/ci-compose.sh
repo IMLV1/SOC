@@ -11,6 +11,9 @@ export SOC_API_PORT SOC_WEB_PORT SOC_DB_PORT
 # A developer's .env may enable the real provider. CI is always offline;
 # real acceptance uses the separate explicit operator command.
 export SOC_AI_PROVIDER=mock
+export GOOGLE_OAUTH_ENABLED=false
+# The baseline browser stack has no published KB; RAG integration tests prepare their own.
+export SOC_KB_ENABLED=false
 cleanup() {
   docker compose --profile test down --volumes --remove-orphans
 }

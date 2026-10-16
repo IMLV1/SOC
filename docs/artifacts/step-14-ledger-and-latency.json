@@ -1,0 +1,39 @@
+{
+  "daily_ledger": [
+    {
+      "utc_day": "2026-10-15",
+      "dispatches": 95,
+      "known_tokens": "85868"
+    },
+    {
+      "utc_day": "2026-10-16",
+      "dispatches": 14,
+      "known_tokens": "3345"
+    }
+  ],
+  "unknown_holds": {
+    "calls": 6,
+    "tokens": "47207"
+  },
+  "cost_usd": null,
+  "cost_reason": "historical usage unconfirmed; Free Tier no billing approval is not invoice evidence",
+  "latency": {
+    "en": {
+      "sample_count": 25,
+      "p50_ms": 0,
+      "p95_ms": 16
+    },
+    "th": {
+      "sample_count": 25,
+      "p50_ms": 0,
+      "p95_ms": 16
+    }
+  },
+  "latency_scope": "SQL retrieval only; embedding batch latency shared, not per-query end-to-end latency",
+  "embedding_batch_latency_ms": 1985,
+  "caps": {
+    "dispatches_per_utc_day": 100,
+    "tokens_per_day_including_unknown_holds": 200000,
+    "rpm": 5
+  }
+}

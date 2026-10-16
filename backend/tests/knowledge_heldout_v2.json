@@ -1,0 +1,606 @@
+{
+  "split": "heldout-v2",
+  "purpose": "unseen after validation-v2 threshold freeze; developer labels pending independent review",
+  "cases": [
+    {
+      "id": "en-authentication-01",
+      "language": "en",
+      "query": "Can a newly authenticated session tell us the identity of the person using it?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-02",
+      "language": "en",
+      "query": "Which account and device details help connect authentication records?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-03",
+      "language": "en",
+      "query": "What uncertainty remains when a login is accepted?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-04",
+      "language": "en",
+      "query": "How can I explain a failed authentication attempt without overstating impact?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-05",
+      "language": "en",
+      "query": "Why does an authenticated account not by itself establish an intruder?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-06",
+      "language": "en",
+      "query": "How do I compare session activity and the time of authentication?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-07",
+      "language": "en",
+      "query": "Which facts about a login should be separated from assumptions?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-08",
+      "language": "en",
+      "query": "Is creating a session sufficient evidence that sensitive records were viewed?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-09",
+      "language": "en",
+      "query": "How should I relate an account to a session and an asset?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-authentication-10",
+      "language": "en",
+      "query": "What additional context is needed to interpret authentication success?",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-01",
+      "language": "en",
+      "query": "Does enforcement of a deny policy establish that the action succeeded?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-02",
+      "language": "en",
+      "query": "How do I describe an attempted action stopped by a security control?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-03",
+      "language": "en",
+      "query": "Can I report an intrusion as successful when all I have is a denied response?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-04",
+      "language": "en",
+      "query": "Which unknowns should accompany a report about a rejected request?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-05",
+      "language": "en",
+      "query": "What is the significance of the enforcement response in a blocked transaction?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-06",
+      "language": "en",
+      "query": "Does a denied operation show actual loss of information?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-07",
+      "language": "en",
+      "query": "How should later events be used when interpreting a request rejection?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-08",
+      "language": "en",
+      "query": "Why should a guide not be treated as proof of an actual intrusion?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-09",
+      "language": "en",
+      "query": "What can a rejected request prove about an attempted action?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-blocked-10",
+      "language": "en",
+      "query": "Should a security analyst distinguish enforcement from attacker success?",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-unanswerable-01",
+      "language": "en",
+      "query": "Which planet has the greatest number of moons?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-unanswerable-02",
+      "language": "en",
+      "query": "What ingredients are used in sourdough bread?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-unanswerable-03",
+      "language": "en",
+      "query": "How is a violin tuned?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-unanswerable-04",
+      "language": "en",
+      "query": "When do cherry blossoms bloom in Kyoto?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "en-unanswerable-05",
+      "language": "en",
+      "query": "What is the boiling point of ethanol?",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-01",
+      "language": "th",
+      "query": "เมื่อระบบออกเซสชันให้แล้ว เรารู้หรือยังว่าใครเป็นคนใช้งานจริง",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-02",
+      "language": "th",
+      "query": "ควรนำข้อมูลบัญชีและอุปกรณ์มาเชื่อมกับบันทึกยืนยันตัวตนอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-03",
+      "language": "th",
+      "query": "การลงชื่อเข้าใช้ผ่านแล้วยังมีเรื่องใดที่สรุปไม่ได้",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-04",
+      "language": "th",
+      "query": "จะอธิบายการพิสูจน์ตัวตนที่ไม่ผ่านโดยไม่กล่าวเกินหลักฐานอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-05",
+      "language": "th",
+      "query": "บัญชีผ่านการยืนยันแล้วแปลว่าพบผู้บุกรุกแน่นอนหรือไม่",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-06",
+      "language": "th",
+      "query": "ควรเปรียบเทียบช่วงเวลาที่ตรวจตัวตนกับกิจกรรมของเซสชันอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-07",
+      "language": "th",
+      "query": "ข้อมูลที่พบในการเข้าระบบกับข้อสันนิษฐานควรแยกกันอย่างไร",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-08",
+      "language": "th",
+      "query": "มีเซสชันใหม่อย่างเดียวเพียงพอจะยืนยันว่าอ่านข้อมูลสำคัญแล้วหรือไม่",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-09",
+      "language": "th",
+      "query": "การเชื่อมบัญชี เซสชัน และเครื่องที่ใช้งานช่วยตีความอะไรได้",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-authentication-10",
+      "language": "th",
+      "query": "การลงชื่อเข้าใช้งานสำเร็จต้องอาศัยบริบทอะไรเพิ่มเพื่ออธิบายผลกระทบ",
+      "expected": "authentication",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-01",
+      "language": "th",
+      "query": "นโยบายที่สั่งปฏิเสธคำขอเป็นหลักฐานว่าโจมตีสำเร็จแล้วหรือไม่",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-02",
+      "language": "th",
+      "query": "จะรายงานความพยายามที่มาตรการความปลอดภัยหยุดไว้ได้อย่างไร",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-03",
+      "language": "th",
+      "query": "มีเพียงคำตอบว่าปฏิเสธคำร้อง จะระบุว่าบุกรุกสำเร็จได้ไหม",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-04",
+      "language": "th",
+      "query": "เมื่อรายงานคำขอที่ไม่ผ่านการอนุญาตควรระบุสิ่งที่ยังไม่ทราบอะไรบ้าง",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-05",
+      "language": "th",
+      "query": "ผลตอบกลับว่าระงับคำขอแล้วบอกถึงการบังคับใช้นโยบายอย่างไร",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-06",
+      "language": "th",
+      "query": "การกระทำที่ระบบห้ามไว้ยืนยันว่ามีข้อมูลสูญหายหรือยัง",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-07",
+      "language": "th",
+      "query": "ควรอ่านเหตุการณ์ถัดไปอย่างไรหลังระบบปฏิเสธคำขอ",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-08",
+      "language": "th",
+      "query": "เหตุใดข้อความจากคู่มือจึงใช้พิสูจน์การบุกรุกในรอบนี้ไม่ได้",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-09",
+      "language": "th",
+      "query": "คำขอที่ถูกหยุดไว้แสดงอะไรเกี่ยวกับความพยายามของผู้ส่ง",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-blocked-10",
+      "language": "th",
+      "query": "นักวิเคราะห์ควรแยกผลการป้องกันออกจากความสำเร็จของผู้โจมตีหรือไม่",
+      "expected": "blocked",
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-unanswerable-01",
+      "language": "th",
+      "query": "ดาวเคราะห์ดวงใดมีดวงจันทร์มากที่สุด",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-unanswerable-02",
+      "language": "th",
+      "query": "ขนมปังซาวโดว์ใช้วัตถุดิบอะไรบ้าง",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-unanswerable-03",
+      "language": "th",
+      "query": "ตั้งสายไวโอลินต้องทำอย่างไร",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-unanswerable-04",
+      "language": "th",
+      "query": "ดอกซากุระในเกียวโตบานช่วงไหน",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    },
+    {
+      "id": "th-unanswerable-05",
+      "language": "th",
+      "query": "เอทานอลเดือดที่อุณหภูมิเท่าไร",
+      "expected": null,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "successful compromise inferred only from a denied request",
+        "a generic guide proves an event occurred"
+      ],
+      "human_reviewed": false
+    }
+  ]
+}

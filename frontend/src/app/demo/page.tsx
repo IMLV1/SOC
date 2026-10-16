@@ -11,6 +11,6 @@ export default function Demo() {
   }, []);
   return <main><h1>อ่านหลักฐานตัวอย่าง</h1><p className="notice">ข้อมูลจำลองแบบอ่านอย่างเดียว แยกจากรอบฝึกและข้อสอบ ไม่มีผลต่อคะแนนหรือบัญชี</p>
     {error ? <p role="alert">โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชเพื่อลองใหม่</p> : events === null ? <p role="status">กำลังโหลด…</p> : events.length === 0 ? <p>ยังไม่มีข้อมูลตัวอย่าง</p> :
-      events.map(event => <article key={event.id}><h2>{event.method} {event.path}</h2><p>Response: {event.status_code}</p><p>{event.description}</p><time>{event.event_time}</time></article>)}
+      <div className="demo-events">{events.map(event => <article key={event.id}><h2>{event.method} {event.path}</h2><p>Response: {event.status_code}</p><p>{event.description}</p><time>{event.event_time}</time></article>)}</div>}
   </main>;
 }

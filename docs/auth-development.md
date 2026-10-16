@@ -96,3 +96,6 @@ Browser tests สมัครบัญชี synthetic จริง จึงใ
 CI ติดตั้ง Chromium dependencies บน Ubuntu; lockfile pin @playwright/test 1.64.0
 OpenAPI approved เฉพาะ health และ routes ในตาราง; endpoint อื่นยัง draft
 `scripts/generate-client-types.py` สร้าง TypeScript DTOs จาก approved schema; --check และ FastAPI contract tests กัน drift
+
+
+Google login เป็น optional runtime feature ตามนโยบายที่ผู้ใช้ยืนยัน 16 ต.ค. 2026 ดู [คู่มือ Google OAuth และผลตรวจ](google-login-setup.md). Password registration/login เดิมยังทำงานตามเดิม; new Google registration เข้าใช้ทันทีและ existing-email ต้อง explicit password reauthenticated linking

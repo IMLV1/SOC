@@ -421,3 +421,14 @@ analysis/sources, overview, alerts, tickets, audit/history, evaluation/export, e
 Instructor ที่กำกับอ่านเฉลยได้หลัง submit ผ่าน admin พร้อม audit เท่านั้น
 
 การให้คะแนนเชิงเหตุผลเป็นงาน background ที่ผูก evidence snapshot/rubric/model/knowledge release ที่ตรึงไว้ ไม่รับคะแนนหรือ `passed` จาก client กฎตรวจหลักฐานและ classification ฝั่ง server เป็นตัวคุมผล หาก AI/RAG ล้มเหลวหรือไม่มั่นใจ ให้ `needs_review` และ Instructor พิจารณา ไม่ auto-pass; result ต้องระบุ source ของคำแนะนำ (`deterministic|ai_rag|instructor`) และ citation ที่ตรวจสิทธิ์แล้ว
+
+
+## Google login extension (user-approved 2026-10-16)
+
+| Method | Path | Authorization / semantics |
+|---|---|---|
+| GET | `/auth/google/status` | Guest/session: available และ linked เฉพาะ user ปัจจุบัน |
+| POST | `/auth/google/start` | Origin/CSRF/JSON; login สำหรับ Guest หรือ link พร้อม active session + password reauthentication |
+| GET | `/auth/google/callback` | One-time OAuth state + browser/session binding, nonce/PKCE; fixed 303 redirects ไม่มี Google tokens |
+
+บัญชีใหม่ Google → Analyst quota 10/20 และ SOC session ทันที อีเมลชนบัญชีเดิม → link_required ไม่ auto-merge ต้อง password login แล้วเชื่อมอีเมลเดียวกัน Identity issuer/sub ไม่เปลี่ยน owner/role/quota Cookie/CSRF เดิมยังใช้ได้ ดู [นโยบายและ security regressions](google-login-setup.md) Default OAuth ปิด; configured status ไม่ใช่หลักฐาน real login ผ่าน

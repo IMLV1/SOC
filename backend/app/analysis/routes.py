@@ -8,6 +8,7 @@ from app.analysis.service import analysis_view, enqueue_analysis
 from app.auth import service as auth
 from app.auth.models import AuthMeta, PageMeta
 from app.http_models import ErrorEnvelope
+from app.knowledge.rag import ensure_training
 from app.runs.idempotency import complete, reserve
 from app.runs.pagination import decode_cursor, encode_cursor
 from app.runs.routes import guard_write, idempotency_key
@@ -52,6 +53,7 @@ async def list_analyses(
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.require_user(session, request)
         await get_owned_run(session, run_id, user["id"])
+        await ensure_training(session, run_id)
         rows = (
             (
                 await session.execute(
@@ -93,6 +95,7 @@ async def detail(run_id: UUID, analysis_id: UUID, request: Request) -> AnalysisE
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.require_user(session, request)
         await get_owned_run(session, run_id, user["id"])
+        await ensure_training(session, run_id)
         row = (
             (
                 await session.execute(
@@ -121,11 +124,26 @@ async def retry(
 ) -> AnalysisEnvelope:
     async with auth.database(request).sessions() as session, session.begin():
         user = await guard_write(session, request)
+        await get_owned_run(session, run_id, user["id"])
+        await ensure_training(session, run_id)
         route = f"/runs/{run_id}/analyses/{analysis_id}/retry"
         request_id, cached = await reserve(
             session, user["id"], route, idempotency_key(request), body.model_dump()
         )
         if cached is not None:
+            cached_row = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM app.analyses WHERE run_id=:run AND id=:id"),
+                        {"run": run_id, "id": UUID(str(cached["id"]))},
+                    )
+                )
+                .mappings()
+                .first()
+            )
+            if cached_row is None:
+                raise auth.AuthError(404, "NOT_FOUND")
+            cached = await analysis_view(session, cached_row)
             return AnalysisEnvelope(data=AnalysisView.model_validate(cached), meta=meta(request))
         run = await get_owned_run(session, run_id, user["id"], lock=True)
         if run["status"] not in {"running", "paused", "reviewing"}:
@@ -164,6 +182,8 @@ async def retry(
             WHERE ta.run_id=:run AND ta.analysis_id=:id AND t.deleted_at IS NULL"""),
             {"run": run_id, "id": analysis_id},
         )
+        if old["kind"] == "question" and ticket_id is None:
+            raise auth.AuthError(409, "TICKET_DELETED")
         new_id = await enqueue_analysis(
             session,
             run_id,
@@ -173,6 +193,7 @@ async def retry(
             list(ids),
             ticket_id,
             analysis_id,
+            question=old["question_text"],
         )
         row = (
             (await session.execute(text("SELECT * FROM app.analyses WHERE id=:id"), {"id": new_id}))

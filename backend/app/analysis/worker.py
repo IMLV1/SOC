@@ -34,6 +34,41 @@ async def analyze_job(
     provider: AnalysisProvider | None = None,
     timeout: float = 30,
 ) -> None:
+    async with database.sessions() as session, session.begin():
+        if not await session.scalar(
+            text("SELECT app.is_training_run(:run)"), {"run": job["run_id"]}
+        ):
+            if await lock_domain(session, job):
+                aid = UUID(job["payload"]["analysis_id"])
+                await session.execute(
+                    text("""UPDATE app.analyses SET status='cancelled',
+                    error_code='AI_UNAVAILABLE_IN_EXAM',finished_at=clock_timestamp(),version=version+1
+                    WHERE id=:id AND status IN ('queued','running')"""),
+                    {"id": aid},
+                )
+                await session.execute(
+                    text(
+                        "UPDATE app.quota_components SET status='released' "
+                        "WHERE analysis_id=:id AND status='reserved'"
+                    ),
+                    {"id": aid},
+                )
+                await session.execute(
+                    text("""UPDATE app.quota_reservations SET status='released',
+                    settled_at=clock_timestamp() WHERE analysis_id=:id AND status='reserved'"""),
+                    {"id": aid},
+                )
+                await require_lease(session, job)
+            return
+        rag = await session.scalar(
+            text("SELECT knowledge_release_id FROM app.analyses WHERE id=:id"),
+            {"id": UUID(job["payload"]["analysis_id"])},
+        )
+    if rag is not None:
+        from app.knowledge.worker import answer_job
+
+        await answer_job(database, job)
+        return
     analysis_id = UUID(job["payload"]["analysis_id"])
     attempt_id = uuid4()
     async with database.sessions() as session, session.begin():

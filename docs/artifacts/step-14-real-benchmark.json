@@ -1,0 +1,4677 @@
+{
+  "mode": "real",
+  "profile": "gemini-embedding-2-768-v1",
+  "chat_model": "gemini-3.5-flash-lite",
+  "dataset_hash": "b39eb1659e17e017d7b283d1d4efda88c62b96ab9326e1378b9a4e5cd1f94280",
+  "scope": "synthetic two-document corpus; labels authored for regression; human review pending",
+  "records": [
+    {
+      "operation": "rag14:smoke-v1:0:no_rag",
+      "split": "smoke-v1",
+      "index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "The provided event indicates that a request to the restricted path was denied with a 403 status due to a request policy denial, but there is insufficient context to determine specific authentication or session login details.",
+        "claims": [
+          {
+            "text": "The request to /restricted resulted in a 403 status and a request_policy_denied event.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "authentication details",
+          "session login information"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2484,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:smoke-v1:0:rag",
+      "split": "smoke-v1",
+      "index": 0,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided incident observation, a request to /restricted resulted in a 403 status and a request_policy_denied event. According to the guidance, a blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate successful compromise. Furthermore, a denied request is not a successful compromise.",
+        "claims": [
+          {
+            "text": "A request to /restricted resulted in a 403 status and a request_policy_denied event.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "A denied request is not successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "Whether the user attempted to authenticate",
+          "Whether there were successful login sessions associated with this actor"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 3187,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:smoke-v1:1:no_rag",
+      "split": "smoke-v1",
+      "index": 1,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลเหตุการณ์ที่บันทึกไว้ คำขอที่มีรหัส 7b4aa063-db68-5096-82bc-98d772458483 ได้รับการตอบกลับด้วยสถานะ 403 และมีประเภทเหตุการณ์เป็น request_policy_denied ซึ่งหมายความว่าคำขอดังกล่าวถูกปฏิเสธและไม่ได้รับการยืนยันการเข้าถึงสำเร็จ",
+        "claims": [
+          {
+            "text": "คำขอได้รับการตอบกลับด้วยสถานะ 403 และถูกปฏิเสธตามนโยบาย",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2000,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:smoke-v1:1:rag",
+      "split": "smoke-v1",
+      "index": 1,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลเหตุการณ์ คำขอมีสถานะการตอบกลับเป็น 403 และถูกบันทึกประเภทเหตุการณ์เป็น request_policy_denied ซึ่งแสดงถึงการปฏิเสธคำขอจากนโยบายความปลอดภัย โดยตามหลักการแล้ว คำขอที่ถูกปฏิเสธ (403) ไม่ได้ยืนยันว่าการเข้าถึงสำเร็จแต่อย่างใด",
+        "claims": [
+          {
+            "text": "คำขอมีสถานะการตอบกลับเป็น 403 และมีประเภทเหตุการณ์เป็น request_policy_denied",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "คำขอที่ถูกปฏิเสธไม่ยืนยันว่าการเข้าถึงระบบสำเร็จ",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2547,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:0:no_rag",
+      "split": "held-v1",
+      "index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided evidence, the request to the restricted path was denied with a 403 status (request_policy_denied), meaning there is insufficient context in the observations to determine what a successful session establishes.",
+        "claims": [
+          {
+            "text": "The request to the restricted path was denied with a 403 status.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "What a successful session establishes"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2297,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:0:rag",
+      "split": "held-v1",
+      "index": 0,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the available knowledge, a successful login records a session, but it does not identify who controlled it. The provided event logs show a denied request (403), indicating a failed or denied access attempt rather than a successful session.",
+        "claims": [
+          {
+            "text": "A successful login records a session, but does not identify who controlled it.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "The request resulted in a policy denial status 403.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2188,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:1:no_rag",
+      "split": "held-v1",
+      "index": 1,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "The available evidence contains a single request policy denied event from the web source, but it is insufficient to determine a comprehensive correlation strategy for failed logins.",
+        "claims": [
+          {
+            "text": "The provided event log shows a request policy denied response (status 403) from the web source.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "What specific correlation rules or mechanisms should be applied to failed logins?"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2328,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:1:rag",
+      "split": "held-v1",
+      "index": 1,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "To correlate failed logins, you should correlate the account, session, asset, and time before describing impact, while noting that a denied request or failed login does not demonstrate successful compromise.",
+        "claims": [
+          {
+            "text": "Correlate the account, session, asset and time before describing impact.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "A blocked request or failed authentication attempt does not demonstrate successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b",
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2344,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:2:no_rag",
+      "split": "held-v1",
+      "index": 2,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided evidence, there are no login success events or details that can identify an attacker. The only recorded event is a denied policy request resulting in a 403 status.",
+        "claims": [
+          {
+            "text": "The available evidence only shows a request policy denial with a 403 status and contains no login success events.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "Whether any login success events occurred",
+          "The identity of the attacker"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2609,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:2:rag",
+      "split": "held-v1",
+      "index": 2,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A successful login records a session, but it does not identify who controlled it.",
+        "claims": [
+          {
+            "text": "A successful login records a session, but does not identify who controlled it.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 1844,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:3:no_rag",
+      "split": "held-v1",
+      "index": 3,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided events, a request was denied with a 403 status (request_policy_denied), but there is insufficient context regarding repeated login failures to provide specific guidance.",
+        "claims": [
+          {
+            "text": "Observation: A request was denied with status 403 due to policy denial.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "repeated login failures"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 3813,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:3:rag",
+      "split": "held-v1",
+      "index": 3,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "After repeated login failures, examine the account, session, asset, and time of the attempts, and correlate them before describing any impact. A denied request demonstrates an attempted action and an enforcement response, but does not indicate a successful compromise. Therefore, inspect related events to determine what outcomes remain unknown.",
+        "claims": [
+          {
+            "text": "A failed login records an unsuccessful authentication attempt, and you should correlate the account, session, asset, and time before describing impact.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, but does not demonstrate a successful compromise, requiring inspection of related events to explain unknown outcomes.",
+            "kind": "guidance",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "The specific logs of repeated login failures beyond the single 403 request policy denied event provided."
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2625,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:4:no_rag",
+      "split": "held-v1",
+      "index": 4,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Authentication alone does not prove data access. As observed in the incident log, a request was denied with a 403 status (request_policy_denied), demonstrating that being authenticated is not sufficient to gain access to restricted data without proper authorization.",
+        "claims": [
+          {
+            "text": "Authentication alone does not prove data access, as demonstrated by the policy denial.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 3344,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:4:rag",
+      "split": "held-v1",
+      "index": 4,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Authentication alone does not prove data access. A successful login or authentication indicates a session was created, but it does not definitively identify who controlled the session or prove that any data was accessed. Furthermore, blocked or denied requests only demonstrate attempted actions and enforcement responses, not successful compromises.",
+        "claims": [
+          {
+            "text": "A successful login records a session, but does not identify who controlled it.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, but does not demonstrate successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2656,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:5:no_rag",
+      "split": "held-v1",
+      "index": 5,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "The provided context and evidence do not contain information regarding why activity should be confirmed with the account owner. The only available event is a policy-denied request (HTTP 403), which does not discuss confirming activity with account owners.",
+        "claims": [],
+        "unknowns": [
+          "Why confirm activity with the account owner?"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 4688,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:5:rag",
+      "split": "held-v1",
+      "index": 5,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A blocked request or denied policy only demonstrates an attempted action and an enforcement response, rather than a successful compromise. Furthermore, a successful login records a session but does not identify who actually controlled it. Therefore, confirming activity with the account owner is necessary to verify who controlled the session or account, as the available evidence is insufficient to determine compromise without further correlation.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, not a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "A successful login records a session, but does not identify who controlled it.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          }
+        ],
+        "unknowns": [
+          "Who controlled the account or session during the activity"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2953,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:6:no_rag",
+      "split": "held-v1",
+      "index": 6,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "The provided event logs only contain a request policy denied event and do not include authentication logs with timestamps necessary to determine which timestamps should be compared.",
+        "claims": [
+          {
+            "text": "The available evidence contains a request policy denied event without authentication log timestamps.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "Which timestamps should be compared in authentication logs?"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2594,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:6:rag",
+      "split": "held-v1",
+      "index": 6,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided knowledge, when analyzing authentication and related logs, you must correlate the account, session, asset, and time before describing impact.",
+        "claims": [
+          {
+            "text": "Correlate the account, session, asset and time before describing impact.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2078,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:7:no_rag",
+      "split": "held-v1",
+      "index": 7,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided evidence, a request to a restricted path resulted in a 403 status and a request_policy_denied event, but there is insufficient context to relate sessions to later activity.",
+        "claims": [
+          {
+            "text": "A request to a restricted path resulted in a 403 status and a request_policy_denied event.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "How to relate sessions to later activity"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2265,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:7:rag",
+      "split": "held-v1",
+      "index": 7,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A successful login records a session, but further activity must be correlated by examining the account, session, asset, and time. The provided evidence only shows a denied request and does not contain session data or later activity.",
+        "claims": [
+          {
+            "text": "A successful login records a session, but does not identify who controlled it, and relating sessions to later activity requires correlating the account, session, asset, and time.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "The available observation is a denied request (status 403) and does not provide session or later activity data.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "session identifiers",
+          "later activity logs"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2969,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:8:no_rag",
+      "split": "held-v1",
+      "index": 8,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided context, there is insufficient evidence to determine whether login facts should be separated from hypotheses.",
+        "claims": [],
+        "unknowns": [
+          "Separating observed login facts from hypotheses"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2765,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:8:rag",
+      "split": "held-v1",
+      "index": 8,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Yes, you should separate observed facts from hypotheses. A denied request demonstrates an attempted action and an enforcement response, but it does not demonstrate a successful compromise. Similarly, a failed login records an unsuccessful attempt, and a successful login records a session without confirming who controlled it. You must inspect related events and separate what is observed from what remains unknown.",
+        "claims": [
+          {
+            "text": "A denied request demonstrates an attempted action and an enforcement response, but does not demonstrate a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "You must separate observed facts from hypotheses when analyzing login and access events.",
+            "kind": "guidance",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b",
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 6500,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:9:no_rag",
+      "split": "held-v1",
+      "index": 9,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided evidence, there is insufficient context to determine what is unknown after a session is created, as the logs only show a denied request to a restricted path.",
+        "claims": [
+          {
+            "text": "The provided evidence only contains a denied request event and lacks information regarding session creation or what remains unknown after it.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "What happens after a session is created"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false
+      },
+      "latency_ms": 2157,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:9:rag",
+      "split": "held-v1",
+      "index": 9,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A successful login records a session, but it does not identify who controlled that session.",
+        "claims": [
+          {
+            "text": "A successful login records a session, but does not identify who controlled it.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          }
+        ],
+        "unknowns": [
+          "Who controlled the session after it was created"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false
+      },
+      "latency_ms": 4203,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:10:no_rag",
+      "split": "held-v1",
+      "index": 10,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "invalid_output",
+      "result": null,
+      "latency_ms": 2219,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ],
+      "validation_exception": "ValueError"
+    },
+    {
+      "operation": "rag14:held-v1:10:rag",
+      "split": "held-v1",
+      "index": 10,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A denied HTTP request does not establish compromise; it only demonstrates an attempted action and an enforcement response.",
+        "claims": [
+          {
+            "text": "A denied HTTP request does not establish compromise, as a blocked request demonstrates an attempted action and an enforcement response rather than a successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2312,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:11:no_rag",
+      "split": "held-v1",
+      "index": 11,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Status 403 shows a request policy denial when attempting to access the restricted path.",
+        "claims": [
+          {
+            "text": "Status 403 shows a request policy denial when attempting to access the restricted path.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2438,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:11:rag",
+      "split": "held-v1",
+      "index": 11,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Status 403 shows a request policy denial for the GET request to /restricted. Based on the knowledge base, a blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate successful compromise.",
+        "claims": [
+          {
+            "text": "Status 403 shows a request policy denial for the GET request to /restricted.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 5891,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:12:no_rag",
+      "split": "held-v1",
+      "index": 12,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A blocked request (such as a 403 response resulting in a request_policy_denied event) is a denied request and does not represent a successful compromise.",
+        "claims": [
+          {
+            "text": "A denied request is not a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 1953,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:12:rag",
+      "split": "held-v1",
+      "index": 12,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate successful compromise.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, and it does not demonstrate successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2156,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:13:no_rag",
+      "split": "held-v1",
+      "index": 13,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided event, a denied request corresponds to a request policy denied event type and a 403 status code.",
+        "claims": [
+          {
+            "text": "A denied request is associated with the request_policy_denied event type and status 403.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "Specific response fields for successful requests are not present in the provided evidence."
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2172,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:13:rag",
+      "split": "held-v1",
+      "index": 13,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "The provided evidence and knowledge do not contain information specifying which response fields distinguish denied and successful requests.",
+        "claims": [],
+        "unknowns": [
+          "Which response fields distinguish denied and successful requests"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2203,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:14:no_rag",
+      "split": "held-v1",
+      "index": 14,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "No, a blocked payload cannot prove successful data access. As shown in the incident log, a request policy denial resulted in a 403 status code, which indicates the request was successfully blocked rather than granting access.",
+        "claims": [
+          {
+            "text": "A blocked payload cannot prove successful data access.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "The request resulted in a policy denial and a 403 status code, confirming the request was denied.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 6750,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:14:rag",
+      "split": "held-v1",
+      "index": 14,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A blocked payload does not prove successful data access; it demonstrates an attempted action and an enforcement response, as seen in the request policy denial (status 403).",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, and it does not demonstrate successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "The event log shows a request to /restricted resulting in a 403 status due to request_policy_denied.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 6109,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:15:no_rag",
+      "split": "held-v1",
+      "index": 15,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A policy denial results in an access restriction (status 403), but the provided evidence and knowledge are insufficient to determine what specific evidence is needed subsequent to a policy denial.",
+        "claims": [
+          {
+            "text": "A request to /restricted resulted in a policy denial with status 403.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "What evidence is needed after a policy denial"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2328,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:15:rag",
+      "split": "held-v1",
+      "index": 15,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A policy denial demonstrates an attempted action and an enforcement response, but it does not confirm a successful compromise. Evidence is needed by inspecting related events to understand the context of the attempt and to determine which outcomes remain unknown.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, not a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "Inspect related events and explain which outcomes remain unknown after a policy denial.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "What specific intent or subsequent actions were attempted by the requester beyond the denied request."
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 7250,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:16:no_rag",
+      "split": "held-v1",
+      "index": 16,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A dangerous URL alone does not establish a successful compromise. As shown in the event logs, a request to a restricted path resulted in a 403 request policy denial, indicating that a denied request is not a successful compromise.",
+        "claims": [
+          {
+            "text": "A request to the restricted path was denied with a 403 status, showing that a denied request is not a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2875,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:16:rag",
+      "split": "held-v1",
+      "index": 16,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "No, a dangerous URL or a blocked request alone does not establish a successful compromise. A blocked request demonstrates an attempted action and an enforcement response, but it does not prove that an attacker successfully compromised the system.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, not a successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "The provided event shows a request policy denied with a 403 status, which represents a blocked request rather than a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2641,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:17:no_rag",
+      "split": "held-v1",
+      "index": 17,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "The provided event logs indicate a request was denied with a 403 status and a request_policy_denied event type, but there is insufficient context to explain how to cautiously explain a denied request.",
+        "claims": [
+          {
+            "text": "The request to /restricted resulted in a 403 status with event_type request_policy_denied.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "How to cautiously explain a denied request"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2219,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:17:rag",
+      "split": "held-v1",
+      "index": 17,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A denied request demonstrates an attempted action and an enforcement response, but it does not demonstrate a successful compromise. When explaining a denied request, inspect related events, explain which outcomes remain unknown, and note that a denied request is not a successful compromise.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response rather than a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "A denied request is not a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "Inspect related events and explain which outcomes remain unknown.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2281,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:18:no_rag",
+      "split": "held-v1",
+      "index": 18,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Abstain when evidence is insufficient.",
+        "claims": [],
+        "unknowns": [
+          "What is the difference between potential and observed impact?"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 1734,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:18:rag",
+      "split": "held-v1",
+      "index": 18,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided context and events, there is no direct definition differentiating potential impact from observed impact. However, the logs show a denied request (status 403) where access was blocked, demonstrating an enforcement response rather than a successful compromise.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, but does not demonstrate successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "What is the exact distinction between potential and observed impact."
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 1954,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:19:no_rag",
+      "split": "held-v1",
+      "index": 19,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided incident observations, checking responses and subsequent logs is necessary to verify policy enforcement, as demonstrated by the 403 status response and corresponding request_policy_denied event log.",
+        "claims": [
+          {
+            "text": "Checking responses and subsequent logs is necessary to verify policy enforcement, as demonstrated by the 403 status response and corresponding request_policy_denied event log.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2359,
+      "expected": "blocked",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:19:rag",
+      "split": "held-v1",
+      "index": 19,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Checking the response and subsequent logs is necessary because a blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate a successful compromise. Inspecting related events helps determine what actually happened while acknowledging which outcomes remain unknown.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "A blocked request does not demonstrate a successful compromise, and a denied request is not a successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "Whether the attacker attempted further actions after the blocked request"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2329,
+      "expected": "blocked",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:20:no_rag",
+      "split": "held-v1",
+      "index": 20,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "I do not have sufficient context to determine tomorrow's weather.",
+        "claims": [],
+        "unknowns": [
+          "tomorrow weather"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2344,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:20:rag",
+      "split": "held-v1",
+      "index": 20,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:21:no_rag",
+      "split": "held-v1",
+      "index": 21,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "There is insufficient evidence provided to answer the question about what medicine cures a cold, as the available logs only indicate a denied request.",
+        "claims": [],
+        "unknowns": [
+          "What medicine cures a cold"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 1969,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:21:rag",
+      "split": "held-v1",
+      "index": 21,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:22:no_rag",
+      "split": "held-v1",
+      "index": 22,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided evidence, the request to access the restricted resource was denied with a 403 status, and there is insufficient information to provide instructions on how to grow tomatoes.",
+        "claims": [
+          {
+            "text": "The request to access the restricted resource resulted in a policy denial with a 403 status.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "How to grow tomatoes"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 6843,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:22:rag",
+      "split": "held-v1",
+      "index": 22,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:23:no_rag",
+      "split": "held-v1",
+      "index": 23,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Abstaining from answering because the evidence provided is insufficient and shows only a denied request.",
+        "claims": [],
+        "unknowns": [
+          "Who won the lunar chess championship?"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2469,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:23:rag",
+      "split": "held-v1",
+      "index": 23,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:24:no_rag",
+      "split": "held-v1",
+      "index": 24,
+      "language": "en",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Based on the provided evidence, there is no information available to predict which stock will rise tomorrow, and request policies have denied access to restricted data.",
+        "claims": [
+          {
+            "text": "The request was denied by policy with a 403 status.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "Which stock will rise tomorrow"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 1907,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:24:rag",
+      "split": "held-v1",
+      "index": 24,
+      "language": "en",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:25:no_rag",
+      "split": "held-v1",
+      "index": 25,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A denied request (such as a 403 status on /restricted) does not indicate a successful compromise.",
+        "claims": [
+          {
+            "text": "A denied request is not a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 1641,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:25:rag",
+      "split": "held-v1",
+      "index": 25,
+      "language": "th",
+      "arm": "rag",
+      "status": "invalid_output",
+      "validation_exception": "ValueError",
+      "result": null,
+      "latency_ms": 7031,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:26:no_rag",
+      "split": "held-v1",
+      "index": 26,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลที่มีอยู่ มีเหตุการณ์การปฏิเสธคำขอเข้าถึงเนื่องจากนโยบาย (request_policy_denied) ที่เส้นทาง /restricted โดยได้รับการตอบกลับเป็นสถานะ 403 แต่ไม่มีหลักฐานหรือรายละเอียดเกี่ยวกับความล้มเหลวในการเข้าสู่ระบบ (login) หรือวิธีการเชื่อมโยงเหตุการณ์ดังกล่าวครับ",
+        "claims": [
+          {
+            "text": "มีเหตุการณ์การปฏิเสธคำขอเข้าถึงเนื่องจากนโยบายที่เส้นทาง /restricted ได้รับการตอบกลับเป็นสถานะ 403",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "วิธีการเชื่อมโยง login ล้มเหลว"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 7797,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:26:rag",
+      "split": "held-v1",
+      "index": 26,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากหลักฐานที่มีคำขอถูกปฏิเสธ (request_policy_denied) การเข้าสู่ระบบที่ล้มเหลวหรือคำขอที่ถูกปฏิเสธนั้นเป็นการแสดงความพยายามและการตอบสนองของระบบในการบังคับใช้นโยบาย แต่ไม่ถือเป็นการยืนยันว่าผู้โจมตีประสบความสำเร็จในการประนีประนอมระบบหรือเข้าสู่ระบบได้สำเร็จ โดยควรตรวจสอบความสัมพันธ์ของบัญชี session อุปกรณ์ และเวลา รวมถึงระบุข้อมูลที่ยังขาดหายไปตามคำแนะนำ",
+        "claims": [
+          {
+            "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามกระทำการและการตอบสนองของระบบ แต่ไม่ได้ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "การเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายามในการยืนยันตัวตน และควรตรวจสอบความสัมพันธ์ของบัญชี session อุปกรณ์ และเวลาก่อนประเมินผลกระทบ",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          }
+        ],
+        "unknowns": [
+          "รายละเอียดเพิ่มเติมเกี่ยวกับบัญชีและเวลาของเหตุการณ์ความพยายามเข้าสู่ระบบอื่นๆ ที่นอกเหนือจากบันทึกคำขอที่ถูกปฏิเสธ"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 7532,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:27:no_rag",
+      "split": "held-v1",
+      "index": 27,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลเหตุการณ์ที่มีอยู่ (E-events) พบเพียงการปฏิเสธการเข้าถึง (403 Forbidden) เนื่องจากนโยบาย ไม่ปรากฏข้อมูลเกี่ยวกับการเข้าสู่ระบบสำเร็จหรือข้อมูลที่บ่งบอกถึงตัวผู้โจมตี",
+        "claims": [
+          {
+            "text": "ข้อมูลเหตุการณ์แสดงเพียงการปฏิเสธคำขอเข้าถึงทรัพยากร และไม่มีข้อมูลการเข้าสู่ระบบสำเร็จหรือรายละเอียดของผู้โจมตี",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "ข้อมูลการเข้าสู่ระบบที่สำเร็จ",
+          "รายละเอียดเกี่ยวกับตัวผู้โจมตี"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2204,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:27:rag",
+      "split": "held-v1",
+      "index": 27,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "การเข้าสู่ระบบสำเร็จ (successful login) ไม่สามารถระบุตัวผู้โจมตีหรือผู้ที่ควบคุมบัญชีนั้นได้โดยตรง โดยจะต้องทำการตรวจความสัมพันธ์ระหว่างบัญชี (account) session อุปกรณ์ (asset) และเวลา (time) เพิ่มเติมก่อนที่จะระบุผลกระทบได้ จากหลักฐานที่มีอยู่แสดงเพียงคำขอที่ถูกปฏิเสธ (request_policy_denied) ซึ่งไม่ถือเป็นการโจมตีหรือการเข้าถึงที่สำเร็จ",
+        "claims": [
+          {
+            "text": "การเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "เหตุการณ์ในระบบบันทึกคำขอที่ถูกปฏิเสธด้วยสถานะ 403 ซึ่งไม่แสดงการเข้าถึงหรือการเข้าสู่ระบบสำเร็จ",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "ตัวตนที่แท้จริงของผู้ควบคุมบัญชีในกรณีที่มีการเข้าสู่ระบบสำเร็จ",
+          "หลักฐานการเข้าสู่ระบบที่สำเร็จในเหตุการณ์นี้"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2484,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:28:no_rag",
+      "split": "held-v1",
+      "index": 28,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "เนื่องจากหลักฐานเหตุการณ์ที่มีเพียงการปฏิเสธการเข้าถึง (403) โดยไม่มีบันทึกข้อมูลการพยายามล็อกอินล้มเหลวหลายครั้ง จึงมีข้อมูลไม่เพียงพอที่จะระบุสาเหตุหรือสิ่งที่ต้องตรวจสอบเฉพาะเจาะจงสำหรับการล็อกอินที่ล้มเหลว",
+        "claims": [
+          {
+            "text": "หลักฐานเหตุการณ์แสดงเฉพาะการปฏิเสธการเข้าถึงคำขอเส้นทาง /restricted ด้วยสถานะ 403 และประเภทเหตุการณ์ request_policy_denied",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "เหตุการณ์ความพยายามล็อกอินล้มเหลวหลายครั้ง",
+          "บันทึกระบบหรือ logs ที่เกี่ยวข้องกับการตรวจสอบความถูกต้องของรหัสผ่านหรือการยืนยันตัวตน"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2625,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:28:rag",
+      "split": "held-v1",
+      "index": 28,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากเหตุการณ์ที่มีคำขอถูกปฏิเสธ (status 403) การเข้าสู่ระบบที่ล้มเหลวบันทึกความพยายามยืนยันตัวตนที่ไม่สำเร็จ แต่คำขอที่ถูกปฏิเสธนั้นไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ ต้องตรวจสอบบัญชี session อุปกรณ์ และเวลาที่เกี่ยวข้อง พร้อมทั้งระบุข้อมูลที่ยังขาด",
+        "claims": [
+          {
+            "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามดำเนินการและการตอบสนองในการบังคับใช้ โดยไม่ยืนยันว่าการโจมตีสำเร็จ",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "เมื่อเกิดการเข้าสู่ระบบล้มเหลว ควรตรวจสอบบัญชี session อุปกรณ์ และเวลาก่อนอธิบายผลกระทบ",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          }
+        ],
+        "unknowns": [
+          "รายละเอียดบัญชีผู้ใช้ที่พยายามเข้าสู่ระบบ",
+          "อุปกรณ์และเวลาที่แน่ชัดของการพยายามเข้าสู่ระบบที่ล้มเหลว"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2594,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:29:no_rag",
+      "split": "held-v1",
+      "index": 29,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Abstain when evidence is insufficient.",
+        "claims": [],
+        "unknowns": [
+          "การยืนยันตัวตนพิสูจน์ว่าอ่านข้อมูลแล้วไหม"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2062,
+      "expected": "authentication",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:29:rag",
+      "split": "held-v1",
+      "index": 29,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": "authentication",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:30:no_rag",
+      "split": "held-v1",
+      "index": 30,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลที่มี ไม่พบหลักฐานหรือบริบทที่อธิบายเหตุผลว่าทำไมต้องยืนยันกิจกรรมกับเจ้าของบัญชี เนื่องจากเหตุการณ์ที่มีบันทึกไว้เป็นเพียงการปฏิเสธคำขอเข้าถึงทรัพยากร (403 Forbidden) เท่านั้น",
+        "claims": [
+          {
+            "text": "เหตุการณ์ในบันทึกระบุเพียงการปฏิเสธคำขอเข้าถึงด้วยรหัสสถานะ 403 และไม่มีข้อมูลเกี่ยวกับการยืนยันกิจกรรมกับเจ้าของบัญชี",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "เหตุผลที่ต้องยืนยันกิจกรรมกับเจ้าของบัญชี"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 5469,
+      "expected": "authentication",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:30:rag",
+      "split": "held-v1",
+      "index": 30,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": "authentication",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:31:no_rag",
+      "split": "held-v1",
+      "index": 31,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context is provided in the logs and knowledge base to determine how the time in authentication logs should be compared.",
+        "claims": [],
+        "unknowns": [
+          "authentication logs time comparison method"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 5937,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:31:rag",
+      "split": "held-v1",
+      "index": 31,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "การวิเคราะห์เหตุการณ์ต้องพิจารณาเวลาควบคู่กับบัญชี session และอุปกรณ์ เพื่อตรวจสอบความสัมพันธ์ของเหตุการณ์ โดยเหตุการณ์คำขอที่ถูกปฏิเสธ เช่น ใน event ที่ 7b4aa063-db68-5096-82bc-98d772458483 แสดงการถูกปฏิเสธ (403) ไม่ได้หมายความว่าระบบถูกบุกรุกสำเร็จ",
+        "claims": [
+          {
+            "text": "ต้องตรวจบัญชี session อุปกรณ์ และเวลา เพื่อวิเคราะห์ผลกระทบและความสัมพันธ์ของเหตุการณ์",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามและการบังคับใช้มาตรการป้องกัน แต่ไม่ยืนยันความสำเร็จของการบุกรุก",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "พบเหตุการณ์คำขอที่ถูกปฏิเสธ (request_policy_denied) ที่เส้นทาง /restricted ได้รับสถานะ 403",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "เวลาที่แน่ชัดและบริบทเพิ่มเติมของเหตุการณ์การยืนยันตัวตนอื่นๆ นอกเหนือจากคำขอที่ถูกปฏิเสธ"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 4609,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:32:no_rag",
+      "split": "held-v1",
+      "index": 32,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Abstain due to insufficient evidence.",
+        "claims": [],
+        "unknowns": [
+          "session",
+          "กิจกรรมต่อเนื่อง"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 3532,
+      "expected": "authentication",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:32:rag",
+      "split": "held-v1",
+      "index": 32,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": "authentication",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:33:no_rag",
+      "split": "held-v1",
+      "index": 33,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลเหตุการณ์ที่ปรากฏ มีการบันทึกเหตุการณ์การปฏิเสธคำขอเข้าถึงทรัพยากร (request_policy_denied) ซึ่งแสดงถึงข้อสังเกตจากการทำงานของระบบ แต่เนื่องจากไม่มีข้อมูลความรู้หรือบริบทเพิ่มเติมเกี่ยวกับสมมติฐาน จึงขอให้พิจารณาหลักฐานที่มีอยู่ในการระบุข้อสังเกตและสมมติฐานให้สอดคล้องกัน",
+        "claims": [
+          {
+            "text": "ระบบบันทึกเหตุการณ์การปฏิเสธคำขอเข้าถึงทรัพยากร (request_policy_denied)",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "รายละเอียดสมมติฐานเกี่ยวกับการพยายามเข้าสู่ระบบ"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 8500,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:33:rag",
+      "split": "held-v1",
+      "index": 33,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "ควรแยกข้อสังเกต login ออกจากสมมติฐานหรือข้อสันนิษฐาน โดยจากการบันทึกหลักฐานการเข้าสู่ระบบ การเข้าสู่ระบบล้มเหลวบันทึกความพยายามที่ไม่สำเร็จ ส่วนการเข้าสู่ระบบสำเร็จจะบันทึก session แต่ยังไม่ระบุชัดเจนว่าผู้ใดเป็นผู้ควบคุม ต้องทำการเชื่อมโยงข้อมูลบัญชี session อุปกรณ์ และเวลาก่อนที่จะระบุผลกระทบ",
+        "claims": [
+          {
+            "text": "การเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายาม ส่วนการเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา โดยแยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 6234,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:34:no_rag",
+      "split": "held-v1",
+      "index": 34,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A denied request is not a successful compromise. Based on the provided event logs, after creating a session, a GET request to `/restricted` resulted in a 403 status due to a policy denial (`request_policy_denied`), but there is insufficient context to determine what else is unknown.",
+        "claims": [
+          {
+            "text": "A request to `/restricted` resulted in a 403 status and a policy denial event.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "What specific details or privileges are unknown after session creation beyond the restricted endpoint denial."
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 4719,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:34:rag",
+      "split": "held-v1",
+      "index": 34,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A successful login records a session, but does not identify who controlled it. In this incident, a blocked request to /restricted resulted in a 403 denied status. A blocked request demonstrates an attempted action and an enforcement response, but a denied request is not a successful compromise, and many details regarding session control and user identity remain unknown.",
+        "claims": [
+          {
+            "text": "A successful login records a session, but does not identify who controlled it.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "ec433364-8e28-5a7c-8255-1625f1acf08b"
+            ]
+          },
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, and a denied request is not a successful compromise.",
+            "kind": "guidance",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "A request to /restricted returned a 403 status (request_policy_denied).",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "Identity of who controlled the session",
+          "Whether the compromise was successful beyond the blocked request"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 9610,
+      "expected": "authentication",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:35:no_rag",
+      "split": "held-v1",
+      "index": 35,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "คำขอ HTTP ถูกปฏิเสธ (สถานะ 403) ตามบันทึกเหตุการณ์ แต่หลักฐานที่มีไม่เพียงพอที่จะยืนยันว่าเป็นการพิสูจน์การเจาะระบบ (penetration testing) หรือไม่",
+        "claims": [
+          {
+            "text": "คำขอ HTTP ถูกปฏิเสธด้วยสถานะ 403 และบันทึกเหตุการณ์ระบุว่าเป็น request_policy_denied",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "เจตนาของผู้ส่งคำขอว่าเป็นการพิสูจน์การเจาะระบบหรือไม่"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 5734,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:35:rag",
+      "split": "held-v1",
+      "index": 35,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลในระบบ HTTP request ที่ถูกปฏิเสธ (status 403) แสดงให้เห็นถึงความพยายามในการเข้าถึงและมาตรการป้องกันที่ทำงานเพื่อปฏิเสธคำขอนั้น แต่ไม่ถือเป็นการพิสูจน์หรือยืนยันว่าการเจาะระบบหรือการประนีประนอมข้อมูลประสบความสำเร็จ",
+        "claims": [
+          {
+            "text": "คำขอ HTTP ถูกปฏิเสธที่เส้นทาง /restricted โดยได้ผลลัพธ์สถานะ 403 และมีประเภทเหตุการณ์เป็น request_policy_denied",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามกระทำและมาตรการบังคับใช้ แต่ไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบหรือประสบความสำเร็จในการเจาะระบบ",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "สถานะความปลอดภัยที่แท้จริงหลังจากคำขอดังกล่าว",
+          "เหตุการณ์หรือความพยายามอื่นๆ ที่อาจเกิดขึ้นนอกเหนือจากบันทึกนี้"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 2625,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:36:no_rag",
+      "split": "held-v1",
+      "index": 36,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลเหตุการณ์ สถานะ 403 (Forbidden) บ่งบอกถึงการถูกปฏิเสธนโยบายการขอเข้าถึง (request_policy_denied)",
+        "claims": [
+          {
+            "text": "สถานะ 403 บ่งบอกถึงการถูกปฏิเสธนโยบายการขอเข้าถึงตามบันทึกเหตุการณ์",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 10094,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:36:rag",
+      "split": "held-v1",
+      "index": 36,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากเหตุการณ์ที่บันทึกไว้ สถานะ 403 (request_policy_denied) ในคำขอไปยังเส้นทาง /restricted แสดงถึงการที่คำขอถูกปฏิเสธตามนโยบาย (denied request) ซึ่งหมายถึงการที่ระบบบังคับใช้นโยบายความปลอดภัยเพื่อปฏิเสธการดำเนินการดังกล่าว อย่างไรก็ตาม คำขอที่ถูกปฏิเสธนี้ไม่สามารถนำมาใช้ยืนยันว่าผู้โจมตีหรือผู้ใช้งานสามารถเข้าถึงระบบได้สำเร็จ",
+        "claims": [
+          {
+            "text": "สถานะ 403 บันทึกเป็นเหตุการณ์ประเภท request_policy_denied สำหรับเส้นทาง /restricted",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "คำขอที่ถูกปฏิเสธแสดงถึงการบังคับใช้นโยบาย แต่ไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "ผลลัพธ์และความพยายามต่อเนื่องอื่นๆ นอกเหนือจากคำขอที่ถูกปฏิเสธนี้"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 12454,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:37:no_rag",
+      "split": "held-v1",
+      "index": 37,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "invalid_output",
+      "validation_exception": "ValueError",
+      "result": null,
+      "latency_ms": 11797,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:37:rag",
+      "split": "held-v1",
+      "index": 37,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A blocked request demonstrates an attempted action and an enforcement response. It does not demonstrate successful compromise.",
+        "claims": [
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, and it does not demonstrate successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 8125,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:38:no_rag",
+      "split": "held-v1",
+      "index": 38,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลที่มีอยู่ ไม่พบรายละเอียดในเหตุการณ์ที่ระบุว่าฟิลด์ใดในคำตอบที่ใช้แยกคำขอที่ถูกปฏิเสธออกจากคำขอที่สำเร็จอย่างชัดเจน",
+        "claims": [],
+        "unknowns": [
+          "response field สำหรับแยกคำขอถูกปฏิเสธกับสำเร็จ"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 6359,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:38:rag",
+      "split": "held-v1",
+      "index": 38,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลที่กำหนดและเอกสารอ้างอิง สถานะคำขอถูกปฏิเสธ (เช่น รหัสสถานะ 403) บ่งบอกถึงการบังคับใช้นโยบายความปลอดภัย แต่ไม่ได้ยืนยันว่าการโจมตีหรือคำขอนั้นประสบความสำเร็จในการเข้าถึงระบบ และไม่มีฟิลด์เฉพาะเจาะจงที่ระบุสถานะสำเร็จแยกต่างหากในเหตุการณ์นี้ เนื่องจากหลักฐานไม่เพียงพอที่จะยืนยันผลลัพธ์ นอกเหนือจากการระบุว่าคำขอถูกปฏิเสธ",
+        "claims": [
+          {
+            "text": "เหตุการณ์คำขอที่ถูกปฏิเสธแสดงถึงการบังคับใช้นโยบาย แต่ไม่ได้ยืนยันความสำเร็จในการเข้าถึงระบบ",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "ฟิลด์เฉพาะใน response ที่ใช้แยกคำขอถูกปฏิเสธกับคำขอที่สำเร็จ"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 8062,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:39:no_rag",
+      "split": "held-v1",
+      "index": 39,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลเหตุการณ์ที่มีอยู่ การที่ payload ถูกบล็อก (status 403) แสดงให้เห็นถึงการปฏิเสธคำขอตามนโยบายความปลอดภัย แต่ไม่สามารถใช้เป็นหลักฐานยืนยันได้ว่ามีการอ่านข้อมูลภายในระบบสำเร็จ เนื่องจากคำขอถูกสกัดกั้นไว้ก่อน",
+        "claims": [
+          {
+            "text": "คำขอถูกปฏิเสธด้วยสถานะ 403 ตามบันทึกเหตุการณ์ request_policy_denied",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 11969,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:39:rag",
+      "split": "held-v1",
+      "index": 39,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A blocked request (status 403 at /restricted) demonstrates an attempted action and an enforcement response, but it does not prove that data was successfully read or that a compromise occurred.",
+        "claims": [
+          {
+            "text": "The request to /restricted resulted in a status 403 policy denial.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "A blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate successful compromise or prove data reading.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "Whether any data was accessed prior to or outside of this blocked request"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 10875,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:40:no_rag",
+      "split": "held-v1",
+      "index": 40,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากหลักฐานการปฏิเสธคำขอตามนโยบาย (policy denial) ในระบบ (รหัสเหตุการณ์ 7b4aa063-db68-5096-82bc-98d772458483) ซึ่งแสดงสถานะการตอบกลับเป็น 403 สำหรับเส้นทาง /restricted จำเป็นต้องหาหลักฐานเพิ่มเติม เช่น บันทึกการตรวจสอบสิทธิ์ (authentication logs) ข้อมูลประจำตัวผู้ใช้ (user credentials) หรือการกำหนดค่านโยบายการเข้าถึง (access control policy configurations) เพื่อตรวจสอบว่าผู้ใช้มีสิทธิ์ในการเข้าถึงทรัพยากรดังกล่าวหรือไม่",
+        "claims": [
+          {
+            "text": "เหตุการณ์คำขอถูกปฏิเสธนโยบาย (policy denial) สำหรับเส้นทาง /restricted ได้รับการบันทึกด้วยสถานะ 403 (รหัสเหตุการณ์ 7b4aa063-db68-5096-82bc-98d772458483)",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "ควรตรวจสอบบันทึกการตรวจสอบสิทธิ์และนโยบายการควบคุมการเข้าถึงเพิ่มเติมเพื่อวิเคราะห์สาเหตุของการปฏิเสธ",
+            "kind": "guidance",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 7672,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:40:rag",
+      "split": "held-v1",
+      "index": 40,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "หลังจากเกิดเหตุการณ์คำขอถูกปฏิเสธ (policy denial) ตามหลักฐาน เหตุการณ์นี้แสดงถึงการพยายามกระทำและการตอบสนองเพื่อบังคับใช้นโยบาย แต่ไม่ยืนยันว่าการโจมตีหรือการเข้าถึงระบบประสบความสำเร็จ คุณควรตรวจสอบเหตุการณ์ที่เกี่ยวข้องเพิ่มเติมเพื่อระบุว่าผลลัพธ์ใดที่ยังไม่ทราบแน่ชัด",
+        "claims": [
+          {
+            "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามกระทำและการตอบสนองเพื่อบังคับใช้นโยบาย แต่ไม่ยืนยันว่าเข้าถึงระบบสำเร็จ",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "ควรตรวจสอบเหตุการณ์ที่เกี่ยวข้องและระบุข้อมูลหรือผลลัพธ์ที่ยังคงไม่ทราบแน่ชัดเพิ่มเติม",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "ผลลัพธ์อื่นๆ ที่อยู่นอกเหนือจากคำขอที่ถูกปฏิเสธนี้",
+          "เหตุการณ์ที่เกี่ยวข้องก่อนหรือหลังการปฏิเสธคำขอนี้"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 9063,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:41:no_rag",
+      "split": "held-v1",
+      "index": 41,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "A denied request or the presence of a suspicious URL alone does not prove a compromise. In the available events, the request to /restricted resulted in a status 403 and was denied by policy, indicating that a denied request is not a successful compromise.",
+        "claims": [
+          {
+            "text": "A denied request or the presence of a suspicious URL alone does not prove a compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          },
+          {
+            "text": "The request to /restricted resulted in a status 403 and was denied by policy, indicating that a denied request is not a successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 7829,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:41:rag",
+      "split": "held-v1",
+      "index": 41,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "URL อันตรายหรือคำขอที่ถูกปฏิเสธ (เช่น สถานะ 403) เพียงอย่างเดียวไม่สามารถพิสูจน์ได้ว่าระบบถูก compromise สำเร็จ โดยเหตุการณ์ดังกล่าวแสดงถึงความพยายามและการบังคับใช้มาตรการป้องกันเท่านั้น",
+        "claims": [
+          {
+            "text": "การพบคำขอที่ถูกปฏิเสธหรือคำขอที่เกี่ยวข้องกับ URL อันตรายแสดงถึงความพยายามและการตอบสนองด้วยการบังคับใช้นโยบาย แต่ไม่ยืนยันว่าการโจมตีประสบความสำเร็จ",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "ผลลัพธ์อื่น ๆ ที่อาจเกิดขึ้นจากความพยายามครั้งนี้",
+          "หลักฐานเพิ่มเติมจากเหตุการณ์แวดล้อมที่เกี่ยวข้อง"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 11688,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked",
+        "authentication"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:42:no_rag",
+      "split": "held-v1",
+      "index": 42,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "invalid_output",
+      "validation_exception": "ValueError",
+      "result": null,
+      "latency_ms": 9157,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:42:rag",
+      "split": "held-v1",
+      "index": 42,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามและการบังคับใช้มาตรการป้องกัน แต่ไม่ได้ยืนยันว่าการโจมตีหรือการเข้าถึงระบบนั้นประสบความสำเร็จ การอธิบายควรตรวจสอบเหตุการณ์ที่เกี่ยวข้อง ระบุผลลัพธ์ที่ยังไม่ทราบแน่ชัด และใช้คู่มือเพื่อเป็นแนวทางตีความเท่านั้น ไม่ใช่ข้อเท็จจริงยืนยันเหตุการณ์",
+        "claims": [
+          {
+            "text": "A denied request demonstrates an attempted action and an enforcement response, but does not demonstrate successful compromise.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          },
+          {
+            "text": "Inspect related events, explain which outcomes remain unknown, and use generic guides for interpretation rather than making definitive claims about a specific incident.",
+            "kind": "guidance",
+            "evidence_refs": [],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 10594,
+      "expected": "blocked",
+      "retrieved": [
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:43:no_rag",
+      "split": "held-v1",
+      "index": 43,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "จากข้อมูลที่ได้รับ มีการบันทึกเหตุการณ์การปฏิเสธคำขอเข้าถึงเนื่องจากนโยบาย (request_policy_denied) ซึ่งการถูกปฏิเสธคำขอนั้นถือว่าไม่ประสบความสำเร็จในการคอมไพล์หรือบุกรุก และจากหลักฐานที่มีอยู่ไม่เพียงพอที่จะระบุรายละเอียดความแตกต่างระหว่าง potential impact และ observed impact ได้",
+        "claims": [
+          {
+            "text": "มีการบันทึกเหตุการณ์การปฏิเสธคำขอเข้าถึงเนื่องจากนโยบาย (request_policy_denied)",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "potential impact",
+          "observed impact"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 8938,
+      "expected": "blocked",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:43:rag",
+      "split": "held-v1",
+      "index": 43,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": "blocked",
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:44:no_rag",
+      "split": "held-v1",
+      "index": 44,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Abstain when evidence is insufficient. A denied request is not successful compromise.",
+        "claims": [
+          {
+            "text": "The provided evidence shows a denied request resulting in a policy denial log.",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "เหตุผลในการดู response และ log อย่างต่อเนื่องนอกเหนือจากเหตุการณ์ที่ถูกปฏิเสธสิทธิ์"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 11609,
+      "expected": "blocked",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:44:rag",
+      "split": "held-v1",
+      "index": 44,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "การดู response และ log อย่างต่อเนื่องช่วยให้เราเห็นความพยายามในการกระทำและผลลัพธ์จากการบังคับใช้มาตรการรักษาความปลอดภัย เช่น คำขอที่ถูกปฏิเสธ (เช่น สถานะ 403) ซึ่งแสดงถึงความพยายามของคำขอและมาตรการตอบสนอง แต่ไม่สามารถใช้ยืนยันความสำเร็จในการโจมตีได้ทันที จึงต้องตรวจสอบเหตุการณ์ที่เกี่ยวข้องต่อเนื่องและแยกแยะสิ่งที่ไม่ทราบ",
+        "claims": [
+          {
+            "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามในการกระทำและมาตรการตอบสนอง แต่ไม่สามารถยืนยันความสำเร็จในการเข้าถึงระบบได้",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": [
+              "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+            ]
+          }
+        ],
+        "unknowns": [
+          "ผลลัพธ์ที่แท้จริงนอกเหนือจากคำขอที่ถูกปฏิเสธ"
+        ],
+        "answer_status": "answered",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 10078,
+      "expected": "blocked",
+      "retrieved": [
+        "authentication",
+        "blocked"
+      ]
+    },
+    {
+      "operation": "rag14:held-v1:45:no_rag",
+      "split": "held-v1",
+      "index": 45,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Abstain: Insufficient evidence available to determine the weather for tomorrow.",
+        "claims": [],
+        "unknowns": [
+          "weather forecast for tomorrow"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 10609,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:45:rag",
+      "split": "held-v1",
+      "index": 45,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:46:no_rag",
+      "split": "held-v1",
+      "index": 46,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "There is insufficient evidence provided to answer the question about cold medicines.",
+        "claims": [],
+        "unknowns": [
+          "ยาอะไรแก้หวัดได้"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 10703,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:46:rag",
+      "split": "held-v1",
+      "index": 46,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:47:no_rag",
+      "split": "held-v1",
+      "index": 47,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "I am sorry, but there is insufficient context and evidence available to provide instructions on how to grow tomatoes.",
+        "claims": [],
+        "unknowns": [
+          "How to grow tomatoes"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 5906,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:47:rag",
+      "split": "held-v1",
+      "index": 47,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:48:no_rag",
+      "split": "held-v1",
+      "index": 48,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "เนื่องจากไม่มีข้อมูลเพียงพอและคำขอถูกปฏิเสธตามนโยบาย จึงไม่สามารถตอบได้ว่าใครชนะหมากรุกบนดวงจันทร์",
+        "claims": [
+          {
+            "text": "คำขอถูกปฏิเสธตามนโยบาย (403)",
+            "kind": "observation",
+            "evidence_refs": [
+              "7b4aa063-db68-5096-82bc-98d772458483"
+            ],
+            "knowledge_refs": []
+          }
+        ],
+        "unknowns": [
+          "ใครชนะหมากรุกบนดวงจันทร์"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 9437,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:48:rag",
+      "split": "held-v1",
+      "index": 48,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:49:no_rag",
+      "split": "held-v1",
+      "index": 49,
+      "language": "th",
+      "arm": "no_rag",
+      "status": "RuntimeError",
+      "validation_exception": "RuntimeError",
+      "result": null,
+      "latency_ms": 20078,
+      "expected": null,
+      "retrieved": []
+    },
+    {
+      "operation": "rag14:held-v1:49:rag",
+      "split": "held-v1",
+      "index": 49,
+      "language": "th",
+      "arm": "rag",
+      "status": "succeeded",
+      "result": {
+        "answer": "Insufficient context / หลักฐานไม่เพียงพอ",
+        "claims": [],
+        "unknowns": [
+          "No matching approved knowledge"
+        ],
+        "answer_status": "insufficient_context",
+        "evidence_truncated": false,
+        "omitted_evidence_ids": []
+      },
+      "latency_ms": 0,
+      "expected": null,
+      "retrieved": [],
+      "generation_dispatch": "none: no_match template from frozen real query embedding"
+    }
+  ],
+  "release_id": "2b98cbc4-14e3-57b6-b822-434d0f0b22ce",
+  "threshold": 0.3978290475741024,
+  "calls": [
+    {
+      "id": "367895d7-f36f-4696-ac38-139dbbae4f83",
+      "analysis_id": null,
+      "operation_key": "document:4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+      "component": "document_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "unknown",
+      "reserved_tokens": 6238,
+      "actual_tokens": null,
+      "dispatched_at": "2026-10-15 17:17:34.379369+00:00"
+    },
+    {
+      "id": "c4f1d7c2-f0da-4a1e-b61e-e224fceb8a88",
+      "analysis_id": null,
+      "operation_key": "document:70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+      "component": "document_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "unknown",
+      "reserved_tokens": 6244,
+      "actual_tokens": null,
+      "dispatched_at": "2026-10-15 17:17:35.102489+00:00"
+    },
+    {
+      "id": "47aeb35b-a72e-44a3-a072-a8aaa851e2f1",
+      "analysis_id": null,
+      "operation_key": "rag14:gold-v1",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "unknown",
+      "reserved_tokens": 6016,
+      "actual_tokens": null,
+      "dispatched_at": "2026-10-15 17:17:35.719553+00:00"
+    },
+    {
+      "id": "6811961e-c389-4484-80a9-64666bc18225",
+      "analysis_id": null,
+      "operation_key": "rag14:smoke-v1",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "unknown",
+      "reserved_tokens": 5680,
+      "actual_tokens": null,
+      "dispatched_at": "2026-10-15 17:17:36.431592+00:00"
+    },
+    {
+      "id": "d1e432ed-91ea-482c-a08e-6a7c738432df",
+      "analysis_id": null,
+      "operation_key": "rag14:smoke-v1:0:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9207,
+      "actual_tokens": 785,
+      "dispatched_at": "2026-10-15 17:17:37.103668+00:00"
+    },
+    {
+      "id": "ac123bac-5f2a-4c04-a98b-4edaa0f44ba7",
+      "analysis_id": null,
+      "operation_key": "rag14:smoke-v1:0:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11067,
+      "actual_tokens": 1282,
+      "dispatched_at": "2026-10-15 17:18:39.550534+00:00"
+    },
+    {
+      "id": "a6e34432-1546-4927-a35f-2ebcb18c64e3",
+      "analysis_id": null,
+      "operation_key": "rag14:smoke-v1:1:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9289,
+      "actual_tokens": 850,
+      "dispatched_at": "2026-10-15 17:18:42.753528+00:00"
+    },
+    {
+      "id": "0f32aa0f-a780-4a41-b930-8e85b36a689c",
+      "analysis_id": null,
+      "operation_key": "rag14:smoke-v1:1:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10215,
+      "actual_tokens": 1064,
+      "dispatched_at": "2026-10-15 17:18:44.755307+00:00"
+    },
+    {
+      "id": "2bc6f76f-8077-40d1-87d6-613ea60dbb06",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "unknown",
+      "reserved_tokens": 13799,
+      "actual_tokens": null,
+      "dispatched_at": "2026-10-15 17:19:15.398496+00:00"
+    },
+    {
+      "id": "0565ad46-2c08-4bc3-bef9-f6d7153fa0f5",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:0:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9211,
+      "actual_tokens": 783,
+      "dispatched_at": "2026-10-15 17:19:17.585370+00:00"
+    },
+    {
+      "id": "a6bfff00-b23d-43de-acb2-5efd1c9402de",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:0:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10143,
+      "actual_tokens": 1066,
+      "dispatched_at": "2026-10-15 17:19:49.936548+00:00"
+    },
+    {
+      "id": "d0a26fb0-4767-43d8-a0f6-df8901f00b38",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:1:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9209,
+      "actual_tokens": 828,
+      "dispatched_at": "2026-10-15 17:19:52.180871+00:00"
+    },
+    {
+      "id": "a8bc7a70-b1f4-423a-b718-3b89802e1d6e",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:1:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11069,
+      "actual_tokens": 1192,
+      "dispatched_at": "2026-10-15 17:19:54.551180+00:00"
+    },
+    {
+      "id": "1a944a38-cbfe-4036-ba0c-679b64525d6b",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:2:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9210,
+      "actual_tokens": 841,
+      "dispatched_at": "2026-10-15 17:20:26.967180+00:00"
+    },
+    {
+      "id": "ca839a38-15c4-4937-8fe4-8fa66512fe19",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:2:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11070,
+      "actual_tokens": 1103,
+      "dispatched_at": "2026-10-15 17:20:29.629328+00:00"
+    },
+    {
+      "id": "aed2163e-6f4c-4020-bbb8-ebef3f43b032",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:3:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9220,
+      "actual_tokens": 778,
+      "dispatched_at": "2026-10-15 17:21:01.557996+00:00"
+    },
+    {
+      "id": "da973cf3-23d7-46c6-9c1d-244b3fd5eb92",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:3:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11080,
+      "actual_tokens": 1264,
+      "dispatched_at": "2026-10-15 17:21:05.431745+00:00"
+    },
+    {
+      "id": "6f5be96d-4082-499d-a9d7-2e61b18d4afe",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:4:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9214,
+      "actual_tokens": 822,
+      "dispatched_at": "2026-10-15 17:21:08.106029+00:00"
+    },
+    {
+      "id": "0ad2024e-2497-4469-a791-b6cc899ceb5a",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:4:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11074,
+      "actual_tokens": 1276,
+      "dispatched_at": "2026-10-15 17:21:41.527205+00:00"
+    },
+    {
+      "id": "b26de157-8115-471b-b5f3-1c0c99aa5a60",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:5:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9214,
+      "actual_tokens": 734,
+      "dispatched_at": "2026-10-15 17:21:44.233430+00:00"
+    },
+    {
+      "id": "ccf2dddd-7957-4fc9-870b-1e349440d4c0",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:5:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11074,
+      "actual_tokens": 1289,
+      "dispatched_at": "2026-10-15 17:22:03.987663+00:00"
+    },
+    {
+      "id": "5ecf4b32-6579-4312-8533-932b12c02574",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:6:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9229,
+      "actual_tokens": 811,
+      "dispatched_at": "2026-10-15 17:22:07.001054+00:00"
+    },
+    {
+      "id": "3ddaba2c-647e-4beb-8c35-eae6f0c11438",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:6:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11089,
+      "actual_tokens": 1118,
+      "dispatched_at": "2026-10-15 17:22:09.649057+00:00"
+    },
+    {
+      "id": "74bfa51b-c2f1-4476-a4bb-e421a370c65c",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:7:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9214,
+      "actual_tokens": 840,
+      "dispatched_at": "2026-10-15 17:22:41.809847+00:00"
+    },
+    {
+      "id": "b32f7ba6-bd01-4dc2-b460-21b4e12b7815",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:7:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10146,
+      "actual_tokens": 1111,
+      "dispatched_at": "2026-10-15 17:22:59.134234+00:00"
+    },
+    {
+      "id": "4369cef3-6a64-421e-9d43-c0d2e04540f6",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:8:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9225,
+      "actual_tokens": 716,
+      "dispatched_at": "2026-10-15 17:23:17.174264+00:00"
+    },
+    {
+      "id": "c98c9da6-ce0f-4e1e-892f-d221d07f3d6e",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:8:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11085,
+      "actual_tokens": 1300,
+      "dispatched_at": "2026-10-15 17:23:20.001401+00:00"
+    },
+    {
+      "id": "ec1908a2-0239-4dbf-ab40-14b3b99cbadc",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:9:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9213,
+      "actual_tokens": 789,
+      "dispatched_at": "2026-10-15 17:23:26.564732+00:00"
+    },
+    {
+      "id": "d558c27f-42e3-417d-8d73-6affc25f8bf0",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:9:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11073,
+      "actual_tokens": 1080,
+      "dispatched_at": "2026-10-15 17:23:43.788556+00:00"
+    },
+    {
+      "id": "74f360c7-e723-4586-a348-004c4e8601bd",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:10:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9218,
+      "actual_tokens": 808,
+      "dispatched_at": "2026-10-15 17:24:03.049861+00:00"
+    },
+    {
+      "id": "05943290-5f73-4d01-9212-6abac5ceb8b0",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:10:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11078,
+      "actual_tokens": 1118,
+      "dispatched_at": "2026-10-15 17:28:39.660242+00:00"
+    },
+    {
+      "id": "c9fab4f0-c6ec-466f-b5d5-950f6f0809b6",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:11:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9196,
+      "actual_tokens": 758,
+      "dispatched_at": "2026-10-15 17:28:41.991999+00:00"
+    },
+    {
+      "id": "d1d71131-5d14-44a5-9bf8-0110d3ea229b",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:11:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11056,
+      "actual_tokens": 1177,
+      "dispatched_at": "2026-10-15 17:28:44.466083+00:00"
+    },
+    {
+      "id": "510a1ad5-eb5d-4980-bc32-58aab48bf6a0",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:12:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9213,
+      "actual_tokens": 757,
+      "dispatched_at": "2026-10-15 17:28:50.386510+00:00"
+    },
+    {
+      "id": "5416cda3-e298-42fc-b6a7-cc63e613a50d",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:12:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11073,
+      "actual_tokens": 1151,
+      "dispatched_at": "2026-10-15 17:28:52.376539+00:00"
+    },
+    {
+      "id": "52589c97-21dc-42fd-8f34-4e55aac6e9ea",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:13:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9235,
+      "actual_tokens": 828,
+      "dispatched_at": "2026-10-15 17:29:54.619097+00:00"
+    },
+    {
+      "id": "5c8d72c8-7f40-48c5-ba07-d3911faedce0",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:13:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11095,
+      "actual_tokens": 1031,
+      "dispatched_at": "2026-10-15 17:29:56.832178+00:00"
+    },
+    {
+      "id": "c01f10f7-f8fe-4677-a099-51bc9bc3b166",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:14:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9221,
+      "actual_tokens": 854,
+      "dispatched_at": "2026-10-15 17:29:59.067159+00:00"
+    },
+    {
+      "id": "1e39537f-2885-48fa-bcf8-2944ba20b432",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:14:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11081,
+      "actual_tokens": 1175,
+      "dispatched_at": "2026-10-15 17:30:05.885156+00:00"
+    },
+    {
+      "id": "070bc471-fe8c-4968-96fe-df1c394a3dee",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:15:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9216,
+      "actual_tokens": 780,
+      "dispatched_at": "2026-10-15 17:30:12.051398+00:00"
+    },
+    {
+      "id": "1ccd27af-ceaa-4394-9a35-feeb1b211401",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:15:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11076,
+      "actual_tokens": 1217,
+      "dispatched_at": "2026-10-15 17:30:59.466583+00:00"
+    },
+    {
+      "id": "0edce200-df45-44a5-add4-f9805f301246",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:16:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9231,
+      "actual_tokens": 830,
+      "dispatched_at": "2026-10-15 17:31:06.774682+00:00"
+    },
+    {
+      "id": "7d6851ae-f991-4185-83ad-3ccd1315ad06",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:16:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11091,
+      "actual_tokens": 1275,
+      "dispatched_at": "2026-10-15 17:31:09.691513+00:00"
+    },
+    {
+      "id": "af68abc7-bb9f-465b-875a-f99c26c27a6e",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:17:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9216,
+      "actual_tokens": 840,
+      "dispatched_at": "2026-10-15 17:31:12.382181+00:00"
+    },
+    {
+      "id": "960bc9f0-3402-4337-97af-05cfa3ddde7f",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:17:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10142,
+      "actual_tokens": 1143,
+      "dispatched_at": "2026-10-15 17:31:14.645985+00:00"
+    },
+    {
+      "id": "dfe205f2-b894-4617-811f-9bee94f6ba3d",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:18:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9231,
+      "actual_tokens": 682,
+      "dispatched_at": "2026-10-15 17:32:02.011239+00:00"
+    },
+    {
+      "id": "c7d39428-00cc-4034-816d-cb97ded88c31",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:18:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11091,
+      "actual_tokens": 1203,
+      "dispatched_at": "2026-10-15 17:32:18.816199+00:00"
+    },
+    {
+      "id": "5d696ab7-9d0f-4c11-8546-d342b75e17c4",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:19:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9209,
+      "actual_tokens": 793,
+      "dispatched_at": "2026-10-15 17:32:20.803522+00:00"
+    },
+    {
+      "id": "2638adeb-4dd0-4544-a24d-bbc4c294e5e6",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:19:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11069,
+      "actual_tokens": 1214,
+      "dispatched_at": "2026-10-15 17:32:23.188039+00:00"
+    },
+    {
+      "id": "aa24d1a1-faf4-4036-9b7b-cf5fcd04ea16",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:20:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9195,
+      "actual_tokens": 682,
+      "dispatched_at": "2026-10-15 17:32:25.559336+00:00"
+    },
+    {
+      "id": "8a3dfb7f-29ec-4e27-80cd-bd38d0ecabe7",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:21:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9197,
+      "actual_tokens": 716,
+      "dispatched_at": "2026-10-15 17:33:13.029779+00:00"
+    },
+    {
+      "id": "228795ed-3da1-4de0-90a6-9ca9e74cd950",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:22:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9191,
+      "actual_tokens": 783,
+      "dispatched_at": "2026-10-15 17:33:30.093632+00:00"
+    },
+    {
+      "id": "052229ae-a5b1-49d7-8ddc-56e37d6de47e",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:23:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9207,
+      "actual_tokens": 693,
+      "dispatched_at": "2026-10-15 17:33:37.005352+00:00"
+    },
+    {
+      "id": "ea97a9e3-6e91-491e-922d-0d5e692d0791",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:24:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9201,
+      "actual_tokens": 771,
+      "dispatched_at": "2026-10-15 17:33:39.559426+00:00"
+    },
+    {
+      "id": "2c1b4aa8-e8e0-4fc4-9fb7-42ede75f3912",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:25:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9238,
+      "actual_tokens": 787,
+      "dispatched_at": "2026-10-15 17:33:41.575326+00:00"
+    },
+    {
+      "id": "fea53dea-4e2b-4ec1-817f-48d2f4264a16",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:25:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10170,
+      "actual_tokens": 1126,
+      "dispatched_at": "2026-10-15 17:34:13.283093+00:00"
+    },
+    {
+      "id": "c7239e39-1276-4c17-bcbf-0d58b1a57587",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:26:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9246,
+      "actual_tokens": 834,
+      "dispatched_at": "2026-10-15 17:34:35.382173+00:00"
+    },
+    {
+      "id": "5c379330-1888-41fd-8875-76da63291edb",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:26:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11106,
+      "actual_tokens": 1338,
+      "dispatched_at": "2026-10-15 17:34:43.235689+00:00"
+    },
+    {
+      "id": "8a110c67-7ee9-4733-b1e9-acdc01944ed2",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:27:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9245,
+      "actual_tokens": 870,
+      "dispatched_at": "2026-10-15 17:34:50.820648+00:00"
+    },
+    {
+      "id": "f5f8b216-518f-4d4e-b22d-eb6012150a6f",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:27:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11105,
+      "actual_tokens": 1349,
+      "dispatched_at": "2026-10-15 17:34:53.053625+00:00"
+    },
+    {
+      "id": "0f9277ac-ccf6-4b63-9c00-7e0c53f1cf42",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:28:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9273,
+      "actual_tokens": 912,
+      "dispatched_at": "2026-10-15 17:35:25.601805+00:00"
+    },
+    {
+      "id": "14fb6cf5-4912-4341-924d-5f2e7a9b33d3",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:28:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11133,
+      "actual_tokens": 1303,
+      "dispatched_at": "2026-10-15 17:35:43.276537+00:00"
+    },
+    {
+      "id": "0815f44e-ebb9-403d-a17b-cb22ce0ee001",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:29:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9293,
+      "actual_tokens": 717,
+      "dispatched_at": "2026-10-15 17:35:45.914787+00:00"
+    },
+    {
+      "id": "0dd91761-47f2-4a23-9d71-6c75958d9943",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:30:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9278,
+      "actual_tokens": 836,
+      "dispatched_at": "2026-10-15 17:36:03.062005+00:00"
+    },
+    {
+      "id": "502bf6d5-55aa-4fef-bf99-c580acf35f15",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:31:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9254,
+      "actual_tokens": 688,
+      "dispatched_at": "2026-10-15 17:36:08.592292+00:00"
+    },
+    {
+      "id": "f3fb76f7-94a0-42c3-a4b9-bd76fe93d81a",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:31:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11114,
+      "actual_tokens": 1364,
+      "dispatched_at": "2026-10-15 17:36:29.576014+00:00"
+    },
+    {
+      "id": "696fc8fc-104d-4a0b-a1c5-60dd9f57ca85",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:32:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9275,
+      "actual_tokens": 681,
+      "dispatched_at": "2026-10-15 17:36:49.232186+00:00"
+    },
+    {
+      "id": "e73b5a63-e47a-48cf-a0f7-06d894bc772a",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:33:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9264,
+      "actual_tokens": 855,
+      "dispatched_at": "2026-10-15 17:36:52.849234+00:00"
+    },
+    {
+      "id": "5b88b99d-be6a-47dc-a7a4-13744d1c5480",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:33:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10196,
+      "actual_tokens": 1021,
+      "dispatched_at": "2026-10-15 17:37:16.389757+00:00"
+    },
+    {
+      "id": "67f31770-d99a-484a-9310-019a0110e7e8",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:34:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9245,
+      "actual_tokens": 862,
+      "dispatched_at": "2026-10-15 17:37:22.652058+00:00"
+    },
+    {
+      "id": "3b87227a-2f50-4ce0-9835-4656d53bc388",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:34:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11105,
+      "actual_tokens": 1329,
+      "dispatched_at": "2026-10-15 17:37:42.429130+00:00"
+    },
+    {
+      "id": "fe4852da-ab69-4272-93d4-c325a308d04e",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:35:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9261,
+      "actual_tokens": 870,
+      "dispatched_at": "2026-10-15 17:37:52.091234+00:00"
+    },
+    {
+      "id": "1cfafc85-0ed1-404e-80b5-3bf28adc84b8",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:35:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10187,
+      "actual_tokens": 1128,
+      "dispatched_at": "2026-10-15 17:37:57.864851+00:00"
+    },
+    {
+      "id": "d724a524-421f-4f41-a660-2dee07c244aa",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:36:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9202,
+      "actual_tokens": 786,
+      "dispatched_at": "2026-10-15 17:38:30.540567+00:00"
+    },
+    {
+      "id": "eec61209-0456-40b7-aebf-1f2ce7c4ec3a",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:36:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10128,
+      "actual_tokens": 1117,
+      "dispatched_at": "2026-10-15 17:38:40.680989+00:00"
+    },
+    {
+      "id": "b9c36275-d94a-492f-b882-2ba65d7553f6",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:37:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9235,
+      "actual_tokens": 891,
+      "dispatched_at": "2026-10-15 17:38:53.205636+00:00"
+    },
+    {
+      "id": "df886019-7c38-49ce-9cd1-59c142a84af6",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:37:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10161,
+      "actual_tokens": 991,
+      "dispatched_at": "2026-10-15 17:39:05.060069+00:00"
+    },
+    {
+      "id": "87fa21e3-897b-423a-8806-3b62e3485c19",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:38:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9266,
+      "actual_tokens": 743,
+      "dispatched_at": "2026-10-15 17:39:13.249201+00:00"
+    },
+    {
+      "id": "b76edb51-34e4-4825-94a1-04d0965e4305",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:38:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11126,
+      "actual_tokens": 1244,
+      "dispatched_at": "2026-10-15 17:39:34.671905+00:00"
+    },
+    {
+      "id": "4b22cca4-5c8d-4ad2-9b9f-89a1b58a5a9b",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:39:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9272,
+      "actual_tokens": 815,
+      "dispatched_at": "2026-10-15 17:39:42.786982+00:00"
+    },
+    {
+      "id": "3d16daf5-e4f7-41cd-aa2f-376994cd0d0f",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:39:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11132,
+      "actual_tokens": 1250,
+      "dispatched_at": "2026-10-15 17:39:54.811679+00:00"
+    },
+    {
+      "id": "fc439ad8-6230-42f9-9178-dac6a049a133",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:40:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9257,
+      "actual_tokens": 1021,
+      "dispatched_at": "2026-10-15 17:40:05.742885+00:00"
+    },
+    {
+      "id": "bd7d06cd-e851-472d-99c2-318984b937d2",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:40:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10183,
+      "actual_tokens": 1218,
+      "dispatched_at": "2026-10-15 17:40:13.458142+00:00"
+    },
+    {
+      "id": "6c0e3ce2-7e48-4c64-b1f2-5813b0d1ee92",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:41:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9282,
+      "actual_tokens": 924,
+      "dispatched_at": "2026-10-15 17:40:37.567186+00:00"
+    },
+    {
+      "id": "76a47263-f927-43be-8cfa-dfd257297130",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:41:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11142,
+      "actual_tokens": 1248,
+      "dispatched_at": "2026-10-15 17:40:45.439493+00:00"
+    },
+    {
+      "id": "1f8389a0-571f-48e1-9a56-3215d24460be",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:42:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9279,
+      "actual_tokens": 821,
+      "dispatched_at": "2026-10-15 17:40:57.188638+00:00"
+    },
+    {
+      "id": "ff09bcd2-15dd-4132-a9f8-fd6f6c49443d",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:42:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 10205,
+      "actual_tokens": 1162,
+      "dispatched_at": "2026-10-15 17:41:06.402845+00:00"
+    },
+    {
+      "id": "67343221-2a30-488e-a7d5-25c4b99dd3b4",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:43:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9246,
+      "actual_tokens": 839,
+      "dispatched_at": "2026-10-15 17:41:17.070455+00:00"
+    },
+    {
+      "id": "491974b6-c31b-4b80-b3ed-d8e1556efc8f",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:44:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9251,
+      "actual_tokens": 810,
+      "dispatched_at": "2026-10-15 17:41:41.136299+00:00"
+    },
+    {
+      "id": "fd6825ff-5783-448d-8f28-c48d63dbc3c2",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:44:rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11111,
+      "actual_tokens": 1223,
+      "dispatched_at": "2026-10-15 17:41:52.792184+00:00"
+    },
+    {
+      "id": "234975cf-f7e7-446b-abee-81eb27d1b706",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:45:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9221,
+      "actual_tokens": 689,
+      "dispatched_at": "2026-10-15 17:42:02.924040+00:00"
+    },
+    {
+      "id": "af7e0e6f-bbd3-4ddc-bb78-23628972d647",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:46:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9218,
+      "actual_tokens": 705,
+      "dispatched_at": "2026-10-15 17:42:13.648562+00:00"
+    },
+    {
+      "id": "d0e343ed-0a79-41bb-9fc2-7ea193fd6247",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:47:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9230,
+      "actual_tokens": 711,
+      "dispatched_at": "2026-10-15 17:42:24.459730+00:00"
+    },
+    {
+      "id": "3a30887e-f7a4-4df9-a1de-c752a719a2ae",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:48:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 9242,
+      "actual_tokens": 789,
+      "dispatched_at": "2026-10-15 17:42:45.672251+00:00"
+    },
+    {
+      "id": "5afc5aa0-7cdf-4ea3-8d90-e469bf98b57f",
+      "analysis_id": null,
+      "operation_key": "rag14:held-v1:49:no_rag",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "unknown",
+      "reserved_tokens": 9230,
+      "actual_tokens": null,
+      "dispatched_at": "2026-10-15 17:42:55.220930+00:00"
+    },
+    {
+      "id": "4d54c166-030a-4e8f-ae5e-c2b30f4258bc",
+      "analysis_id": null,
+      "operation_key": "rag14:usage-mapping-smoke-v2",
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "reserved_tokens": 5432,
+      "actual_tokens": 3,
+      "dispatched_at": "2026-10-16 01:07:16.102754+00:00"
+    },
+    {
+      "id": "d26d6a87-21e8-4e3b-a6cd-18e4c24b7b67",
+      "analysis_id": "d4d6498a-7a1e-44e6-a93b-055223203c82",
+      "operation_key": null,
+      "component": "query_embedding",
+      "model_id": "gemini-embedding-2",
+      "status": "consumed",
+      "reserved_tokens": 5459,
+      "actual_tokens": 8,
+      "dispatched_at": "2026-10-16 01:27:02.337687+00:00"
+    },
+    {
+      "id": "5e4fa24a-44e6-4efc-b875-ae11f3403f4c",
+      "analysis_id": "d4d6498a-7a1e-44e6-a93b-055223203c82",
+      "operation_key": null,
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "reserved_tokens": 11486,
+      "actual_tokens": 1308,
+      "dispatched_at": "2026-10-16 01:27:03.040864+00:00"
+    }
+  ],
+  "measured_cost_usd": null,
+  "benchmark_schema": "question-v1-before-omission-metadata",
+  "context_catalog": [
+    {
+      "retrieval_item_id": "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3",
+      "document_title": "blocked",
+      "document_version": "1",
+      "heading": "",
+      "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a",
+      "excerpt": "# Reading blocked requests / อ่านคำขอที่ถูกปฏิเสธ\n\nA blocked request demonstrates an attempted action and an enforcement response. It does not demonstrate successful compromise. Inspect related events and explain which outcomes remain unknown. A generic guide supports interpretation, not a factual claim about a particular incident.\n\nคำขอที่ถูกปฏิเสธไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ ตรวจเหตุการณ์ที่เกี่ยวข้องและระบุข้อมูลที่ยังขาด คู่มืออธิบายหลักการ ไม่ใช่หลักฐานว่าเหตุการณ์สำเร็จ\n"
+    },
+    {
+      "retrieval_item_id": "ec433364-8e28-5a7c-8255-1625f1acf08b",
+      "document_title": "authentication",
+      "document_version": "1",
+      "heading": "",
+      "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f",
+      "excerpt": "# Reading authentication evidence / อ่านหลักฐานการยืนยันตัวตน\n\nA failed login records an unsuccessful authentication attempt. A successful login records a session, but does not identify who controlled it. Correlate the account, session, asset and time before describing impact.\n\nการเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายาม ส่วนการเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา โดยแยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ\n"
+    }
+  ],
+  "cases": [
+    {
+      "language": "en",
+      "query": "What does a successful session establish?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "How should failed logins be correlated?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "Can login success identify the attacker?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "What should I check after repeated login failures?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "Does authentication alone prove data access?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "Why confirm activity with the account owner?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "Which timestamps should be compared in authentication logs?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "How can I relate sessions to later activity?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "Should I separate observed login facts from hypotheses?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "What is unknown after a session is created?",
+      "expected": "authentication"
+    },
+    {
+      "language": "en",
+      "query": "Does a denied HTTP request establish compromise?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "What does status 403 show?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "How should blocked requests be interpreted?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "Which response fields distinguish denied and successful requests?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "Can a blocked payload prove successful data access?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "What evidence is needed after a policy denial?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "Should a dangerous URL alone establish successful compromise?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "How can I explain a denied request cautiously?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "What is the difference between potential and observed impact?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "Why check response and subsequent logs?",
+      "expected": "blocked"
+    },
+    {
+      "language": "en",
+      "query": "What is tomorrow weather?",
+      "expected": null
+    },
+    {
+      "language": "en",
+      "query": "What medicine cures a cold?",
+      "expected": null
+    },
+    {
+      "language": "en",
+      "query": "How to grow tomatoes?",
+      "expected": null
+    },
+    {
+      "language": "en",
+      "query": "Who won the lunar chess championship?",
+      "expected": null
+    },
+    {
+      "language": "en",
+      "query": "Which stock will rise tomorrow?",
+      "expected": null
+    },
+    {
+      "language": "th",
+      "query": "session สำเร็จบอกอะไรได้บ้าง",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "ควรเชื่อม login ล้มเหลวอย่างไร",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "login สำเร็จบอกตัวผู้โจมตีไหม",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "หลัง login ล้มเหลวหลายครั้งต้องตรวจอะไร",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "การยืนยันตัวตนพิสูจน์ว่าอ่านข้อมูลแล้วไหม",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "ทำไมต้องยืนยันกิจกรรมกับเจ้าของบัญชี",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "เวลาใน authentication logs ควรเทียบอย่างไร",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "เชื่อม session กับกิจกรรมต่อเนื่องอย่างไร",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "ควรแยกข้อสังเกต login จากสมมติฐานไหม",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "หลังสร้าง session ยังไม่รู้อะไร",
+      "expected": "authentication"
+    },
+    {
+      "language": "th",
+      "query": "HTTP request ถูกปฏิเสธพิสูจน์การเจาะไหม",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "status 403 บอกอะไร",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "ควรตีความ blocked request อย่างไร",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "response field ใดแยกคำขอถูกปฏิเสธกับสำเร็จ",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "payload ที่ถูก block พิสูจน์การอ่านข้อมูลไหม",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "หลัง policy denial ต้องหาหลักฐานใดเพิ่ม",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "URL อันตรายเพียงอย่างเดียวพิสูจน์ compromise ไหม",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "ควรอธิบาย denied request อย่างระมัดระวังอย่างไร",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "potential impact ต่างจาก observed impact อย่างไร",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "ทำไมต้องดู response และ log ต่อเนื่อง",
+      "expected": "blocked"
+    },
+    {
+      "language": "th",
+      "query": "พรุ่งนี้ฝนจะตกไหม",
+      "expected": null
+    },
+    {
+      "language": "th",
+      "query": "ยาอะไรแก้หวัดได้",
+      "expected": null
+    },
+    {
+      "language": "th",
+      "query": "ปลูกมะเขือเทศอย่างไร",
+      "expected": null
+    },
+    {
+      "language": "th",
+      "query": "ใครชนะหมากรุกบนดวงจันทร์",
+      "expected": null
+    },
+    {
+      "language": "th",
+      "query": "หุ้นใดจะขึ้นพรุ่งนี้",
+      "expected": null
+    }
+  ],
+  "measured_at_bangkok": "2026-10-16T08:14:04.225238+07:00",
+  "corpus_manifest_sha256": "a4c30dab0fc6df74c8774417512b8a592256b6bcfe0ea31611337d80d73ec061",
+  "source_base": "7a5f142; uncommitted codex/step-14-rag candidate",
+  "summary": {
+    "dispatches": 98,
+    "known_tokens": 87187,
+    "usage_unknown_calls": 6,
+    "total_cost_usd": null,
+    "pricing_policy": "Free Tier no billing; cap 0 THB; no paid mode enabled",
+    "human_grounding_review": "pending",
+    "labels_review": "developer-authored pilot; independent review pending",
+    "unknown_token_hold": 47207
+  },
+  "language_metrics": [
+    {
+      "language": "en",
+      "arm": "no_rag",
+      "sample_count": 25,
+      "statuses": {
+        "succeeded": 24,
+        "invalid_output": 1
+      },
+      "recall_at_5": null,
+      "mrr": null,
+      "unanswerable_count": 5,
+      "insufficient_context_on_unanswerable": 5,
+      "latency_scope": "generation/validation or no_match template only; excludes embedding/retrieval",
+      "latency_p50_ms": 2344,
+      "supported_claims_human": null
+    },
+    {
+      "language": "en",
+      "arm": "rag",
+      "sample_count": 25,
+      "statuses": {
+        "succeeded": 25
+      },
+      "recall_at_5": 1.0,
+      "mrr": 0.975,
+      "unanswerable_count": 5,
+      "insufficient_context_on_unanswerable": 5,
+      "latency_scope": "generation/validation or no_match template only; excludes embedding/retrieval",
+      "latency_p50_ms": 2312,
+      "supported_claims_human": null
+    },
+    {
+      "language": "th",
+      "arm": "no_rag",
+      "sample_count": 25,
+      "statuses": {
+        "succeeded": 22,
+        "invalid_output": 2,
+        "RuntimeError": 1
+      },
+      "recall_at_5": null,
+      "mrr": null,
+      "unanswerable_count": 5,
+      "insufficient_context_on_unanswerable": 4,
+      "latency_scope": "generation/validation or no_match template only; excludes embedding/retrieval",
+      "latency_p50_ms": 7797,
+      "supported_claims_human": null
+    },
+    {
+      "language": "th",
+      "arm": "rag",
+      "sample_count": 25,
+      "statuses": {
+        "invalid_output": 1,
+        "succeeded": 24
+      },
+      "recall_at_5": 0.8,
+      "mrr": 0.775,
+      "unanswerable_count": 5,
+      "insufficient_context_on_unanswerable": 5,
+      "latency_scope": "generation/validation or no_match template only; excludes embedding/retrieval",
+      "latency_p50_ms": 4609,
+      "supported_claims_human": null
+    }
+  ],
+  "quality_acceptance": {
+    "status": "not_passed",
+    "reasons": [
+      "Thai Recall@5 0.80 < 0.85 target",
+      "Independent relevance and human supported-claim review pending",
+      "Four invalid outputs and one provider failure retained; no raw invalid output published"
+    ],
+    "regression_checks": "separate from quality targets"
+  }
+}

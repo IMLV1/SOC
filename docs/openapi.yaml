@@ -2,9 +2,10 @@ openapi: 3.1.0
 info:
   title: SOC API
   version: 0.1.0
-  description: 'Steps 01–11: implemented operations are approved from FastAPI. Gemini
+  description: 'Steps 01–14: implemented operations are approved from FastAPI. Gemini
     analysis is Free Tier gated and synthetic-data only. Evaluation and Instructor
-    review are training-only. RAG, learning and exam operations remain draft.'
+    review are training-only. RAG supports pinned releases; learning and exam operations
+    remain draft.'
 paths:
   /health/live:
     get:
@@ -4154,229 +4155,368 @@ paths:
       x-authorization: instructor + assignment + access audit
   /api/v1/runs/{run_id}/tickets/{ticket_id}/questions:
     post:
-      operationId: post_runs_run_id_tickets_ticket_id_questions
-      summary: POST /runs/{run_id}/tickets/{ticket_id}/questions
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. question 1–2,000 chars,
-        expected_version ของ ticket, Idempotency-Key และ CSRF; 202 analysis_id/kind=question/status=queued
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
-        schemas require feature review before enabling.'
-      security:
-      - SessionCookie: []
-      x-contract-status: draft
-      x-requirements:
-      - FR-012
-      x-authorization: authenticated owner; resource outside scope returns 404
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '202':
-          description: Draft success semantics from api.md; payload schema pending
-            approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      tags:
+      - RAG
+      summary: Question
+      operationId: questions_create
       parameters:
       - name: run_id
         in: path
         required: true
-        schema: *id001
+        schema:
+          type: string
+          format: uuid
+          title: Run Id
       - name: ticket_id
         in: path
         required: true
-        schema: *id001
-      - $ref: '#/components/parameters/CSRF'
-      - $ref: '#/components/parameters/Origin'
-      - $ref: '#/components/parameters/Idempotency'
+        schema:
+          type: string
+          format: uuid
+          title: Ticket Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QuestionRequest'
-      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue
-        after run frozen. Grading is separate.
-  /api/v1/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}:
-    get:
-      operationId: get_runs_run_id_analyses_analysis_id_sources_retrieval_item_id
-      summary: GET /runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. citation excerpt/metadata
-        เฉพาะ item ของ analysis นี้และ run ตนเอง
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
-        schemas require feature review before enabling.'
-      security:
-      - SessionCookie: []
-      x-contract-status: draft
+              $ref: '#/components/schemas/QuestionInput'
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisEnvelope'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Conflict
+        '410':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Gone
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unprocessable Entity
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Too Many Requests
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Service Unavailable
+      x-contract-status: approved
       x-requirements:
       - FR-012
       x-authorization: authenticated owner; resource outside scope returns 404
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending
-            approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
-        '410':
-          $ref: '#/components/responses/DomainError'
+  /api/v1/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}:
+    get:
+      tags:
+      - RAG
+      summary: Read Source
+      operationId: analysis_source_get
       parameters:
       - name: run_id
         in: path
         required: true
-        schema: *id001
+        schema:
+          type: string
+          format: uuid
+          title: Run Id
       - name: analysis_id
         in: path
         required: true
-        schema: *id001
+        schema:
+          type: string
+          format: uuid
+          title: Analysis Id
       - name: retrieval_item_id
         in: path
         required: true
-        schema: *id001
-      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue
-        after run frozen. Grading is separate.
+        schema:
+          type: string
+          format: uuid
+          title: Retrieval Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceEnvelope'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Conflict
+        '410':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Gone
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unprocessable Entity
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Too Many Requests
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Service Unavailable
+      x-contract-status: approved
+      x-requirements:
+      - FR-012
+      x-authorization: authenticated owner; resource outside scope returns 404
   /api/v1/admin/runs/{run_id}/analyses/{analysis_id}:
     get:
-      operationId: get_admin_runs_run_id_analyses_analysis_id
-      summary: GET /admin/runs/{run_id}/analyses/{analysis_id}
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. Instructor อ่านผลเดิมใน
-        assignment scope พร้อม access audit
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
-        schemas require feature review before enabling.'
-      security:
-      - SessionCookie: []
-      x-contract-status: draft
-      x-requirements:
-      - FR-010
-      x-authorization: instructor + assignment + access audit
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending
-            approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
+      tags:
+      - RAG
+      summary: Instructor Analysis
+      operationId: instructor_analysis_get
       parameters:
       - name: run_id
         in: path
         required: true
-        schema: *id001
+        schema:
+          type: string
+          format: uuid
+          title: Run Id
       - name: analysis_id
         in: path
         required: true
-        schema: *id001
-      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue
-        after run frozen. Grading is separate.
+        schema:
+          type: string
+          format: uuid
+          title: Analysis Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisEnvelope'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Conflict
+        '410':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Gone
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unprocessable Entity
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Too Many Requests
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Service Unavailable
+      x-contract-status: approved
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
   /api/v1/admin/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}:
     get:
-      operationId: get_admin_runs_run_id_analyses_analysis_id_sources_retrieval_item_id
-      summary: GET /admin/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. อ่าน citation ใน scope
-        เดียวกัน; ไม่มีสิทธิ์ถาม/retry ของผู้อื่น
-
-        Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
-        schemas require feature review before enabling.'
-      security:
-      - SessionCookie: []
-      x-contract-status: draft
-      x-requirements:
-      - FR-010
-      x-authorization: instructor + assignment + access audit
-      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
-      responses:
-        default:
-          $ref: '#/components/responses/DomainError'
-        '200':
-          description: Draft success semantics from api.md; payload schema pending
-            approval.
-        '400':
-          $ref: '#/components/responses/DomainError'
-        '401':
-          $ref: '#/components/responses/DomainError'
-        '403':
-          $ref: '#/components/responses/DomainError'
-        '404':
-          $ref: '#/components/responses/DomainError'
-        '409':
-          $ref: '#/components/responses/DomainError'
-        '413':
-          $ref: '#/components/responses/DomainError'
-        '422':
-          $ref: '#/components/responses/DomainError'
-        '429':
-          $ref: '#/components/responses/DomainError'
-        '503':
-          $ref: '#/components/responses/DomainError'
-        '410':
-          $ref: '#/components/responses/DomainError'
+      tags:
+      - RAG
+      summary: Instructor Source
+      operationId: instructor_source_get
       parameters:
       - name: run_id
         in: path
         required: true
-        schema: *id001
+        schema:
+          type: string
+          format: uuid
+          title: Run Id
       - name: analysis_id
         in: path
         required: true
-        schema: *id001
+        schema:
+          type: string
+          format: uuid
+          title: Analysis Id
       - name: retrieval_item_id
         in: path
         required: true
-        schema: *id001
-      x-exam-behavior: No learner triage/Ask AI/citation hints before submit; no enqueue
-        after run frozen. Grading is separate.
+        schema:
+          type: string
+          format: uuid
+          title: Retrieval Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceEnvelope'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Conflict
+        '410':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Gone
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Unprocessable Entity
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Too Many Requests
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: Service Unavailable
+      x-contract-status: approved
+      x-requirements:
+      - FR-010
+      x-authorization: instructor + assignment + access audit
   /api/v1/learning-path:
     get:
       operationId: get_learning_path
@@ -4951,6 +5091,200 @@ paths:
       x-contract-status: approved
       x-requirements:
       - FR-010
+  /api/v1/auth/google/status:
+    get:
+      tags:
+      - Auth
+      summary: Status
+      operationId: google_status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleStatusEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
+      x-requirements:
+      - FR-001
+  /api/v1/auth/google/start:
+    post:
+      tags:
+      - Auth
+      summary: Start
+      operationId: google_start
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleStartInput'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleStartEnvelope'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
+      x-requirements:
+      - FR-001
+  /api/v1/auth/google/callback:
+    get:
+      tags:
+      - Auth
+      summary: Callback
+      operationId: google_callback
+      responses:
+        '303':
+          description: Successful Response
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+      x-contract-status: approved
+      x-requirements:
+      - FR-001
 components:
   schemas:
     ErrorDetail:
@@ -5881,6 +6215,22 @@ components:
       title: AnalysisList
     AnalysisResult:
       properties:
+        knowledge_refs:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Knowledge Refs
+        evidence_truncated:
+          type: boolean
+          title: Evidence Truncated
+          default: false
+        omitted_evidence_ids:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Omitted Evidence Ids
         summary:
           type: string
           minLength: 1
@@ -5978,10 +6328,35 @@ components:
             format: uuid
           type: array
           title: Evidence Ids
+        kind:
+          type: string
+          enum:
+          - triage
+          - question
+          title: Kind
+          default: triage
+        question_text:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Question Text
+        response_visibility:
+          type: string
+          enum:
+          - visible
+          - withdrawn
+          title: Response Visibility
+          default: visible
+        retrieval:
+          anyOf:
+          - $ref: '#/components/schemas/RetrievalView'
+          - type: 'null'
         result:
           anyOf:
           - $ref: '#/components/schemas/AnalysisResult'
+          - $ref: '#/components/schemas/QuestionResult'
           - type: 'null'
+          title: Result
         error_code:
           anyOf:
           - type: string
@@ -6968,6 +7343,238 @@ components:
       required:
       - body
       title: CommentInput
+    Claim:
+      properties:
+        text:
+          type: string
+          maxLength: 2000
+          minLength: 1
+          title: Text
+        kind:
+          type: string
+          enum:
+          - observation
+          - guidance
+          title: Kind
+        evidence_refs:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Evidence Refs
+        knowledge_refs:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Knowledge Refs
+      additionalProperties: false
+      type: object
+      required:
+      - text
+      - kind
+      - evidence_refs
+      - knowledge_refs
+      title: Claim
+    QuestionInput:
+      properties:
+        question:
+          type: string
+          maxLength: 2000
+          minLength: 1
+          title: Question
+        expected_version:
+          type: integer
+          minimum: 1.0
+          title: Expected Version
+      additionalProperties: false
+      type: object
+      required:
+      - question
+      - expected_version
+      title: QuestionInput
+    QuestionResult:
+      properties:
+        answer:
+          type: string
+          maxLength: 6000
+          minLength: 1
+          title: Answer
+        claims:
+          items:
+            $ref: '#/components/schemas/Claim'
+          type: array
+          maxItems: 20
+          title: Claims
+        unknowns:
+          items:
+            type: string
+          type: array
+          title: Unknowns
+        answer_status:
+          type: string
+          enum:
+          - answered
+          - insufficient_context
+          title: Answer Status
+        evidence_truncated:
+          type: boolean
+          title: Evidence Truncated
+          default: false
+        omitted_evidence_ids:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Omitted Evidence Ids
+      additionalProperties: false
+      type: object
+      required:
+      - answer
+      - claims
+      - unknowns
+      - answer_status
+      title: QuestionResult
+    RetrievalView:
+      properties:
+        status:
+          type: string
+          enum:
+          - matched
+          - no_match
+          - unavailable
+          - revoked
+          title: Status
+        release_id:
+          type: string
+          format: uuid
+          title: Release Id
+        config_version:
+          type: string
+          title: Config Version
+        citations:
+          items:
+            $ref: '#/components/schemas/SourceView'
+          type: array
+          title: Citations
+      additionalProperties: false
+      type: object
+      required:
+      - status
+      - release_id
+      - config_version
+      - citations
+      title: RetrievalView
+    SourceEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/SourceView'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: SourceEnvelope
+    SourceView:
+      properties:
+        retrieval_item_id:
+          type: string
+          format: uuid
+          title: Retrieval Item Id
+        document_title:
+          type: string
+          title: Document Title
+        document_version:
+          type: string
+          title: Document Version
+        heading:
+          type: string
+          title: Heading
+        excerpt:
+          type: string
+          title: Excerpt
+        content_hash:
+          type: string
+          title: Content Hash
+      additionalProperties: false
+      type: object
+      required:
+      - retrieval_item_id
+      - document_title
+      - document_version
+      - heading
+      - excerpt
+      - content_hash
+      title: SourceView
+    GoogleStartData:
+      properties:
+        authorization_url:
+          type: string
+          title: Authorization Url
+      additionalProperties: false
+      type: object
+      required:
+      - authorization_url
+      title: GoogleStartData
+    GoogleStartEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/GoogleStartData'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: GoogleStartEnvelope
+    GoogleStartInput:
+      properties:
+        purpose:
+          type: string
+          enum:
+          - login
+          - link
+          title: Purpose
+          default: login
+        password:
+          anyOf:
+          - type: string
+            maxLength: 128
+            minLength: 12
+          - type: 'null'
+          title: Password
+      additionalProperties: false
+      type: object
+      title: GoogleStartInput
+    GoogleStatusData:
+      properties:
+        available:
+          type: boolean
+          title: Available
+        linked:
+          type: boolean
+          title: Linked
+      additionalProperties: false
+      type: object
+      required:
+      - available
+      - linked
+      title: GoogleStatusData
+    GoogleStatusEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/GoogleStatusData'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: GoogleStatusEnvelope
   securitySchemes:
     SessionCookie:
       type: apiKey

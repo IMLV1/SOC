@@ -1,0 +1,1919 @@
+{
+  "evidence_context": [
+    {
+      "id": "7b4aa063-db68-5096-82bc-98d772458483",
+      "source": "web",
+      "request": {
+        "method": "GET",
+        "path": "/restricted"
+      },
+      "response": {
+        "status": 403
+      },
+      "log": {
+        "event_type": "request_policy_denied"
+      }
+    }
+  ],
+  "artifact_sha256": "768880091458c1e8a9f79b9d9680ea3453e6e3a9ae6fa3f84c41c62a6c64def7",
+  "reviewer": "Codex — implementation author",
+  "independent_of_implementation": false,
+  "source_id_kind": "frozen retrieval item ID; historical pilot lacks original chunk IDs",
+  "sources": [
+    {
+      "retrieval_item_id": "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3",
+      "document_title": "blocked",
+      "document_version": "1",
+      "heading": "",
+      "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a",
+      "excerpt": "# Reading blocked requests / อ่านคำขอที่ถูกปฏิเสธ\n\nA blocked request demonstrates an attempted action and an enforcement response. It does not demonstrate successful compromise. Inspect related events and explain which outcomes remain unknown. A generic guide supports interpretation, not a factual claim about a particular incident.\n\nคำขอที่ถูกปฏิเสธไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ ตรวจเหตุการณ์ที่เกี่ยวข้องและระบุข้อมูลที่ยังขาด คู่มืออธิบายหลักการ ไม่ใช่หลักฐานว่าเหตุการณ์สำเร็จ\n"
+    },
+    {
+      "retrieval_item_id": "ec433364-8e28-5a7c-8255-1625f1acf08b",
+      "document_title": "authentication",
+      "document_version": "1",
+      "heading": "",
+      "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f",
+      "excerpt": "# Reading authentication evidence / อ่านหลักฐานการยืนยันตัวตน\n\nA failed login records an unsuccessful authentication attempt. A successful login records a session, but does not identify who controlled it. Correlate the account, session, asset and time before describing impact.\n\nการเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายาม ส่วนการเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา โดยแยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ\n"
+    }
+  ],
+  "labels": [
+    {
+      "index": 0,
+      "language": "en",
+      "query": "What does a successful session establish?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุว่า successful login สร้าง session แต่ไม่บอกตัวผู้ควบคุม จึงตอบขอบเขตสิ่งที่ยืนยันได้",
+      "agent_reviewed": true
+    },
+    {
+      "index": 1,
+      "language": "en",
+      "query": "How should failed logins be correlated?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้เชื่อมบัญชี session อุปกรณ์และเวลา จึงรองรับการ correlate failed logins",
+      "agent_reviewed": true
+    },
+    {
+      "index": 2,
+      "language": "en",
+      "query": "Can login success identify the attacker?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุชัดว่าการ login สำเร็จยังไม่ระบุตัวผู้ควบคุมบัญชี",
+      "agent_reviewed": true
+    },
+    {
+      "index": 3,
+      "language": "en",
+      "query": "What should I check after repeated login failures?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ตรวจ account/session/asset/time ก่อนสรุป impact; ไม่ได้แจกแจงเครื่องมือหรือขั้นตอนเพิ่มเติม",
+      "agent_reviewed": true
+    },
+    {
+      "index": 4,
+      "language": "en",
+      "query": "Does authentication alone prove data access?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication จำกัดข้อสรุปของ login ไว้ที่ session และให้ตรวจบริบทก่อนสรุป impact จึงไม่ยืนยัน data access",
+      "agent_reviewed": true
+    },
+    {
+      "index": 5,
+      "language": "en",
+      "query": "Why confirm activity with the account owner?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication อธิบายว่าผู้ควบคุมยังไม่ทราบ จึงรองรับเหตุผลที่ต้องยืนยันกับเจ้าของบัญชีเพียงบางส่วน; ไม่ได้กำหนดวิธียืนยัน",
+      "agent_reviewed": true
+    },
+    {
+      "index": 6,
+      "language": "en",
+      "query": "Which timestamps should be compared in authentication logs?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุการ correlate time กับ session/account/asset แต่ไม่ระบุชื่อ timestamp fields",
+      "agent_reviewed": true
+    },
+    {
+      "index": 7,
+      "language": "en",
+      "query": "How can I relate sessions to later activity?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ correlate session กับบัญชี asset และเวลา จึงเกี่ยวข้องกับการเชื่อมกิจกรรม",
+      "agent_reviewed": true
+    },
+    {
+      "index": 8,
+      "language": "en",
+      "query": "Should I separate observed login facts from hypotheses?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ฉบับไทยให้แยกสิ่งที่พบกับสิ่งที่ยังไม่ทราบ ใช้กับ login facts และ hypotheses ได้",
+      "agent_reviewed": true
+    },
+    {
+      "index": 9,
+      "language": "en",
+      "query": "What is unknown after a session is created?",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุว่าหลังสร้าง session ยังไม่รู้ผู้ควบคุมและผลกระทบที่ต้องตรวจเพิ่ม",
+      "agent_reviewed": true
+    },
+    {
+      "index": 10,
+      "language": "en",
+      "query": "Does a denied HTTP request establish compromise?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แยก attempted action/enforcement จาก successful compromise โดยตรง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 11,
+      "language": "en",
+      "query": "What does status 403 show?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked รองรับการตีความการปฏิเสธ; ถ้าระบุว่า event นี้เป็น 403 ต้องใช้ event จริงเพิ่ม",
+      "agent_reviewed": true
+    },
+    {
+      "index": 12,
+      "language": "en",
+      "query": "How should blocked requests be interpreted?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked อธิบายขอบเขตและการอ่านเหตุการณ์ที่เกี่ยวข้องของ blocked requests",
+      "agent_reviewed": true
+    },
+    {
+      "index": 13,
+      "language": "en",
+      "query": "Which response fields distinguish denied and successful requests?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้หลักแยก enforcement กับ success เพียงบางส่วน; ไม่มีรายการชื่อ response fields ทั้งหมด",
+      "agent_reviewed": true
+    },
+    {
+      "index": 14,
+      "language": "en",
+      "query": "Can a blocked payload prove successful data access?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุว่า blocked request ไม่ยืนยัน compromise หรือ data access สำเร็จ",
+      "agent_reviewed": true
+    },
+    {
+      "index": 15,
+      "language": "en",
+      "query": "What evidence is needed after a policy denial?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้ตรวจ related events และระบุ outcomes ที่ยังไม่ทราบหลัง policy denial",
+      "agent_reviewed": true
+    },
+    {
+      "index": 16,
+      "language": "en",
+      "query": "Should a dangerous URL alone establish successful compromise?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แยก attempted request จากผลสำเร็จ ช่วยเตือนไม่ใช้ URL เพียงอย่างเดียวสรุป compromise; ไม่ได้ยืนยันว่า URL ใดอันตราย",
+      "agent_reviewed": true
+    },
+    {
+      "index": 17,
+      "language": "en",
+      "query": "How can I explain a denied request cautiously?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้รายงาน attempts/enforcement และสิ่งที่ยังไม่ทราบ จึงรองรับคำอธิบายอย่างระมัดระวัง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 18,
+      "language": "en",
+      "query": "What is the difference between potential and observed impact?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แยกความพยายามกับผลสำเร็จที่ยังไม่ยืนยัน จึงช่วยแยก potential/observed impact บางส่วน; ไม่ใช่ rubric ผลกระทบครบระบบ",
+      "agent_reviewed": true
+    },
+    {
+      "index": 19,
+      "language": "en",
+      "query": "Why check response and subsequent logs?",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้ตรวจ related events/unknown outcomes จึงรองรับการดู response/log ต่อ; ไม่มีรายละเอียด log schema",
+      "agent_reviewed": true
+    },
+    {
+      "index": 20,
+      "language": "en",
+      "query": "What is tomorrow weather?",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "คู่มือทั้งสองไม่มีข้อมูลอากาศหรือการพยากรณ์ จึงไม่มี relevant source",
+      "agent_reviewed": true
+    },
+    {
+      "index": 21,
+      "language": "en",
+      "query": "What medicine cures a cold?",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "คู่มือทั้งสองไม่มีคำแนะนำการรักษาหวัด จึงไม่มี relevant source",
+      "agent_reviewed": true
+    },
+    {
+      "index": 22,
+      "language": "en",
+      "query": "How to grow tomatoes?",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "คู่มือทั้งสองไม่มีความรู้การปลูกมะเขือเทศ จึงไม่มี relevant source",
+      "agent_reviewed": true
+    },
+    {
+      "index": 23,
+      "language": "en",
+      "query": "Who won the lunar chess championship?",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "คู่มือทั้งสองไม่มีข้อมูลการแข่งขันหมากรุก จึงไม่มี relevant source",
+      "agent_reviewed": true
+    },
+    {
+      "index": 24,
+      "language": "en",
+      "query": "Which stock will rise tomorrow?",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "คู่มือทั้งสองไม่มีข้อมูลพยากรณ์หุ้น จึงไม่มี relevant source",
+      "agent_reviewed": true
+    },
+    {
+      "index": 25,
+      "language": "th",
+      "query": "session สำเร็จบอกอะไรได้บ้าง",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุขอบเขต session success และไม่รู้ผู้ควบคุมโดยตรง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 26,
+      "language": "th",
+      "query": "ควรเชื่อม login ล้มเหลวอย่างไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้เชื่อมบัญชี session อุปกรณ์และเวลาเพื่ออ่าน failed-login evidence",
+      "agent_reviewed": true
+    },
+    {
+      "index": 27,
+      "language": "th",
+      "query": "login สำเร็จบอกตัวผู้โจมตีไหม",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุว่า login สำเร็จยังไม่ระบุว่าใครควบคุม จึงไม่ยืนยันตัวผู้โจมตี",
+      "agent_reviewed": true
+    },
+    {
+      "index": 28,
+      "language": "th",
+      "query": "หลัง login ล้มเหลวหลายครั้งต้องตรวจอะไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ตรวจบัญชี session อุปกรณ์และเวลาก่อนอธิบายผลกระทบ; ไม่ได้แจกแจง playbook ทุกขั้น",
+      "agent_reviewed": true
+    },
+    {
+      "index": 29,
+      "language": "th",
+      "query": "การยืนยันตัวตนพิสูจน์ว่าอ่านข้อมูลแล้วไหม",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication จำกัดผลของการยืนยันตัวตนที่ session ไม่ใช่หลักฐานอ่านข้อมูลสำเร็จ",
+      "agent_reviewed": true
+    },
+    {
+      "index": 30,
+      "language": "th",
+      "query": "ทำไมต้องยืนยันกิจกรรมกับเจ้าของบัญชี",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication อธิบายเหตุผลเรื่องผู้ควบคุมที่ยังไม่ทราบ แต่ไม่ได้บอกขั้นตอนยืนยันกับเจ้าของบัญชีครบถ้วน",
+      "agent_reviewed": true
+    },
+    {
+      "index": 31,
+      "language": "th",
+      "query": "เวลาใน authentication logs ควรเทียบอย่างไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ correlate เวลา/session/account/asset แต่ไม่ระบุ timestamp fields",
+      "agent_reviewed": true
+    },
+    {
+      "index": 32,
+      "language": "th",
+      "query": "เชื่อม session กับกิจกรรมต่อเนื่องอย่างไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ตรวจ session ร่วมกับกิจกรรมและบริบทบัญชี/อุปกรณ์/เวลา",
+      "agent_reviewed": true
+    },
+    {
+      "index": 33,
+      "language": "th",
+      "query": "ควรแยกข้อสังเกต login จากสมมติฐานไหม",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ฉบับไทยให้แยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ",
+      "agent_reviewed": true
+    },
+    {
+      "index": 34,
+      "language": "th",
+      "query": "หลังสร้าง session ยังไม่รู้อะไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "ec433364-8e28-5a7c-8255-1625f1acf08b"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุว่ามี session แล้วก็ยังไม่รู้ผู้ควบคุมและผลกระทบ",
+      "agent_reviewed": true
+    },
+    {
+      "index": 35,
+      "language": "th",
+      "query": "HTTP request ถูกปฏิเสธพิสูจน์การเจาะไหม",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุว่า request ถูกปฏิเสธไม่ยืนยัน successful compromise",
+      "agent_reviewed": true
+    },
+    {
+      "index": 36,
+      "language": "th",
+      "query": "status 403 บอกอะไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้หลักตีความ enforcement; ตัวเลข 403 ของรอบจริงยังต้องอ้าง event เพิ่ม",
+      "agent_reviewed": true
+    },
+    {
+      "index": 37,
+      "language": "th",
+      "query": "ควรตีความ blocked request อย่างไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked อธิบาย attempts/enforcement และข้อจำกัดของข้อสรุปโดยตรง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 38,
+      "language": "th",
+      "query": "response field ใดแยกคำขอถูกปฏิเสธกับสำเร็จ",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้หลักการบางส่วน ไม่มีรายการ response fields หรือค่าของ successful request",
+      "agent_reviewed": true
+    },
+    {
+      "index": 39,
+      "language": "th",
+      "query": "payload ที่ถูก block พิสูจน์การอ่านข้อมูลไหม",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุว่า request ที่ถูกหยุดไม่ยืนยันการเข้าถึงสำเร็จ",
+      "agent_reviewed": true
+    },
+    {
+      "index": 40,
+      "language": "th",
+      "query": "หลัง policy denial ต้องหาหลักฐานใดเพิ่ม",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้ตรวจเหตุการณ์ที่เกี่ยวข้องและ outcomes ที่ยังไม่ทราบหลัง denial",
+      "agent_reviewed": true
+    },
+    {
+      "index": 41,
+      "language": "th",
+      "query": "URL อันตรายเพียงอย่างเดียวพิสูจน์ compromise ไหม",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้แยกความพยายามจากผลสำเร็จ ไม่ใช้ URL หรือคู่มือเป็นหลักฐานว่าเกิด compromise",
+      "agent_reviewed": true
+    },
+    {
+      "index": 42,
+      "language": "th",
+      "query": "ควรอธิบาย denied request อย่างระมัดระวังอย่างไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้ใช้ related events และอธิบาย unknown outcomes แทนข้อสรุปเกินหลักฐาน",
+      "agent_reviewed": true
+    },
+    {
+      "index": 43,
+      "language": "th",
+      "query": "potential impact ต่างจาก observed impact อย่างไร",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ช่วยแยกความพยายาม/ผลกระทบที่อาจเกิดจากผลที่มีหลักฐาน แต่ไม่มี rubric impact เต็มรูปแบบ",
+      "agent_reviewed": true
+    },
+    {
+      "index": 44,
+      "language": "th",
+      "query": "ทำไมต้องดู response และ log ต่อเนื่อง",
+      "approved": false,
+      "relevant_source_ids": [
+        "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+      ],
+      "answerable": true,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้ตรวจ related events และผลลัพธ์ ไม่พิจารณา request เพียงอย่างเดียว",
+      "agent_reviewed": true
+    },
+    {
+      "index": 45,
+      "language": "th",
+      "query": "พรุ่งนี้ฝนจะตกไหม",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลพยากรณ์ฝนในคู่มือทั้งสอง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 46,
+      "language": "th",
+      "query": "ยาอะไรแก้หวัดได้",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลการใช้ยารักษาหวัดในคู่มือทั้งสอง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 47,
+      "language": "th",
+      "query": "ปลูกมะเขือเทศอย่างไร",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลการปลูกมะเขือเทศในคู่มือทั้งสอง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 48,
+      "language": "th",
+      "query": "ใครชนะหมากรุกบนดวงจันทร์",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลการแข่งขันหมากรุกในคู่มือทั้งสอง",
+      "agent_reviewed": true
+    },
+    {
+      "index": 49,
+      "language": "th",
+      "query": "หุ้นใดจะขึ้นพรุ่งนี้",
+      "approved": false,
+      "relevant_source_ids": [],
+      "answerable": false,
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลพยากรณ์หุ้นในคู่มือทั้งสอง",
+      "agent_reviewed": true
+    }
+  ],
+  "claims": [
+    {
+      "operation": "rag14:held-v1:19:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "Checking responses and subsequent logs is necessary to verify policy enforcement, as demonstrated by the 403 status response and corresponding request_policy_denied event log.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": false,
+      "reason": "event แสดง denial/403 ได้ แต่ไม่มีหลักฐานรองรับคำแนะนำทั่วไปว่า checking responses/subsequent logs is necessary ซึ่งถูกใส่เป็น observation และไม่มี knowledge citation",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:0:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "The request to the restricted path was denied with a 403 status.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event ระบุ path /restricted และ status 403 ตรงกับ claim",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:4:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "Authentication alone does not prove data access, as demonstrated by the policy denial.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": false,
+      "reason": "event ไม่มี authentication event จึงไม่รองรับการอ้างว่าข้อสรุปเรื่อง authentication ถูก demonstrated by policy denial ทั้งข้อความ แม้หลักการจะสมเหตุผล",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:12:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "A denied request is not a successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "ตีความเฉพาะ denied request ที่ event นี้บันทึก: การกระทำถูกปฏิเสธ ไม่ใช่หลักฐาน successful compromise; ไม่ได้ยืนยันว่าทั้งระบบปลอดภัย",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:2:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "The available evidence only shows a request policy denial with a 403 status and contains no login success events.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "frozen evidence มีเพียง denial/403 ไม่มี login success event; claim จำกัดขอบเขตที่ available evidence",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:13:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "A denied request is associated with the request_policy_denied event type and status 403.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "response.status=403 และ log.event_type=request_policy_denied ตรงกับ claim",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:7:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "A request to a restricted path resulted in a 403 status and a request_policy_denied event.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "request.path=/restricted, response.status=403, log.event_type=request_policy_denied ตรงกัน",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:9:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "The provided evidence only contains a denied request event and lacks information regarding session creation or what remains unknown after it.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "snapshot นี้มี denial event เดียว จึงไม่มีข้อมูล session creation/later activity ตามที่ claim จำกัดขอบเขต",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:1:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "The provided event log shows a request policy denied response (status 403) from the web source.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "source=web, status=403 และ event_type=request_policy_denied ตรงกัน",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:15:no_rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "no_rag",
+      "claim": {
+        "text": "A request to /restricted resulted in a policy denial with status 403.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "path=/restricted, status=403 และ policy denial อยู่ใน event จริง",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:0:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A successful login records a session, but does not identify who controlled it.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุตรงตัวว่า successful login records a session but does not identify who controlled it",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:0:rag",
+      "claim_index": 1,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "The request resulted in a policy denial status 403.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event มี policy denial และ status 403 โดยตรง",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:17:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request demonstrates an attempted action and an enforcement response rather than a successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event ยืนยัน denial; Blocked รองรับ attempted action/enforcement และไม่สรุป compromise โดยจำกัดที่ request นี้",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:17:rag",
+      "claim_index": 1,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A denied request is not a successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event แสดง denied request; Blocked รองรับว่าการปฏิเสธไม่ใช่หลักฐาน compromise ของ request นี้ ไม่ตีความเป็นทั้งระบบไม่ถูกเจาะ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:17:rag",
+      "claim_index": 2,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "Inspect related events and explain which outcomes remain unknown.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ระบุ Inspect related events and explain which outcomes remain unknown",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:12:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request demonstrates an attempted action and an enforcement response, and it does not demonstrate successful compromise.",
+        "kind": "guidance",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ระบุความพยายาม/enforcement และไม่ยืนยัน compromise; event รองรับว่ามี denial จริง",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:6:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "Correlate the account, session, asset and time before describing impact.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุ Correlate the account, session, asset and time before describing impact",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:18:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request demonstrates an attempted action and an enforcement response, but does not demonstrate successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event รองรับ denial และ Blocked รองรับการแยก attempted action/enforcement จาก compromise",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:1:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "Correlate the account, session, asset and time before describing impact.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุ account/session/asset/time ก่อนอธิบาย impact ตรงกับ guidance",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:1:rag",
+      "claim_index": 1,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request or failed authentication attempt does not demonstrate successful compromise.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b",
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุ failed login เป็น unsuccessful attempt; Blocked ระบุ blocked request ไม่ยืนยัน compromise จึงรองรับคำแนะนำนี้",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:15:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request demonstrates an attempted action and an enforcement response, not a successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event รองรับ blocked action และ Blocked รองรับ attempted action/enforcement ไม่ใช่หลักฐานผลสำเร็จ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:15:rag",
+      "claim_index": 1,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "Inspect related events and explain which outcomes remain unknown after a policy denial.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ระบุ inspect related events/unknown outcomes จึงรองรับคำแนะนำหลัง denial",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:2:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A successful login records a session, but does not identify who controlled it.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุ successful login records session แต่ไม่บอกผู้ควบคุม",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:7:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A successful login records a session, but does not identify who controlled it, and relating sessions to later activity requires correlating the account, session, asset, and time.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุทั้ง session ไม่บอกตัวผู้ควบคุมและการ correlate account/session/asset/time",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:7:rag",
+      "claim_index": 1,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "The available observation is a denied request (status 403) and does not provide session or later activity data.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "snapshot มี denial/403 เพียง event เดียว ไม่มี session หรือลำดับกิจกรรมถัดไป",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:11:rag",
+      "claim_index": 0,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "Status 403 shows a request policy denial for the GET request to /restricted.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event ระบุ GET /restricted, status 403 และ request_policy_denied โดยตรง",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:11:rag",
+      "claim_index": 1,
+      "language": "en",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request demonstrates an attempted action and an enforcement response, but it does not demonstrate successful compromise.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ระบุ attempted action/enforcement และ does not demonstrate successful compromise โดยตรง",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:39:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "คำขอถูกปฏิเสธด้วยสถานะ 403 ตามบันทึกเหตุการณ์ request_policy_denied",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event มี status 403 และ event_type=request_policy_denied ตามข้อความ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:41:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "A denied request or the presence of a suspicious URL alone does not prove a compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": false,
+      "reason": "ส่วน suspicious URL เป็นหลักการเพิ่มเติมที่ไม่ได้อยู่ใน event หรือ knowledge refs; event นี้ไม่ได้ระบุว่า URL น่าสงสัย จึงรองรับไม่ครบทั้ง claim ที่เป็น observation",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:41:no_rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "The request to /restricted resulted in a status 403 and was denied by policy, indicating that a denied request is not a successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event มี /restricted/403/policy denial; ข้อความจำกัดว่าคำขอที่ถูกปฏิเสธนี้ไม่ใช่ successful action ไม่ได้ปฏิเสธ compromise จากเหตุการณ์อื่น",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:35:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "คำขอ HTTP ถูกปฏิเสธด้วยสถานะ 403 และบันทึกเหตุการณ์ระบุว่าเป็น request_policy_denied",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event ระบุ HTTP 403 และ request_policy_denied ตรงกัน",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:25:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "A denied request is not a successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "denied request ของ event นี้ไม่ใช่ successful action; ไม่สรุปว่าไม่มี compromise ในบริบทอื่น",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:44:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "The provided evidence shows a denied request resulting in a policy denial log.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event แสดง denied request และ policy denial ตาม claim",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:26:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "มีเหตุการณ์การปฏิเสธคำขอเข้าถึงเนื่องจากนโยบายที่เส้นทาง /restricted ได้รับการตอบกลับเป็นสถานะ 403",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "path=/restricted, response.status=403 และ request_policy_denied ตรงกับ claim",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:43:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "มีการบันทึกเหตุการณ์การปฏิเสธคำขอเข้าถึงเนื่องจากนโยบาย (request_policy_denied)",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "log.event_type=request_policy_denied อยู่จริง",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:33:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "ระบบบันทึกเหตุการณ์การปฏิเสธคำขอเข้าถึงทรัพยากร (request_policy_denied)",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event_type=request_policy_denied รองรับว่ามีบันทึกปฏิเสธคำขอ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:36:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "สถานะ 403 บ่งบอกถึงการถูกปฏิเสธนโยบายการขอเข้าถึงตามบันทึกเหตุการณ์",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "response.status=403 และ event_type=request_policy_denied รองรับการตีความเฉพาะ event นี้",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:48:no_rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "no_rag",
+      "claim": {
+        "text": "คำขอถูกปฏิเสธตามนโยบาย (403)",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "response.status=403 และ event_type=request_policy_denied รองรับข้อความ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:35:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "คำขอ HTTP ถูกปฏิเสธที่เส้นทาง /restricted โดยได้ผลลัพธ์สถานะ 403 และมีประเภทเหตุการณ์เป็น request_policy_denied",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event ระบุ /restricted, 403 และ request_policy_denied ครบ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:35:rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามกระทำและมาตรการบังคับใช้ แต่ไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบหรือประสบความสำเร็จในการเจาะระบบ",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked รองรับ attempted action/enforcement และไม่ยืนยัน successful compromise",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:42:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "A denied request demonstrates an attempted action and an enforcement response, but does not demonstrate successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event รองรับ denied action; Blocked รองรับขอบเขต attempts/enforcement ไม่ยืนยัน compromise",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:42:rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "Inspect related events, explain which outcomes remain unknown, and use generic guides for interpretation rather than making definitive claims about a specific incident.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ระบุ related events, unknown outcomes และ generic guide ใช้ interpretation ไม่ใช่ factual event claim",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:34:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "A successful login records a session, but does not identify who controlled it.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุ successful login records a session but does not identify who controlled it",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:34:rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request demonstrates an attempted action and an enforcement response, and a denied request is not a successful compromise.",
+        "kind": "guidance",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked รองรับ attempts/enforcement ไม่ใช่ successful compromise; event รองรับ denied action จริง",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:34:rag",
+      "claim_index": 2,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "A request to /restricted returned a 403 status (request_policy_denied).",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "path=/restricted, status=403 และ event_type=request_policy_denied ตรงกัน",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:28:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามดำเนินการและการตอบสนองในการบังคับใช้ โดยไม่ยืนยันว่าการโจมตีสำเร็จ",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event รองรับ denial; Blocked รองรับความพยายาม/enforcement ไม่ยืนยันความสำเร็จของโจมตี",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:28:rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "เมื่อเกิดการเข้าสู่ระบบล้มเหลว ควรตรวจสอบบัญชี session อุปกรณ์ และเวลาก่อนอธิบายผลกระทบ",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุการตรวจ account/session/asset/time ก่อนอธิบาย impact หลัง failed login",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:38:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "เหตุการณ์คำขอที่ถูกปฏิเสธแสดงถึงการบังคับใช้นโยบาย แต่ไม่ได้ยืนยันความสำเร็จในการเข้าถึงระบบ",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event รองรับ enforcement denial และ Blocked ระบุว่าไม่ยืนยันการเข้าถึงสำเร็จ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:31:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "ต้องตรวจบัญชี session อุปกรณ์ และเวลา เพื่อวิเคราะห์ผลกระทบและความสัมพันธ์ของเหตุการณ์",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "ec433364-8e28-5a7c-8255-1625f1acf08b"
+        ]
+      },
+      "supported": true,
+      "reason": "Authentication ระบุ account/session/asset/time ก่อนอธิบาย impact และ correlation ตรงกับ guidance",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:31:rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามและการบังคับใช้มาตรการป้องกัน แต่ไม่ยืนยันความสำเร็จของการบุกรุก",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ระบุ attempted action/enforcement และไม่ยืนยัน successful compromise",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:31:rag",
+      "claim_index": 2,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "พบเหตุการณ์คำขอที่ถูกปฏิเสธ (request_policy_denied) ที่เส้นทาง /restricted ได้รับสถานะ 403",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event ระบุ request_policy_denied, /restricted และ 403 ครบ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:36:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "สถานะ 403 บันทึกเป็นเหตุการณ์ประเภท request_policy_denied สำหรับเส้นทาง /restricted",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": []
+      },
+      "supported": true,
+      "reason": "event ระบุ /restricted, 403 และ request_policy_denied ครบ",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:36:rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "คำขอที่ถูกปฏิเสธแสดงถึงการบังคับใช้นโยบาย แต่ไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ระบุ denial/enforcement ไม่ยืนยันการเข้าถึงสำเร็จ ตรงกับ guidance",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:40:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "คำขอที่ถูกปฏิเสธแสดงถึงความพยายามกระทำและการตอบสนองเพื่อบังคับใช้นโยบาย แต่ไม่ยืนยันว่าเข้าถึงระบบสำเร็จ",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event รองรับ blocked action; Blocked รองรับการตอบสนอง enforcement โดยไม่ยืนยัน success",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:40:rag",
+      "claim_index": 1,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "ควรตรวจสอบเหตุการณ์ที่เกี่ยวข้องและระบุข้อมูลหรือผลลัพธ์ที่ยังคงไม่ทราบแน่ชัดเพิ่มเติม",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "Blocked ให้ตรวจ related events และ unknown outcomes ตรงกับ guidance",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:41:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "การพบคำขอที่ถูกปฏิเสธหรือคำขอที่เกี่ยวข้องกับ URL อันตรายแสดงถึงความพยายามและการตอบสนองด้วยการบังคับใช้นโยบาย แต่ไม่ยืนยันว่าการโจมตีประสบความสำเร็จ",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": false,
+      "reason": "ส่วน blocked request รองรับได้ แต่การกล่าวเพิ่มเรื่อง URL อันตราย/คำขอที่เกี่ยวข้องกับ URL นั้นไม่มีใน event หรือคู่มือที่อ้าง จึงรองรับไม่ครบทั้ง observation",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    },
+    {
+      "operation": "rag14:held-v1:37:rag",
+      "claim_index": 0,
+      "language": "th",
+      "arm": "rag",
+      "claim": {
+        "text": "A blocked request demonstrates an attempted action and an enforcement response, and it does not demonstrate successful compromise.",
+        "kind": "observation",
+        "evidence_refs": [
+          "7b4aa063-db68-5096-82bc-98d772458483"
+        ],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      "supported": true,
+      "reason": "event รองรับ blocked action และ Blocked ระบุ attempted action/enforcement ไม่ยืนยัน successful compromise",
+      "agent_reviewed": true,
+      "support_scope": "cited frozen evidence/knowledge only; entire claim must be supported"
+    }
+  ],
+  "review_type": "agent_self_review",
+  "human_approved": false,
+  "reviewed_at": "2026-10-16T10:51:50.411642+07:00",
+  "decision_scope": "preliminary semantic review only; not independent human acceptance"
+}

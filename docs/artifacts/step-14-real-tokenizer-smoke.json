@@ -1,0 +1,66 @@
+{
+  "mode": "real",
+  "status": "succeeded",
+  "scope": "model-tokenizer + structured generation; two maximum dispatches; not full browser/API flow",
+  "result": {
+    "answer": "A denied request does not demonstrate a successful compromise, but rather shows an attempted action and an enforcement response. Based on the provided logs, the request to /restricted resulted in a 403 status and a policy denial event.",
+    "claims": [
+      {
+        "text": "A blocked request does not demonstrate successful compromise, but rather an attempted action and enforcement response.",
+        "kind": "guidance",
+        "evidence_refs": [],
+        "knowledge_refs": [
+          "d19e7b2e-1722-5b11-89a2-f2bcd739bcb3"
+        ]
+      },
+      {
+        "text": "The request to /restricted resulted in a 403 status and was denied by policy.",
+        "kind": "observation",
+        "evidence_refs": [
+          "099fbc77-0535-46f1-919e-8840624c2741"
+        ],
+        "knowledge_refs": []
+      }
+    ],
+    "unknowns": [],
+    "answer_status": "answered",
+    "evidence_truncated": false,
+    "omitted_evidence_ids": []
+  },
+  "latency_ms": 2047,
+  "calls": [
+    {
+      "id": "c8ee47a6-76eb-40fe-88bc-0610bc032e25",
+      "operation_key": "token-count:rag14:tokenizer-smoke-v2-20261016",
+      "component": "token_count",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "actual_tokens": 0,
+      "reserved_tokens": 9240,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 218,
+        "counted_input_tokens": 841
+      },
+      "dispatched_at": "2026-10-16 01:58:16.586225+00:00"
+    },
+    {
+      "id": "ea73db2e-fc2c-4ba4-af66-14ac4c63b93d",
+      "operation_key": "rag14:tokenizer-smoke-v2-20261016",
+      "component": "generation",
+      "model_id": "gemini-3.5-flash-lite",
+      "status": "consumed",
+      "actual_tokens": 1113,
+      "reserved_tokens": 10440,
+      "telemetry_json": {
+        "error_code": null,
+        "latency_ms": 1687,
+        "input_tokens": 841,
+        "total_tokens": 1113,
+        "output_tokens": 272,
+        "thinking_tokens": null
+      },
+      "dispatched_at": "2026-10-16 01:58:16.823061+00:00"
+    }
+  ]
+}

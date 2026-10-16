@@ -1,0 +1,83 @@
+{
+  "review_type": "agent_self_review",
+  "reviewer": "Codex — implementation author",
+  "independent_of_implementation": false,
+  "human_approved": false,
+  "reviewed_at": "2026-10-16T10:51:50.411642+07:00",
+  "decision_scope": "preliminary semantic review only; not independent human acceptance",
+  "status": "agent_review_complete_human_acceptance_pending",
+  "artifact_hashes": {
+    "baseline": "768880091458c1e8a9f79b9d9680ea3453e6e3a9ae6fa3f84c41c62a6c64def7",
+    "retrieval_v2": "68672c8bbed6dc7015d1e357326aa1c94926c8deea7cf7bee3893e1843ad2a46"
+  },
+  "human_templates_sha256": {
+    "step-14-human-review.pending.json": "c2863166b11119febc9346f99455995a4bf6dd31e8b16972dbece6c5cef0e81c",
+    "step-14-retrieval-review.pending.json": "be0ac34ba79088031d660cede7c43e3ace33c82c0636c798b1095e5007c54c75"
+  },
+  "claim_sample_count": 57,
+  "claims_supported": 53,
+  "claims_unsupported": 4,
+  "unsupported_claim_indices_zero_based": [
+    0,
+    2,
+    28,
+    55
+  ],
+  "supported_rate": 0.9298245614035088,
+  "grounding": {
+    "en": {
+      "no_rag": {
+        "sample_count": 10,
+        "supported": 8,
+        "supported_rate": 0.8
+      },
+      "rag": {
+        "sample_count": 17,
+        "supported": 17,
+        "supported_rate": 1.0
+      }
+    },
+    "th": {
+      "no_rag": {
+        "sample_count": 11,
+        "supported": 10,
+        "supported_rate": 0.9090909090909091
+      },
+      "rag": {
+        "sample_count": 19,
+        "supported": 18,
+        "supported_rate": 0.9473684210526315
+      }
+    }
+  },
+  "retrieval_v2": {
+    "en": {
+      "answerable": 20,
+      "recall_at_5": 1.0,
+      "mrr": 0.975
+    },
+    "th": {
+      "answerable": 20,
+      "recall_at_5": 0.95,
+      "mrr": 0.95
+    }
+  },
+  "limits": [
+    "same agent authored implementation and initial labels",
+    "100 relevance judgements; 57 sampled claims from 40 successful responses only",
+    "4 invalid-output and 1 provider-failure outcomes remain failures outside this successful-claim sample",
+    "not full paired answer benchmark of release v2; not independent human review"
+  ],
+  "thai_query_group_english_only_claims": [
+    28,
+    29,
+    31,
+    32,
+    40,
+    41,
+    42,
+    43,
+    44,
+    56
+  ]
+}

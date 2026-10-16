@@ -12,15 +12,25 @@ async def reserve_call(
     model: str,
     token_bound: int,
     experiment: bool = False,
+    component: str = "generation",
+    operation_key: str | None = None,
 ) -> bool:
-    column = "experiment_arm_id" if experiment else "analysis_id"
+    column = (
+        "operation_key"
+        if operation_key is not None
+        else "experiment_arm_id"
+        if experiment
+        else "analysis_id"
+    )
+    identity = operation_key if operation_key is not None else analysis_id
     policy = (
         (await session.execute(text("SELECT * FROM app.provider_policy WHERE id=1 FOR UPDATE")))
         .mappings()
         .one()
     )
     existing = await session.scalar(
-        text(f"SELECT 1 FROM app.provider_calls WHERE {column}=:id"), {"id": analysis_id}
+        text(f"SELECT 1 FROM app.provider_calls WHERE {column}=:id AND component=:component"),
+        {"id": identity, "component": component},
     )
     if existing:
         # A crash after admission may have sent the request. Never replay it.
@@ -56,8 +66,14 @@ async def reserve_call(
     await session.execute(
         text(f"""INSERT INTO app.provider_calls
         ({column},component,policy_version,model_id,reserved_tokens,status)
-        VALUES(:id,'generation',:policy,:model,:tokens,'unknown')"""),
-        {"id": analysis_id, "policy": policy["version"], "model": model, "tokens": token_bound},
+        VALUES(:id,:component,:policy,:model,:tokens,'unknown')"""),
+        {
+            "id": identity,
+            "component": component,
+            "policy": policy["version"],
+            "model": model,
+            "tokens": token_bound,
+        },
     )
     return True
 
@@ -69,14 +85,24 @@ async def settle_call(
     rejected: bool = False,
     cooldown: int = 0,
     experiment: bool = False,
+    component: str = "generation",
+    operation_key: str | None = None,
 ) -> None:
-    column = "experiment_arm_id" if experiment else "analysis_id"
+    column = (
+        "operation_key"
+        if operation_key is not None
+        else "experiment_arm_id"
+        if experiment
+        else "analysis_id"
+    )
+    identity = operation_key if operation_key is not None else analysis_id
     await session.execute(text("SELECT id FROM app.provider_policy WHERE id=1 FOR UPDATE"))
     await session.execute(
         text(f"""UPDATE app.provider_calls SET status=:status,
-        actual_tokens=:tokens WHERE {column}=:id AND status='unknown'"""),
+        actual_tokens=:tokens WHERE {column}=:id AND component=:component AND status='unknown'"""),
         {
-            "id": analysis_id,
+            "id": identity,
+            "component": component,
             "tokens": tokens if tokens else None,
             "status": "consumed" if tokens else "released" if rejected else "unknown",
         },

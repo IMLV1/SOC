@@ -1,0 +1,99 @@
+{
+  "analysis": {
+    "id": "d4d6498a-7a1e-44e6-a93b-055223203c82",
+    "run_id": "51632049-c8a2-4f1b-8596-69259c5e2de1",
+    "retry_of": null,
+    "mode": "real",
+    "model_id": "gemini-3.5-flash-lite",
+    "prompt_version": "prompt-v1",
+    "status": "succeeded",
+    "version": 3,
+    "evidence_ids": [
+      "6eedcaaa-f8bc-4783-89f9-a1c789a421f7"
+    ],
+    "kind": "question",
+    "question_text": "How should I interpret authentication evidence cautiously?",
+    "response_visibility": "visible",
+    "retrieval": {
+      "status": "matched",
+      "release_id": "2b98cbc4-14e3-57b6-b822-434d0f0b22ce",
+      "config_version": "exact-gemini768-v1",
+      "citations": [
+        {
+          "retrieval_item_id": "5306e9db-d9ca-428b-8651-4b7b780cbfab",
+          "document_title": "authentication",
+          "document_version": "1",
+          "heading": "",
+          "excerpt": "# Reading authentication evidence / อ่านหลักฐานการยืนยันตัวตน\n\nA failed login records an unsuccessful authentication attempt. A successful login records a session, but does not identify who controlled it. Correlate the account, session, asset and time before describing impact.\n\nการเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายาม ส่วนการเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา โดยแยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ\n",
+          "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+        },
+        {
+          "retrieval_item_id": "403c088b-d5bb-4d0c-82eb-c31c12af06eb",
+          "document_title": "blocked",
+          "document_version": "1",
+          "heading": "",
+          "excerpt": "# Reading blocked requests / อ่านคำขอที่ถูกปฏิเสธ\n\nA blocked request demonstrates an attempted action and an enforcement response. It does not demonstrate successful compromise. Inspect related events and explain which outcomes remain unknown. A generic guide supports interpretation, not a factual claim about a particular incident.\n\nคำขอที่ถูกปฏิเสธไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ ตรวจเหตุการณ์ที่เกี่ยวข้องและระบุข้อมูลที่ยังขาด คู่มืออธิบายหลักการ ไม่ใช่หลักฐานว่าเหตุการณ์สำเร็จ\n",
+          "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a"
+        }
+      ]
+    },
+    "result": {
+      "answer": "To interpret authentication evidence cautiously, recognize that a failed login records an unsuccessful authentication attempt and a successful login records a session without identifying who controlled it. You must correlate the account, session, asset, and time before describing impact, separating what is observed from what remains unknown.",
+      "claims": [
+        {
+          "text": "A failed login records an unsuccessful authentication attempt and a successful login records a session without identifying who controlled it.",
+          "kind": "guidance",
+          "evidence_refs": [],
+          "knowledge_refs": [
+            "5306e9db-d9ca-428b-8651-4b7b780cbfab"
+          ]
+        },
+        {
+          "text": "Correlate the account, session, asset and time before describing impact, distinguishing between observed facts and unknown details.",
+          "kind": "guidance",
+          "evidence_refs": [],
+          "knowledge_refs": [
+            "5306e9db-d9ca-428b-8651-4b7b780cbfab"
+          ]
+        }
+      ],
+      "unknowns": [
+        "The actual controller of the user session",
+        "Specific account identities and assets involved in any broader incident beyond the provided page view event"
+      ],
+      "answer_status": "answered",
+      "evidence_truncated": false,
+      "omitted_evidence_ids": []
+    },
+    "error_code": null,
+    "usage": {
+      "mode": "real",
+      "components": [
+        {
+          "status": "consumed",
+          "component": "query_embedding",
+          "actual_tokens": 8,
+          "measured_cost": 0
+        },
+        {
+          "status": "consumed",
+          "component": "generation",
+          "actual_tokens": 1308,
+          "measured_cost": 0
+        }
+      ]
+    },
+    "created_at": "2026-10-16T01:27:01.691473Z",
+    "finished_at": "2026-10-16T01:27:05.407587Z"
+  },
+  "source": {
+    "retrieval_item_id": "5306e9db-d9ca-428b-8651-4b7b780cbfab",
+    "document_title": "authentication",
+    "document_version": "1",
+    "heading": "",
+    "excerpt": "# Reading authentication evidence / อ่านหลักฐานการยืนยันตัวตน\n\nA failed login records an unsuccessful authentication attempt. A successful login records a session, but does not identify who controlled it. Correlate the account, session, asset and time before describing impact.\n\nการเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายาม ส่วนการเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา โดยแยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ\n",
+    "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f"
+  },
+  "export_has_frozen_citations": true,
+  "export_sha256": "65525edb9fc1b5dade71bf6d530d66e0c8bbd6896cb2b4adcbfdeb5756037a37"
+}

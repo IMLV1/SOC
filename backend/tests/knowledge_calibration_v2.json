@@ -1,0 +1,38 @@
+{
+  "profile": "gemini-embedding-2-768-v1",
+  "split": "validation-v2-not-heldout",
+  "calibration": [
+    {
+      "query": "A session was established: how do analysts evaluate authentication evidence?",
+      "expected": "authentication"
+    },
+    {
+      "query": "การตรวจสอบหลักฐานยืนยันตัวตน ต้องเชื่อมบัญชีกับช่วงเวลาและอุปกรณ์อย่างไร",
+      "expected": "authentication"
+    },
+    {
+      "query": "Describe what a security policy rejection can and cannot demonstrate.",
+      "expected": "blocked"
+    },
+    {
+      "query": "คำร้องที่นโยบายความปลอดภัยห้ามไว้ แสดงผลกระทบที่เกิดขึ้นจริงได้หรือไม่",
+      "expected": "blocked"
+    },
+    {
+      "query": "Explain the growth cycle of a butterfly.",
+      "expected": null
+    },
+    {
+      "query": "สูตรทำไอศกรีมมะพร้าวมีขั้นตอนอะไรบ้าง",
+      "expected": null
+    },
+    {
+      "query": "Reading session timestamps cannot by itself identify the person controlling an account.",
+      "expected": "authentication"
+    },
+    {
+      "query": "ข้อมูลการเข้าสู่ระบบแปลว่ายืนยันตัวบุคคลหรือการอ่านเนื้อหาสำเร็จแล้วหรือเปล่า",
+      "expected": "authentication"
+    }
+  ]
+}

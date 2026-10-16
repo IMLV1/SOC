@@ -133,6 +133,18 @@ class GeminiProvider:
         self.config = config
         self.request_timeout = request_timeout
 
+    async def structured(self, body: dict[str, Any]) -> dict[str, Any]:
+        # The caller reserves component capacity first; the LangChain pipeline
+        # validates the returned structured text and citations before publication.
+        return await asyncio.to_thread(
+            call,
+            self.config,
+            self.config.chat_model,
+            "generateContent",
+            body,
+            timeout=self.request_timeout,
+        )
+
     async def analyze(self, data: AnalysisInput) -> ProviderOutput:
         body = request_body(data)
         response = await asyncio.to_thread(
