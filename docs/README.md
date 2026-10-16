@@ -49,3 +49,5 @@ GitHub CI ข้อ 03 ผ่านแล้ว แต่ required check/branch 
 - [Agent self-review ข้อ 14 และข้อพบเรื่อง grounding/ภาษา](step-14-agent-review.md)
 
 - [เตรียม Google login/OAuth Client และสิ่งที่ยังไม่เปิดใช้งาน](google-login-setup.md)
+
+- [แผนระบบลืมรหัสผ่านทางอีเมล (Draft)](password-reset-plan.md)
