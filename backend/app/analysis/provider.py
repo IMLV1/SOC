@@ -31,6 +31,12 @@ class AnalysisProvider(Protocol):
     async def analyze(self, data: AnalysisInput) -> ProviderOutput | dict[str, Any]: ...
 
 
+class StructuredAnalysisProvider(AnalysisProvider, Protocol):
+    """RAG extends the existing provider boundary; validation remains outside transport."""
+
+    async def structured(self, body: dict[str, Any]) -> dict[str, Any]: ...
+
+
 class MockProvider:
     mode = "mock"
 

@@ -1,0 +1,847 @@
+{
+  "artifact_sha256": "68672c8bbed6dc7015d1e357326aa1c94926c8deea7cf7bee3893e1843ad2a46",
+  "reviewer": "Codex — implementation author",
+  "independent_of_implementation": false,
+  "sources": [
+    {
+      "chunk_id": "4b6996a3-22bc-53c4-9949-1c0c6a959ac9",
+      "content_hash": "82d7cbb5f74abe7264702cfdc60230bad29cc6b6b37119c649a67c7d6b10712a",
+      "body": "# Reading blocked requests / อ่านคำขอที่ถูกปฏิเสธ\n\nA blocked request demonstrates an attempted action and an enforcement response. It does not demonstrate successful compromise. Inspect related events and explain which outcomes remain unknown. A generic guide supports interpretation, not a factual claim about a particular incident.\n\nคำขอที่ถูกปฏิเสธไม่ยืนยันว่าผู้โจมตีเข้าถึงระบบสำเร็จ ตรวจเหตุการณ์ที่เกี่ยวข้องและระบุข้อมูลที่ยังขาด คู่มืออธิบายหลักการ ไม่ใช่หลักฐานว่าเหตุการณ์สำเร็จ\n",
+      "version_id": "836814a5-352e-5bf5-b654-9432edbfce30",
+      "stable_key": "blocked"
+    },
+    {
+      "chunk_id": "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7",
+      "content_hash": "bc7b74d7a832270b55aadd35042265be4cddd18b889716a7a7e24eea5125ca5f",
+      "body": "# Reading authentication evidence / อ่านหลักฐานการยืนยันตัวตน\n\nA failed login records an unsuccessful authentication attempt. A successful login records a session, but does not identify who controlled it. Correlate the account, session, asset and time before describing impact.\n\nการเข้าสู่ระบบล้มเหลวเป็นหลักฐานของความพยายาม ส่วนการเข้าสู่ระบบสำเร็จยังไม่ยืนยันว่าผู้ใดควบคุมบัญชี ต้องตรวจบัญชี session อุปกรณ์ และเวลา โดยแยกสิ่งที่พบออกจากสิ่งที่ยังไม่ทราบ\n",
+      "version_id": "44870f3f-4d64-5205-adc7-e6b7259294d2",
+      "stable_key": "authentication"
+    }
+  ],
+  "labels": [
+    {
+      "id": "en-authentication-01",
+      "query": "Can a newly authenticated session tell us the identity of the person using it?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุว่า session success ไม่ระบุตัวผู้ควบคุมบัญชี",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-02",
+      "query": "Which account and device details help connect authentication records?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication แนะนำการเชื่อม account/session/asset/time; ไม่ได้ระบุ field schema รายละเอียด",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-03",
+      "query": "What uncertainty remains when a login is accepted?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้แยกสิ่งที่พบกับผู้ควบคุมและผลกระทบที่ยังไม่ทราบ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-04",
+      "query": "How can I explain a failed authentication attempt without overstating impact?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุ failed attempt ไม่สำเร็จ และให้แยกข้อเท็จจริงจากสิ่งที่ยังไม่รู้",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-05",
+      "query": "Why does an authenticated account not by itself establish an intruder?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ไม่ให้ระบุผู้ควบคุมจาก login success จึงไม่ยืนยันว่าพบ intruder",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-06",
+      "query": "How do I compare session activity and the time of authentication?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ correlate session/account/asset/time โดยตรง",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-07",
+      "query": "Which facts about a login should be separated from assumptions?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ฉบับไทยให้แยกสิ่งที่พบกับสิ่งที่ยังไม่ทราบ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-08",
+      "query": "Is creating a session sufficient evidence that sensitive records were viewed?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ยืนยันเพียง session และตรวจ impact เพิ่ม ไม่ยืนยัน records were viewed",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-09",
+      "query": "How should I relate an account to a session and an asset?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุการเชื่อม account/session/asset/time โดยตรง",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-authentication-10",
+      "query": "What additional context is needed to interpret authentication success?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ตรวจบริบทบัญชี session อุปกรณ์ เวลา ก่อนกล่าวถึง impact",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-01",
+      "query": "Does enforcement of a deny policy establish that the action succeeded?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แยก enforcement response กับ successful action/compromise",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-02",
+      "query": "How do I describe an attempted action stopped by a security control?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้กล่าวถึง attempted action และ enforcement ที่หยุดคำขอ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-03",
+      "query": "Can I report an intrusion as successful when all I have is a denied response?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุ denied request ไม่ยืนยัน successful compromise",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-04",
+      "query": "Which unknowns should accompany a report about a rejected request?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้ตรวจ related events และอธิบาย outcomes ที่ยังไม่ทราบ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-05",
+      "query": "What is the significance of the enforcement response in a blocked transaction?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุ enforcement response เป็นหลักฐานการตอบสนองต่อความพยายาม",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-06",
+      "query": "Does a denied operation show actual loss of information?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ไม่ให้อนุมาน successful access/compromise หรือ loss จาก denial เพียงอย่างเดียว",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-07",
+      "query": "How should later events be used when interpreting a request rejection?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แนะนำการตรวจ related events และ unknown outcomes",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-08",
+      "query": "Why should a guide not be treated as proof of an actual intrusion?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุชัด generic guide รองรับ interpretation ไม่ใช่ factual event claim",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-09",
+      "query": "What can a rejected request prove about an attempted action?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แสดง attempted action/enforcement โดยตรง",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-blocked-10",
+      "query": "Should a security analyst distinguish enforcement from attacker success?",
+      "language": "en",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แยกการบังคับใช้มาตรการกับ successful compromise อย่างชัดเจน",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-unanswerable-01",
+      "query": "Which planet has the greatest number of moons?",
+      "language": "en",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลดาราศาสตร์เรื่องจำนวนดวงจันทร์ใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-unanswerable-02",
+      "query": "What ingredients are used in sourdough bread?",
+      "language": "en",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีสูตรขนมปังใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-unanswerable-03",
+      "query": "How is a violin tuned?",
+      "language": "en",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีขั้นตอนตั้งสายไวโอลินใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-unanswerable-04",
+      "query": "When do cherry blossoms bloom in Kyoto?",
+      "language": "en",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีปฏิทินดอกซากุระใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "en-unanswerable-05",
+      "query": "What is the boiling point of ethanol?",
+      "language": "en",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีจุดเดือดเอทานอลใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-01",
+      "query": "เมื่อระบบออกเซสชันให้แล้ว เรารู้หรือยังว่าใครเป็นคนใช้งานจริง",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุว่าสร้าง session แล้วยังไม่รู้ผู้ควบคุมบัญชี",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-02",
+      "query": "ควรนำข้อมูลบัญชีและอุปกรณ์มาเชื่อมกับบันทึกยืนยันตัวตนอย่างไร",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้เชื่อมบัญชี session อุปกรณ์และเวลาโดยตรง",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-03",
+      "query": "การลงชื่อเข้าใช้ผ่านแล้วยังมีเรื่องใดที่สรุปไม่ได้",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication อธิบายความไม่แน่นอนหลัง login ผ่าน; retrieval ผลจริงเป็น no-match จึงต้องนับเป็น miss",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-04",
+      "query": "จะอธิบายการพิสูจน์ตัวตนที่ไม่ผ่านโดยไม่กล่าวเกินหลักฐานอย่างไร",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้แยก failed attempt จากผลสำเร็จและสิ่งที่ยังไม่ทราบ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-05",
+      "query": "บัญชีผ่านการยืนยันแล้วแปลว่าพบผู้บุกรุกแน่นอนหรือไม่",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ไม่ระบุตัวผู้ควบคุมจาก login success จึงไม่ยืนยันว่าเป็นผู้บุกรุก",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-06",
+      "query": "ควรเปรียบเทียบช่วงเวลาที่ตรวจตัวตนกับกิจกรรมของเซสชันอย่างไร",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ correlate time ร่วมกับ session/account/asset",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-07",
+      "query": "ข้อมูลที่พบในการเข้าระบบกับข้อสันนิษฐานควรแยกกันอย่างไร",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ฉบับไทยให้แยกสิ่งที่พบกับสิ่งที่ยังไม่ทราบ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-08",
+      "query": "มีเซสชันใหม่อย่างเดียวเพียงพอจะยืนยันว่าอ่านข้อมูลสำคัญแล้วหรือไม่",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ยืนยันเพียง session ไม่พอจะสรุปว่าอ่านข้อมูลแล้ว",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-09",
+      "query": "การเชื่อมบัญชี เซสชัน และเครื่องที่ใช้งานช่วยตีความอะไรได้",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ระบุ account/session/asset/time เป็นบริบทที่ต้องเชื่อม",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-authentication-10",
+      "query": "การลงชื่อเข้าใช้งานสำเร็จต้องอาศัยบริบทอะไรเพิ่มเพื่ออธิบายผลกระทบ",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "70beb8f9-6d3e-57d6-b2a8-0e114d6c38d7"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Authentication ให้ตรวจบริบทก่อนอธิบายผลกระทบของ login",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-01",
+      "query": "นโยบายที่สั่งปฏิเสธคำขอเป็นหลักฐานว่าโจมตีสำเร็จแล้วหรือไม่",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุว่าปฏิเสธคำขอไม่ยืนยันการโจมตีสำเร็จ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-02",
+      "query": "จะรายงานความพยายามที่มาตรการความปลอดภัยหยุดไว้ได้อย่างไร",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แนะนำการรายงาน attempted action/enforcement โดยไม่กล่าวเกินหลักฐาน",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-03",
+      "query": "มีเพียงคำตอบว่าปฏิเสธคำร้อง จะระบุว่าบุกรุกสำเร็จได้ไหม",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ไม่ให้สรุป successful compromise จาก denied response",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-04",
+      "query": "เมื่อรายงานคำขอที่ไม่ผ่านการอนุญาตควรระบุสิ่งที่ยังไม่ทราบอะไรบ้าง",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แนะนำระบุ unknown outcomes และหา related events",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-05",
+      "query": "ผลตอบกลับว่าระงับคำขอแล้วบอกถึงการบังคับใช้นโยบายอย่างไร",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แสดงว่าการหยุดคำขอคือ enforcement response",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-06",
+      "query": "การกระทำที่ระบบห้ามไว้ยืนยันว่ามีข้อมูลสูญหายหรือยัง",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ไม่ให้อนุมาน successful access หรือข้อมูลสูญหายจาก denial อย่างเดียว",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-07",
+      "query": "ควรอ่านเหตุการณ์ถัดไปอย่างไรหลังระบบปฏิเสธคำขอ",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ให้ตรวจเหตุการณ์ที่เกี่ยวข้องภายหลังและสิ่งที่ยังไม่ทราบ",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-08",
+      "query": "เหตุใดข้อความจากคู่มือจึงใช้พิสูจน์การบุกรุกในรอบนี้ไม่ได้",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุว่าคู่มือช่วยตีความ ไม่ยืนยันข้อเท็จจริงของ incident",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-09",
+      "query": "คำขอที่ถูกหยุดไว้แสดงอะไรเกี่ยวกับความพยายามของผู้ส่ง",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked ระบุความพยายามกับ enforcement ของคำขอที่ถูกหยุด",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-blocked-10",
+      "query": "นักวิเคราะห์ควรแยกผลการป้องกันออกจากความสำเร็จของผู้โจมตีหรือไม่",
+      "language": "th",
+      "approved": false,
+      "answerable": true,
+      "relevant_chunk_ids": [
+        "4b6996a3-22bc-53c4-9949-1c0c6a959ac9"
+      ],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "ยืนยันผู้โจมตีหรือการอ่านข้อมูลสำเร็จจาก login/denied request เพียงอย่างเดียว",
+        "ใช้คู่มือทั่วไปแทนหลักฐานว่า incident เกิดขึ้นจริง"
+      ],
+      "reason": "Blocked แยกผลการบังคับใช้นโยบายจาก successful compromise",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-unanswerable-01",
+      "query": "ดาวเคราะห์ดวงใดมีดวงจันทร์มากที่สุด",
+      "language": "th",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลจำนวนดวงจันทร์ใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-unanswerable-02",
+      "query": "ขนมปังซาวโดว์ใช้วัตถุดิบอะไรบ้าง",
+      "language": "th",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีสูตรซาวโดว์ใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-unanswerable-03",
+      "query": "ตั้งสายไวโอลินต้องทำอย่างไร",
+      "language": "th",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีขั้นตอนตั้งสายไวโอลินใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-unanswerable-04",
+      "query": "ดอกซากุระในเกียวโตบานช่วงไหน",
+      "language": "th",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีช่วงดอกซากุระใน corpus",
+      "agent_reviewed": true
+    },
+    {
+      "id": "th-unanswerable-05",
+      "query": "เอทานอลเดือดที่อุณหภูมิเท่าไร",
+      "language": "th",
+      "approved": false,
+      "answerable": false,
+      "relevant_chunk_ids": [],
+      "expected_evidence_ids": [],
+      "forbidden_claims": [
+        "แต่งข้อมูลนอก approved corpus"
+      ],
+      "reason": "ไม่มีข้อมูลจุดเดือดเอทานอลใน corpus",
+      "agent_reviewed": true
+    }
+  ],
+  "review_type": "agent_self_review",
+  "human_approved": false,
+  "reviewed_at": "2026-10-16T10:51:50.411642+07:00",
+  "decision_scope": "preliminary semantic review only; not independent human acceptance"
+}

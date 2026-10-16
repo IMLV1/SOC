@@ -1,6 +1,6 @@
 # SOC Platform — LangChain RAG Design
 
-วันที่: 12 ตุลาคม 2026 · สถานะ: แบบออกแบบ ยังไม่ได้ติดตั้ง LangChain, pgvector หรือเชื่อม provider จริง
+วันที่แบบออกแบบ: 12 ตุลาคม 2026 · implementation ข้อ 13–14 เพิ่ม pgvector/LangChain และ local Gemini opt-in แล้ว; quality acceptance ยังไม่ครบ ดู [ผลตรวจ](step-14-verification.md)
 
 อ่านร่วมกับ [Architecture](architecture.md), [API](api.md), [Database](database.md), [CI/CD](ci-cd.md) และ [Development plan](development-plan.md)
 

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Assistant } from "../../../../../features/assistant";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, read, write } from "../../../../../lib/api";
@@ -216,6 +217,7 @@ export default function TicketPage() {
             })}</fieldset>
           <button disabled={!mutable || busy || !!ticket.deleted_at || !newNote.trim()} onClick={() => void addNote()}>เพิ่มบันทึก</button>
         </section></div>
+        <Assistant runId={runId} ticket={ticket} mutable={!!mutable} />
         <section className="run-panel"><h2>Timeline</h2>
           {timeline.length === 0 ? <p>ยังไม่มีประวัติ</p> : <ol>{timeline.map(item =>
             <li key={`${item.kind}-${item.id}`}>{item.kind} · {item.action} · {new Date(item.occurred_at).toLocaleString("th-TH")}{item.event_id ? ` · event ${item.event_id}` : ""}</li>)}</ol>}

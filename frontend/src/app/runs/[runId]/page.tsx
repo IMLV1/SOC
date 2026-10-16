@@ -198,9 +198,9 @@ export default function RunDetailPage() {
           <p><Link href={`/runs/${runId}/tickets/new`}>สร้าง ticket จากหลักฐาน</Link></p>
           {tickets.length === 0 ? <p>ยังไม่มี ticket</p> : <ol className="run-list">{tickets.map(item =>
             <li key={item.id}><Link href={`/runs/${runId}/tickets/${item.id}`}>{item.title} · {item.severity} · {item.status}</Link></li>)}</ol>}
-          <h3>AI-assisted analysis</h3><p className="run-muted">โหมด mock เท่านั้น ไม่ใช่คะแนนหรือผล benchmark</p>
+          <h3>AI-assisted analysis</h3><p className="run-muted">ผล AI ไม่ใช่คะแนน · mode แสดงตามแต่ละรายการ · ถามและดูคู่มืออ้างอิงในหน้า ticket</p>
           {analyses.length === 0 ? <p>ยังไม่มีคำวิเคราะห์</p> : <ol className="run-list">{analyses.map(item => <li key={item.id}>
-            <strong>{item.status}</strong> · mode={item.mode}{item.result && <p>{item.result.summary}</p>}
+            <strong>{item.status}</strong> · mode={item.mode}{item.result && <p>{("summary" in item.result ? item.result.summary : item.result.answer)}</p>}
             {item.error_code && <p role="status">{item.error_code}</p>}
             {["failed", "timed_out", "invalid_output", "quota_exceeded"].includes(item.status) &&
               <button disabled={busy || !run || !["running", "paused", "reviewing"].includes(run.status)}

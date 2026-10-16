@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { ApiError, mutate, read, type SessionData } from "../lib/api";
 
@@ -11,6 +12,8 @@ export function useSession() {
   return state;
 }
 export default function SessionProvider({ children, preview = false }: { children: React.ReactNode; preview?: boolean }) {
+  const pathname = usePathname();
+  const [navOpen, setNavOpen] = useState(false);
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -33,21 +36,24 @@ export default function SessionProvider({ children, preview = false }: { childre
     return () => { window.removeEventListener("focus", focus); window.clearInterval(timer); };
   }, [refresh]);
   async function logout() {
-    try { await mutate<void>("/auth/logout", {}); ++generation.current; setSession(null); setError(""); setLoading(false); }
+    try { await mutate<void>("/auth/logout", {}); ++generation.current; setSession(null); setError(""); setLoading(false); setNavOpen(false); }
     catch { setError("ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง"); }
   }
   return <Context.Provider value={{ session, loading, error, refresh, preview }}>
     {preview && <p role="status" className="account-message">Free preview: ทดสอบสมัครสมาชิก/เข้าสู่ระบบและดูตัวอย่างได้ · ยังเริ่มรอบฝึกไม่ได้ เพราะไม่มี background runner · AI เป็น mock · ฐานข้อมูลชั่วคราว ห้ามใส่ข้อมูลจริง</p>}
-    <nav className="account-nav" aria-label="บัญชี">
-      <Link href="/">Sentinel</Link><Link href="/demo">ดูตัวอย่าง</Link>
-      <Link href="/scenarios">สถานการณ์ฝึก</Link>
-      {session && <Link href="/runs">รอบฝึกของฉัน</Link>}
-      {loading ? <span role="status">กำลังตรวจบัญชี…</span> : session ? <>
-        <Link href="/account">{session.user.display_name}</Link>
+    <a href="#main-content" className="skip-link">ข้ามไปเนื้อหา</a>
+    <nav className="account-nav" aria-label="บัญชี" data-open={navOpen}>
+      <Link className="nav-brand" href="/" onClick={() => setNavOpen(false)} aria-label="Sentinel"><span className="brand-mark" aria-hidden="true">S</span><span>Sentinel<small>SOC LEARNING LAB</small></span></Link>
+      <button className="nav-toggle" type="button" aria-expanded={navOpen} aria-controls="primary-links account-links" onClick={() => setNavOpen(value => !value)}><span aria-hidden="true">{navOpen ? "×" : "☰"}</span>{navOpen ? "ปิดเมนู" : "เมนู"}</button>
+      <div className="nav-links" id="primary-links"><Link href="/demo" onClick={() => setNavOpen(false)} aria-current={pathname === "/demo" ? "page" : undefined}>ดูตัวอย่าง</Link>
+      <Link href="/scenarios" onClick={() => setNavOpen(false)} aria-current={pathname === "/scenarios" ? "page" : undefined}>สถานการณ์ฝึก</Link>
+      {session && <Link href="/runs" onClick={() => setNavOpen(false)} aria-current={pathname.startsWith("/runs") ? "page" : undefined}>รอบฝึกของฉัน</Link>}</div>
+      <div className="nav-account" id="account-links">{loading ? <span role="status">กำลังตรวจบัญชี…</span> : session ? <>
+        <Link href="/account" onClick={() => setNavOpen(false)} aria-current={pathname === "/account" ? "page" : undefined}>{session.user.display_name}</Link>
         <button onClick={() => void logout()}>ออกจากระบบ</button>
-      </> : <><Link href="/login">เข้าสู่ระบบ</Link><Link href="/register">สมัครสมาชิก</Link></>}
+      </> : <><Link href="/login" onClick={() => setNavOpen(false)} aria-current={pathname === "/login" ? "page" : undefined}>เข้าสู่ระบบ</Link><Link className="nav-cta" href="/register" onClick={() => setNavOpen(false)}>สมัครสมาชิก <span aria-hidden="true">↗</span></Link></>}</div>
     </nav>
     {error && <p role="alert" className="account-message">{error} <button onClick={() => void refresh()}>ลองใหม่</button></p>}
-    {children}
+    <div id="main-content" tabIndex={-1}>{children}</div>
   </Context.Provider>;
 }

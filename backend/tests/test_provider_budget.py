@@ -118,3 +118,53 @@ def test_429_releases_token_hold_but_cools_down_other_workers(migrated):
             await db.close()
 
     asyncio.run(execute())
+
+
+@pytest.mark.integration
+def test_owner_operation_reconciliation_requires_confirmed_usage_and_audits(migrated):
+    from app.analysis.reconcile import reconcile_operation
+
+    async def run():
+        worker = Database(migrated("worker_runtime"))
+        owner = Database(migrated("migration_owner"))
+        try:
+            async with worker.sessions() as s, s.begin():
+                assert await reserve_call(
+                    s,
+                    uuid4(),
+                    "embedding-model",
+                    100,
+                    component="document_embedding",
+                    operation_key="ci:ingest",
+                )
+            with pytest.raises(PermissionError):
+                await reconcile_operation(worker, "ci:ingest", 15, "confirmed test report")
+            with pytest.raises(ValueError):
+                await reconcile_operation(owner, "ci:ingest", 15, "")
+            await reconcile_operation(owner, "ci:ingest", 15, "confirmed synthetic test report")
+            async with owner.sessions() as s:
+                row = (
+                    await s.execute(
+                        text(
+                            "SELECT status,actual_tokens,reconciliation_reason FROM "
+                            "app.provider_calls WHERE operation_key='ci:ingest'"
+                        )
+                    )
+                ).one()
+                assert row.status == "consumed" and row.actual_tokens == 15
+                assert (
+                    await s.scalar(
+                        text(
+                            "SELECT count(*) FROM app.audit_logs WHERE "
+                            "action='provider.operation_reconcile'"
+                        )
+                    )
+                    == 1
+                )
+            with pytest.raises(ValueError):
+                await reconcile_operation(owner, "ci:ingest", 15, "duplicate report")
+        finally:
+            await worker.close()
+            await owner.close()
+
+    asyncio.run(run())

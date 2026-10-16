@@ -143,6 +143,7 @@ async def finalize(session: AsyncSession, run_id: UUID) -> bool:
         (
             await session.execute(
                 text("""SELECT id,correlation_key,evidence_hash,mode,model_id,prompt_version,
+        kind,question_text,knowledge_release_id,retrieval_config_version,
         status,result_json,usage_json,created_at,finished_at FROM app.analyses
         WHERE run_id=:run AND created_at<=:cutoff ORDER BY created_at,id"""),
                 {"run": run_id, "cutoff": completion["assessment_cutoff"]},
@@ -151,6 +152,40 @@ async def finalize(session: AsyncSession, run_id: UUID) -> bool:
         .mappings()
         .all()
     )
+    retrieval_snapshots: dict[UUID, dict[str, Any]] = {}
+    for analysis in analyses:
+        retrieval = (
+            (
+                await session.execute(
+                    text("""SELECT status,release_id,config_version
+            FROM app.retrievals WHERE run_id=:run AND analysis_id=:id"""),
+                    {"run": run_id, "id": analysis["id"]},
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if retrieval is not None:
+            citations = (
+                (
+                    await session.execute(
+                        text("""SELECT id AS retrieval_item_id,
+                document_title,document_version,heading,excerpt_snapshot AS excerpt,content_hash
+                FROM app.retrieval_items WHERE run_id=:run AND analysis_id=:id ORDER BY rank"""),
+                        {"run": run_id, "id": analysis["id"]},
+                    )
+                )
+                .mappings()
+                .all()
+            )
+            retrieval_snapshots[analysis["id"]] = {
+                "status": retrieval["status"],
+                "release_id": str(retrieval["release_id"]),
+                "config_version": retrieval["config_version"],
+                "citations": [
+                    dict(c) | {"retrieval_item_id": str(c["retrieval_item_id"])} for c in citations
+                ],
+            }
     event_by_key = {(e["scenario_instance_id"], e["fixture_event_key"]): e for e in events}
     truth_rows: list[tuple[Any, Any]] = []
     for scenario in scenarios:
@@ -267,6 +302,13 @@ async def finalize(session: AsyncSession, run_id: UUID) -> bool:
                 "model_id": a["model_id"],
                 "prompt_version": a["prompt_version"],
                 "status": a["status"],
+                "kind": a["kind"],
+                "question_text": a["question_text"],
+                "knowledge_release_id": str(a["knowledge_release_id"])
+                if a["knowledge_release_id"]
+                else None,
+                "retrieval": retrieval_snapshots.get(a["id"]),
+                "response_visibility": "visible",
                 "result": a["result_json"],
                 "usage": a["usage_json"],
                 "created_at": a["created_at"].isoformat(),

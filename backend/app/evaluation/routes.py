@@ -13,6 +13,7 @@ from app.auth import service as auth
 from app.auth.service import authorize_assignment, authorize_owner
 from app.evaluation.experiments import compare
 from app.http_models import Meta
+from app.knowledge.rag import redact_snapshot
 
 router = APIRouter(prefix="/api/v1", tags=["Evaluation"])
 admin_router = APIRouter(prefix="/api/v1/admin/runs", tags=["Instructor review"])
@@ -89,7 +90,7 @@ async def export_evaluation(run_id: UUID, request: Request) -> Response:
             "truncated": row["truncated"],
             "metrics": row["metrics_json"],
             "versions": row["versions_json"],
-            "snapshot": row["snapshot_json"],
+            "snapshot": await redact_snapshot(session, row["snapshot_json"]),
         }
     return Response(
         content=json.dumps(body, sort_keys=True, default=str),

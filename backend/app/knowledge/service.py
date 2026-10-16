@@ -96,6 +96,11 @@ async def admit(session: AsyncSession, documents: list[dict[str, Any]]) -> UUID:
 
 
 async def ingest(database: Database, job: dict[str, Any]) -> None:
+    if job["payload"].get("profile") == "gemini-embedding-2-768-v1":
+        from app.knowledge.real_ingestion import ingest_real
+
+        await ingest_real(database, job)
+        return
     vid = UUID(job["payload"]["version_id"])
     async with database.sessions() as session, session.begin():
         # Version before job. Publish/revoke serialize with the same version lock.
@@ -170,10 +175,22 @@ async def publish(session: AsyncSession, rid: UUID, expected_version: int) -> No
     )
     if not members or any(v["status"] != "ready" or v["revoked_at"] for v in members):
         raise ValueError("Partial or revoked corpus")
+    profile = await session.scalar(
+        text("SELECT profile_id FROM kb.releases WHERE id=:id"), {"id": rid}
+    )
+    table = (
+        "kb.embeddings_gemini768"
+        if profile == "gemini-embedding-2-768-v1"
+        else "kb.embeddings_fake16"
+    )
+    if profile == "gemini-embedding-2-768-v1" and not await session.scalar(
+        text("SELECT 1 FROM kb.retrieval_policies WHERE release_id=:id"), {"id": rid}
+    ):
+        raise ValueError("Calibrated real relevance policy required")
     missing = await session.scalar(
-        text("""SELECT count(*) FROM kb.chunks c
+        text(f"""SELECT count(*) FROM kb.chunks c
       JOIN kb.members m ON m.version_id=c.version_id
-      LEFT JOIN kb.embeddings_fake16 e ON e.chunk_id=c.id
+      LEFT JOIN {table} e ON e.chunk_id=c.id
       WHERE m.release_id=:id AND e.chunk_id IS NULL"""),
         {"id": rid},
     )
@@ -236,29 +253,44 @@ async def revoke(session: AsyncSession, vid: UUID) -> None:
 
 
 async def retrieve(
-    session: AsyncSession, rid: UUID, query: str, *, draft: bool = False
+    session: AsyncSession,
+    rid: UUID,
+    query: str,
+    *,
+    draft: bool = False,
+    vector: list[float] | None = None,
 ) -> list[dict[str, Any]]:
     if draft and await session.scalar(text("SELECT current_user")) not in (
         "migration_owner",
         "knowledge_publisher",
     ):
         raise PermissionError("Draft validation requires publisher")
-    vector = await FakeEmbeddings().embed(query)
-    validate_vector(vector, 16)
+    profile = await session.scalar(
+        text("SELECT profile_id FROM kb.releases WHERE id=:id"), {"id": rid}
+    )
+    if profile is None:
+        return []
+    real = profile == "gemini-embedding-2-768-v1"
+    if vector is None:
+        if real:
+            raise ValueError("Real query embedding required")
+        vector = await FakeEmbeddings().embed(query)
+    validate_vector(vector, 768 if real else 16)
+    table = "kb.embeddings_gemini768" if real else "kb.embeddings_fake16"
     if not any(vector):
         return []
     rows = (
         (
             await session.execute(
-                text("""SELECT c.id,c.version_id,c.body,c.heading,c.content_hash,v.stable_key,
+                text(f"""SELECT c.id,c.version_id,c.body,c.heading,c.content_hash,v.stable_key,
         e.embedding OPERATOR(public.<=>) CAST(:vector AS public.vector) AS distance
-      FROM kb.embeddings_fake16 e JOIN kb.chunks c ON c.id=e.chunk_id
+      FROM {table} e JOIN kb.chunks c ON c.id=e.chunk_id
       JOIN kb.versions v ON v.id=c.version_id JOIN kb.members m ON m.version_id=v.id
       JOIN kb.releases r ON r.id=m.release_id
-      WHERE r.id=:rid AND (r.published_at IS NOT NULL OR :draft) AND r.profile_id='fake-hash-16-v1'
+      WHERE r.id=:rid AND (r.published_at IS NOT NULL OR :draft) AND r.profile_id=:profile
         AND v.revoked_at IS NULL AND v.status='ready'
       ORDER BY distance,c.id LIMIT 12"""),
-                {"rid": rid, "vector": json.dumps(vector), "draft": draft},
+                {"rid": rid, "vector": json.dumps(vector), "draft": draft, "profile": profile},
             )
         )
         .mappings()
@@ -276,14 +308,22 @@ async def retrieve(
     return result
 
 
-async def validate_release(session: AsyncSession, rid: UUID, suite: dict[str, Any]) -> bool:
+async def validate_release(
+    session: AsyncSession,
+    rid: UUID,
+    suite: dict[str, Any],
+    vectors: list[list[float]] | None = None,
+) -> bool:
     if await session.scalar(text("SELECT current_user")) not in (
         "migration_owner",
         "knowledge_publisher",
     ):
         raise PermissionError("Publisher connection required")
     await session.execute(text("SELECT id FROM kb.active_release WHERE id=1 FOR UPDATE"))
-    if suite.get("profile") != "fake-hash-16-v1":
+    profile = await session.scalar(
+        text("SELECT profile_id FROM kb.releases WHERE id=:id"), {"id": rid}
+    )
+    if suite.get("profile") != profile:
         raise ValueError("Incompatible validation profile")
     pending = await session.scalar(
         text("""SELECT count(*) FROM kb.members m
@@ -297,8 +337,10 @@ async def validate_release(session: AsyncSession, rid: UUID, suite: dict[str, An
     if not cases:
         raise ValueError("Golden queries required")
     passed = True
-    for case in cases:
-        rows = await retrieve(session, rid, case["query"], draft=True)
+    for index, case in enumerate(cases):
+        rows = await retrieve(
+            session, rid, case["query"], draft=True, vector=vectors[index] if vectors else None
+        )
         passed = passed and bool(rows) and rows[0]["stable_key"] == case["expected"]
     await session.execute(
         text("""INSERT INTO kb.validations

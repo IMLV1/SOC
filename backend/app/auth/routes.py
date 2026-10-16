@@ -137,7 +137,9 @@ async def login(body: LoginInput, request: Request, response: Response) -> Sessi
         correct: bool
         try:
             correct = await asyncio.to_thread(
-                PASSWORDS.verify, row["password_hash"] if row else DUMMY_HASH, body.password
+                PASSWORDS.verify,
+                row["password_hash"] if row and row["password_hash"] else DUMMY_HASH,
+                body.password,
             )
         except VerificationError:
             correct = False

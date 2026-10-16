@@ -198,7 +198,7 @@ AI job fail ยัง GET resource ได้ 200 พร้อม status/error_co
 | NFR-004 Usability | 375/768/1440px, keyboard focus/labels; loading/empty/error, สีมีข้อความกำกับ | auth/Guest ผ่านข้อ 04; catalog ตรวจในข้อ 05; full flows ยังไม่พร้อม |
 | NFR-005 Privacy/retention | run child data 30d, account audit 90d (ค่าที่เสนอ); secrets redacted; no learner shared cache | ยังไม่เปิด retention จริง |
 | NFR-006 Delivery/recovery | pinned runtimes/locks; contract drift gate; HTTPS same origin; RPO≤15m/RTO≤2h | local scaffold; hosting/restore pending |
-| NFR-007 RAG quality | ≥50 Thai/English held-out queries; Recall@5≥.85, supported claims/abstention≥.90; refs ไม่หลุด | targets ไม่ใช่ผลวัด; provider/corpus pending |
+| NFR-007 RAG quality | ≥50 Thai/English held-out queries; Recall@5≥.85, supported claims/abstention≥.90; refs ไม่หลุด | targets ไม่ใช่ผลวัด; Gemini/corpus local ได้อนุมัติแล้ว ดูผล pilot ข้อ 14 |
 
 ## 7. ข้อมูล ER และ migration boundary
 
@@ -257,14 +257,14 @@ global 100 requests/วัน UTC, 200,000 tokens/วัน, 5 requests/rolling 
 | D-02 | retake จำนวนครั้ง/cooldown/quota/case rotation; active รวม pending/needs_review หรือไม่; pause/abort/expiry | attempt admission/index/lifecycle จริง |
 | D-03 | override pass→fail หลัง unlock: คงสิทธิ์/ถอนสิทธิ์/ผลต่อ attempt ระดับถัดไป; ผู้อนุมัติและการแจ้งผู้เรียน | review/unlock mutation จริง |
 | D-04 | feedback รายข้อเผยได้แค่ไหนโดยไม่เป็นเฉลยเต็ม; grading citation source access/withdrawal | learner result/export schema approval |
-| D-05 | เลือก Gemini Free Tier สำหรับ analysis เฉพาะ synthetic training events ใน local (15 ต.ค. 2026); ใช้ Gemini 3.5 Flash-Lite หลัง 2.5 Flash ตอบ 404 สำหรับ project ใหม่; embedding/RAG model, production privacy/secret store, paid budget/rate card ยังรอ | real calls เฉพาะ local synthetic; benchmark/ingestion/production ยังปิด |
+| D-05 | เลือก Gemini Free Tier สำหรับ analysis เฉพาะ synthetic training events ใน local (15 ต.ค. 2026); ใช้ Gemini 3.5 Flash-Lite หลัง 2.5 Flash ตอบ 404 สำหรับ project ใหม่; ผู้ใช้ยืนยันเพิ่ม gemini-embedding-2/768 และ corpus 2 เรื่องสำหรับ local ingestion/benchmark วันที่ 16 ต.ค. 2026; production privacy/paid mode ยังรอ | local synthetic และ corpus ที่อนุมัติเท่านั้น; เพดาน 0 บาท/100 dispatches/200,000 tokens ต่อ UTC day/5 ต่อ 60 วินาที |
 | D-06 | approved KB manifest/reviewer, hosting/PostgreSQL/pgvector, domain/registry/backup/release owner | corpus publish/deploy |
 | D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า และ promotion notification; quota ผู้สมัครใหม่ยืนยันแล้ว 10 runs/20 AI requests ต่อวัน UTC (14 ต.ค. 2026) ส่วน exam/retake ยัง pending | public learning rollout |
 
-ไม่มี default คะแนนผ่านหรือ auto-revoke unlock. Gemini Free Tier ที่ระบุข้างต้นเป็นการตัดสินใจผู้ใช้สำหรับ local synthetic analysis เท่านั้น; ไม่ได้อนุมัติ embedding/RAG, benchmark หรือ production use.
+ไม่มี default คะแนนผ่านหรือ auto-revoke unlock. Gemini Free Tier ที่ระบุข้างต้นเป็นการตัดสินใจผู้ใช้สำหรับ local synthetic analysis เท่านั้น; วันที่ 16 ต.ค. 2026 ผู้ใช้อนุมัติ embedding/RAG และ benchmark เฉพาะ local corpus สองเรื่องตาม D-05 เพิ่มแล้ว; production/paid use ยังไม่อนุมัติ.
 ข้อ 05 ใช้ [training-only catalog/seed และ exam default-deny policy](scenario-development.md)
 เพื่อปิดช่องก่อนเปิด run/exam จริง; ไม่อนุมัติ draft rubric/result/attempt schema โดยปริยาย
-RAG และ exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
+RAG เปิดต่อ run ด้วย opt-in หลัง publish release; exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
 Approval เพิ่ม route: ตกลง policy/schema → เปลี่ยน operation เป็น approved → implement response
 allowlist/validation/permission → generated OpenAPI drift + behavior/integration tests → ติ๊ก checklist เฉพาะที่ผ่าน
 
@@ -277,3 +277,49 @@ Published release/config pin ใน run_versions เมื่อ SOC_KB_ENABLED=
 ค่าเริ่มต้น false คง run เก่าที่ไม่ใช้ RAG. Fake profile 16 มิติสำหรับ CI/local เท่านั้น.
 ผู้ใช้อนุมัติสองคู่มือทั่วไปใน backend/knowledge/manifest.json สำหรับ local/mock แล้ว.
 ดู [คู่มือ/หลักฐานข้อ 13](step-13-verification.md); triage/question/citations อยู่ข้อ 14.
+
+
+## ข้อ 14 — contract ที่ใช้งานจริงและข้อจำกัด
+
+FR-012 ใช้ `POST /api/v1/runs/{run_id}/tickets/{ticket_id}/questions`,
+`GET /api/v1/runs/{run_id}/analyses/{analysis_id}/sources/{retrieval_item_id}`,
+analysis list/detail/retry เดิม และ Instructor read-only `/api/v1/admin/runs/{run_id}/analyses/{analysis_id}`
+กับ `/sources/{retrieval_item_id}`. Instructor ต้องผ่าน assignment และ access audit.
+OpenAPI approved เฉพาะ routes ที่มี implementation; learning/exam routes ยัง draft.
+
+Migration 0013–0016 เพิ่ม frozen `app.retrievals`, `app.retrieval_items`,
+`app.analysis_knowledge_refs` และ `app.quota_components` (ชื่อย่อของ component reservation
+ใน design). Component ผูก logical analysis หนึ่งชุด ไม่สร้างค่าบริการซ้ำตาม system/user ledger;
+parent reservation แต่ละ scope เก็บผลรวมเดียวกัน. Citation refs มี composite FK ถึง analysis/run/item
+และ chunk/version; snapshots แก้ไขไม่ได้. Knowledge release/config และคำถามเป็น immutable context.
+
+Backend ตรวจ approved training identity ก่อนอ่าน AI หรือ idempotency response;
+current DB ยังปฏิเสธ purpose=exam อยู่แล้ว ไม่อ้างว่า exam/submit endpoint พร้อม.
+คำถาม lock run → ticket → quota; finish ใช้ run lock เดียวกัน. Question ไม่แก้ ticket version/assessment.
+ก่อน provider/persist ตรวจ revocation; ทุก read รวม replay/export ซ่อนผลที่ใช้ withdrawn context.
+การ revoke ไม่แก้ evaluation snapshot หรือ metrics. Snapshot export มี frozen citation metadata/excerpts.
+
+Context policy v1 เลือก outcome events ก่อนแล้วเติมตาม released order ภายใน 4,000 UTF-8 bytes;
+คืน `evidence_truncated` กับ `omitted_evidence_ids`. Knowledge context จำกัด 3,000 UTF-8 bytes
+และ output 1,200 tokens. Bytes เป็น conservative upper bound ไม่อ้างว่าเป็น native tokenizer count.
+Question no_match ไม่ส่ง generation; provider/retrieval outage ไม่แก้ assessment/หยุด detector.
+Global AI capacity หมดทำให้ automatic analysis เป็น quota_exceeded แต่ ticket/detection ยัง commit.
+
+Gemini ใช้ StructuredAnalysisProvider extension ของ adapter เดิม ผ่าน LangChain Core 1.6.10;
+ไม่มี agent tools/SQL/web browsing/tracing. CI ใช้ fake profiles/generation เท่านั้น.
+Real pilot กับผลที่ยังไม่ผ่าน quality targets อยู่ใน [รายงานข้อ 14](step-14-verification.md).
+
+
+ข้อ 14 เพิ่มเติม (16 ต.ค. 2026): generation จริงมี Gemini model-tokenizer preflight รวม system/schema
+และ conservative full-request window 16k/output 1200; evidence/KB มี byte cap ที่เข้มกว่าเป็นด่านแรก.
+Count request ใช้ shared request/rate cap เดียวกับ embedding/chat แต่ counted input length ไม่ใช่ generation usage.
+Calibration ใหม่สร้าง release ใหม่ ไม่ update policy/run pin เดิม; token/latency telemetry อยู่ migration 0017.
+เกณฑ์คุณภาพยังต้องมีผู้ตรวจยืนยัน relevance/grounding ดู [คู่มือผู้ตรวจ](step-14-review-guide.md).
+Retrieval v2 ที่ได้ TH Recall@5 0.95 เป็น developer-label measurement ยังไม่ใช่ full paired answer acceptance.
+
+
+## FR-001 Google login extension — user-approved 2026-10-16
+
+Password registration ยังคงไม่ auto-login ข้อยกเว้น Google verified identity ใหม่สร้าง Analyst พร้อม quota 10 runs/20 logical AI requests ต่อวัน UTC และออก opaque SOC session ทันที Existing email ไม่ auto-merge; เจ้าของต้อง password login แล้ว reauthenticate เพื่อ explicit link Google อีเมลเดียวกันหนึ่งครั้ง เก็บ issuer/sub เป็น unique identity กับ user ID เดิม ไม่ให้ email/domain กำหนด Instructor หรือย้าย ownership/quota Google-only account ไม่มี password login; unlink/password enrollment ยังไม่อยู่ในขอบเขต
+
+Mapping: GET `/api/v1/auth/google/status`, POST `/api/v1/auth/google/start` และ GET `/api/v1/auth/google/callback` ตาม OpenAPI approved; callback single-use browser/session-bound 5 นาที พร้อม nonce/PKCE ตรวจ signature/audience/issuer/expiry/verified email และออก session ใหม่เมื่อสำเร็จ Provider failure ไม่กระทบ password login; disabled user เข้าไม่ได้ Identity transaction advisory guard มาก่อน user/session locks การ consume flow อยู่ transaction แยกก่อน external IO ไม่มี transaction ค้างรอ Google และต้องตรวจ session/expiry ซ้ำก่อนผูกบัญชี
