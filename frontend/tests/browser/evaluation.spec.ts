@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("finish training freezes evaluation and exposes the JSON export", async ({ page }) => {
+test("finish training freezes evaluation and exposes the JSON export", async ({
+  page,
+}) => {
   test.setTimeout(120000);
   const email = `evaluation-${Date.now()}@example.test`;
   const password = `Test-only-${Date.now()}-password`;
@@ -9,7 +11,9 @@ test("finish training freezes evaluation and exposes the JSON export", async ({ 
   await page.getByLabel("อีเมล", { exact: true }).fill(email);
   await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
   await page.getByRole("button", { name: "สร้างบัญชี Analyst" }).click();
-  await expect(page.getByText("สมัครสำเร็จ กรุณาเข้าสู่ระบบด้วยบัญชีของคุณ")).toBeVisible();
+  await expect(
+    page.getByText("สมัครสำเร็จ กรุณาเข้าสู่ระบบด้วยบัญชีของคุณ"),
+  ).toBeVisible();
   await page.getByRole("link", { name: "ไปเข้าสู่ระบบ" }).click();
   await page.getByLabel("อีเมล", { exact: true }).fill(email);
   await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
@@ -21,14 +25,19 @@ test("finish training freezes evaluation and exposes the JSON export", async ({ 
   await page.getByRole("button", { name: "จบรอบและประเมินผล" }).click();
   await expect(page.getByRole("link", { name: "ดูผลประเมิน" })).toBeVisible();
   await page.getByRole("link", { name: "ดูผลประเมิน" }).click();
-  await expect(page.getByRole("heading", { name: "ผลประเมินรอบฝึก" })).toBeVisible();
-  await expect(page.getByText(/Snapshot SHA-256:/)).toBeVisible({ timeout: 90000 });
-  await expect(page.getByRole("link", { name: "ดาวน์โหลด JSON snapshot" })).toHaveAttribute(
-    "href",
-    new RegExp(`/api/v1/runs/[0-9a-f-]+/export`),
-  );
+  await expect(
+    page.getByRole("heading", { name: "ผลประเมินรอบฝึก" }),
+  ).toBeVisible();
+  await expect(page.getByText(/Snapshot SHA-256:/)).toBeVisible({
+    timeout: 90000,
+  });
+  await expect(
+    page.getByRole("link", { name: "ดาวน์โหลด JSON snapshot" }),
+  ).toHaveAttribute("href", new RegExp(`/api/v1/runs/[0-9a-f-]+/export`));
   const exportResponse = await page.request.get(
-    await page.getByRole("link", { name: "ดาวน์โหลด JSON snapshot" }).getAttribute("href") ?? "",
+    (await page
+      .getByRole("link", { name: "ดาวน์โหลด JSON snapshot" })
+      .getAttribute("href")) ?? "",
   );
   expect(exportResponse.status()).toBe(200);
   const exported = await exportResponse.json();

@@ -7,8 +7,14 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   async rewrites() {
     return [
-      { source: "/api/v1/:path*", destination: `${backendOrigin}/api/v1/:path*` },
-      { source: "/health/:path*", destination: `${backendOrigin}/health/:path*` },
+      {
+        source: "/api/v1/:path*",
+        destination: `${backendOrigin}/api/v1/:path*`,
+      },
+      {
+        source: "/health/:path*",
+        destination: `${backendOrigin}/health/:path*`,
+      },
     ];
   },
 };
