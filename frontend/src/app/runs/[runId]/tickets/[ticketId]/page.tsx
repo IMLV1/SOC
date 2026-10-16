@@ -4,7 +4,14 @@ import { Assistant } from "../../../../../features/assistant";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, read, write } from "../../../../../lib/api";
-import type { Assessment, Event, Note, Run, Ticket, TicketTimelineEntry } from "../../../../../lib/run-types";
+import type {
+  Assessment,
+  Event,
+  Note,
+  Run,
+  Ticket,
+  TicketTimelineEntry,
+} from "../../../../../lib/run-types";
 import { useSession } from "../../../../session-provider";
 
 export default function TicketPage() {
@@ -30,199 +37,604 @@ export default function TicketPage() {
   const [newNote, setNewNote] = useState("");
   const [newNoteEvidence, setNewNoteEvidence] = useState<string[]>([]);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
-  const [noteEvidenceDrafts, setNoteEvidenceDrafts] = useState<Record<string, string[]>>({});
-  const load = useCallback(async (preserveDraft = false) => {
-    setLoading(true);
-    try {
-      const currentRun = await read<Run>(`/runs/${runId}`);
-      setRun(currentRun);
-      if (isNew) {
-        const released = await read<Event[]>(`/runs/${runId}/events?limit=100`);
-        setEvents(released);
-      } else {
-        const [currentTicket, currentNotes, history, currentTimeline] = await Promise.all([
-          read<Ticket>(`/runs/${runId}/tickets/${ticketId}`),
-          read<Note[]>(`/runs/${runId}/tickets/${ticketId}/notes?deleted=true`),
-          read<Assessment[]>(`/runs/${runId}/tickets/${ticketId}/assessments`),
-          read<TicketTimelineEntry[]>(`/runs/${runId}/tickets/${ticketId}/timeline`),
-        ]);
-        setTicket(currentTicket); setNotes(currentNotes); setAssessments(history); setTimeline(currentTimeline);
-        if (!preserveDraft) {
-          setTitle(currentTicket.title); setSeverity(currentTicket.severity);
-          setStatus(currentTicket.status);
-          setDisposition("");
-          setNoteDrafts(Object.fromEntries(currentNotes.map(item => [item.id, item.body])));
-          setNoteEvidenceDrafts(Object.fromEntries(currentNotes.map(item => [item.id, item.evidence_ids])));
+  const [noteEvidenceDrafts, setNoteEvidenceDrafts] = useState<
+    Record<string, string[]>
+  >({});
+  const load = useCallback(
+    async (preserveDraft = false) => {
+      setLoading(true);
+      try {
+        const currentRun = await read<Run>(`/runs/${runId}`);
+        setRun(currentRun);
+        if (isNew) {
+          const released = await read<Event[]>(
+            `/runs/${runId}/events?limit=100`,
+          );
+          setEvents(released);
+        } else {
+          const [currentTicket, currentNotes, history, currentTimeline] =
+            await Promise.all([
+              read<Ticket>(`/runs/${runId}/tickets/${ticketId}`),
+              read<Note[]>(
+                `/runs/${runId}/tickets/${ticketId}/notes?deleted=true`,
+              ),
+              read<Assessment[]>(
+                `/runs/${runId}/tickets/${ticketId}/assessments`,
+              ),
+              read<TicketTimelineEntry[]>(
+                `/runs/${runId}/tickets/${ticketId}/timeline`,
+              ),
+            ]);
+          setTicket(currentTicket);
+          setNotes(currentNotes);
+          setAssessments(history);
+          setTimeline(currentTimeline);
+          if (!preserveDraft) {
+            setTitle(currentTicket.title);
+            setSeverity(currentTicket.severity);
+            setStatus(currentTicket.status);
+            setDisposition("");
+            setNoteDrafts(
+              Object.fromEntries(
+                currentNotes.map((item) => [item.id, item.body]),
+              ),
+            );
+            setNoteEvidenceDrafts(
+              Object.fromEntries(
+                currentNotes.map((item) => [item.id, item.evidence_ids]),
+              ),
+            );
+          }
         }
+        setMessage("");
+      } catch (error) {
+        setMessage(
+          error instanceof ApiError && error.status === 401
+            ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
+            : "โหลด ticket ไม่สำเร็จ",
+        );
+      } finally {
+        setLoading(false);
       }
-      setMessage("");
-    } catch (error) {
-      setMessage(error instanceof ApiError && error.status === 401 ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง" : "โหลด ticket ไม่สำเร็จ");
-    } finally { setLoading(false); }
-  }, [runId, ticketId, isNew]);
+    },
+    [runId, ticketId, isNew],
+  );
   useEffect(() => {
     if (!session) return;
     const timer = setTimeout(() => void load(), 0);
     return () => clearTimeout(timer);
   }, [session, load]);
-  const mutable = !loading && run && ["running", "paused", "reviewing"].includes(run.status);
+  const mutable =
+    !loading && run && ["running", "paused", "reviewing"].includes(run.status);
   function errorMessage(error: unknown) {
-    if (error instanceof ApiError && error.status === 409) return "ข้อมูลถูกแก้ไขหรือรอบถูกล็อกแล้ว ร่างของคุณยังอยู่ กดโหลดเวอร์ชันล่าสุดเพื่อตรวจเปรียบเทียบ";
-    if (error instanceof ApiError && error.status === 401) return "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง";
+    if (error instanceof ApiError && error.status === 409)
+      return "ข้อมูลถูกแก้ไขหรือรอบถูกล็อกแล้ว ร่างของคุณยังอยู่ กดโหลดเวอร์ชันล่าสุดเพื่อตรวจเปรียบเทียบ";
+    if (error instanceof ApiError && error.status === 401)
+      return "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง";
     return "บันทึกไม่สำเร็จ กรุณาตรวจข้อมูลและลองใหม่";
   }
   async function createTicket() {
-    setBusy(true); setMessage("");
+    setBusy(true);
+    setMessage("");
     try {
-      const created = await write<Ticket>(`/runs/${runId}/tickets`,
+      const created = await write<Ticket>(
+        `/runs/${runId}/tickets`,
         { title, severity, evidence_ids: selectedEvidence, reason },
-        { idempotencyKey: crypto.randomUUID() });
+        { idempotencyKey: crypto.randomUUID() },
+      );
       router.replace(`/runs/${runId}/tickets/${created.id}`);
-    } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
+    } catch (error) {
+      setMessage(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
   }
   async function saveTicket() {
     if (!ticket) return;
-    setBusy(true); setMessage("");
+    setBusy(true);
+    setMessage("");
     try {
-      const updated = await write<Ticket>(`/runs/${runId}/tickets/${ticket.id}`,
-        { expected_version: ticket.version, title, severity, status,
-          ...(disposition ? { disposition } : {}), reason }, { method: "PATCH" });
+      const updated = await write<Ticket>(
+        `/runs/${runId}/tickets/${ticket.id}`,
+        {
+          expected_version: ticket.version,
+          title,
+          severity,
+          status,
+          ...(disposition ? { disposition } : {}),
+          reason,
+        },
+        { method: "PATCH" },
+      );
       setTicket(updated);
       // Render the revision returned atomically with the update before refreshing
       // the history list, so the saved assessment is immediately visible.
       const savedAssessment = updated.latest_assessment;
       if (disposition && savedAssessment) {
-        setAssessments(current => [
-          ...current.filter(item => item.id !== savedAssessment.id),
-          savedAssessment,
-        ].sort((left, right) => left.revision - right.revision));
+        setAssessments((current) =>
+          [
+            ...current.filter((item) => item.id !== savedAssessment.id),
+            savedAssessment,
+          ].sort((left, right) => left.revision - right.revision),
+        );
       }
-      const history = await read<Assessment[]>(`/runs/${runId}/tickets/${ticket.id}/assessments`);
-      setAssessments(current => {
-        const byId = new Map(current.map(item => [item.id, item]));
+      const history = await read<Assessment[]>(
+        `/runs/${runId}/tickets/${ticket.id}/assessments`,
+      );
+      setAssessments((current) => {
+        const byId = new Map(current.map((item) => [item.id, item]));
         for (const item of history) byId.set(item.id, item);
-        return [...byId.values()].sort((left, right) => left.revision - right.revision);
+        return [...byId.values()].sort(
+          (left, right) => left.revision - right.revision,
+        );
       });
-      setReason(""); setDisposition("");
-    } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
+      setReason("");
+      setDisposition("");
+    } catch (error) {
+      setMessage(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
   }
   async function changeDeleted(restore: boolean) {
     if (!ticket) return;
-    if (!restore && !window.confirm("ลบ ticket แบบ soft delete? กู้คืนได้ก่อนรอบถูกล็อก")) return;
-    setBusy(true); setMessage("");
+    if (
+      !restore &&
+      !window.confirm("ลบ ticket แบบ soft delete? กู้คืนได้ก่อนรอบถูกล็อก")
+    )
+      return;
+    setBusy(true);
+    setMessage("");
     try {
-      const updated = await write<Ticket>(`/runs/${runId}/tickets/${ticket.id}${restore ? "/restore" : ""}`,
-        { expected_version: ticket.version, reason }, { method: restore ? "POST" : "DELETE" });
-      setTicket(updated); setReason("");
-    } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
+      const updated = await write<Ticket>(
+        `/runs/${runId}/tickets/${ticket.id}${restore ? "/restore" : ""}`,
+        { expected_version: ticket.version, reason },
+        { method: restore ? "POST" : "DELETE" },
+      );
+      setTicket(updated);
+      setReason("");
+    } catch (error) {
+      setMessage(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
   }
   async function addNote() {
     if (!ticket) return;
-    setBusy(true); setMessage("");
+    setBusy(true);
+    setMessage("");
     try {
-      const item = await write<Note>(`/runs/${runId}/tickets/${ticket.id}/notes`,
+      const item = await write<Note>(
+        `/runs/${runId}/tickets/${ticket.id}/notes`,
         { body: newNote, evidence_ids: newNoteEvidence },
-        { idempotencyKey: crypto.randomUUID() });
-      setNotes(current => [...current, item]); setNewNote("");
-      setNoteDrafts(current => ({ ...current, [item.id]: item.body }));
-      setNoteEvidenceDrafts(current => ({ ...current, [item.id]: item.evidence_ids }));
+        { idempotencyKey: crypto.randomUUID() },
+      );
+      setNotes((current) => [...current, item]);
+      setNewNote("");
+      setNoteDrafts((current) => ({ ...current, [item.id]: item.body }));
+      setNoteEvidenceDrafts((current) => ({
+        ...current,
+        [item.id]: item.evidence_ids,
+      }));
       setNewNoteEvidence([]);
-    } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
+    } catch (error) {
+      setMessage(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
   }
   async function changeNote(note: Note, action: "edit" | "delete" | "restore") {
     if (!ticket) return;
-    setBusy(true); setMessage("");
+    setBusy(true);
+    setMessage("");
     try {
       const path = `/runs/${runId}/tickets/${ticket.id}/notes/${note.id}`;
-      const updated = await write<Note>(path + (action === "restore" ? "/restore" : ""),
-        action === "edit" ? { expected_version: note.version, body: noteDrafts[note.id],
-                               evidence_ids: noteEvidenceDrafts[note.id] ?? note.evidence_ids,
-                               reason: reason || "แก้ไขบันทึก" } :
-                            { expected_version: note.version, reason: reason || "เปลี่ยนสถานะบันทึก" },
-        { method: action === "edit" ? "PATCH" : action === "delete" ? "DELETE" : "POST" });
-      setNotes(current => current.map(item => item.id === note.id ? updated : item));
-      setNoteEvidenceDrafts(current => ({ ...current, [note.id]: updated.evidence_ids }));
+      const updated = await write<Note>(
+        path + (action === "restore" ? "/restore" : ""),
+        action === "edit"
+          ? {
+              expected_version: note.version,
+              body: noteDrafts[note.id],
+              evidence_ids: noteEvidenceDrafts[note.id] ?? note.evidence_ids,
+              reason: reason || "แก้ไขบันทึก",
+            }
+          : {
+              expected_version: note.version,
+              reason: reason || "เปลี่ยนสถานะบันทึก",
+            },
+        {
+          method:
+            action === "edit"
+              ? "PATCH"
+              : action === "delete"
+                ? "DELETE"
+                : "POST",
+        },
+      );
+      setNotes((current) =>
+        current.map((item) => (item.id === note.id ? updated : item)),
+      );
+      setNoteEvidenceDrafts((current) => ({
+        ...current,
+        [note.id]: updated.evidence_ids,
+      }));
       setReason("");
-    } catch (error) { setMessage(errorMessage(error)); } finally { setBusy(false); }
+    } catch (error) {
+      setMessage(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
   }
-  return <main className="run-shell">
-    <div className="run-topline"><Link href={`/runs/${runId}`}>กลับไปรอบฝึก</Link><span>03 — Investigation</span></div>
-    <h1>{isNew ? "สร้าง ticket" : ticket?.title || "Ticket"}</h1>
-    {sessionLoading ? <p role="status">กำลังตรวจบัญชี…</p> : !session ? <p><Link href="/login">เข้าสู่ระบบเพื่อสืบสวน</Link></p> : <>
-      {loading && <p role="status">กำลังโหลด…</p>}
-      {message && <p role="alert" className="run-alert">{message} {!isNew && <button type="button" onClick={() => void load(true)}>โหลดเวอร์ชันล่าสุด</button>}</p>}
-      {run && <p className="run-muted">รอบ {run.status} · {mutable ? "แก้ไขได้" : "อ่านได้อย่างเดียวหลังเริ่มปิดรอบ"}</p>}
-      {isNew ? <section className="run-panel">
-        <label>หัวข้อ<input value={title} onChange={event => setTitle(event.target.value)} maxLength={120} /></label>
-        <label>ความรุนแรง<select value={severity} onChange={event => setSeverity(event.target.value)}>
-          {["low", "medium", "high", "critical"].map(value => <option key={value}>{value}</option>)}
-        </select></label>
-        <fieldset><legend>เลือกหลักฐานอย่างน้อยหนึ่งรายการ</legend>{events.map(item => <label key={item.id}>
-          <input type="checkbox" checked={selectedEvidence.includes(item.id)} onChange={event => setSelectedEvidence(current =>
-            event.target.checked ? [...current, item.id] : current.filter(id => id !== item.id))} />
-          #{item.release_seq} · {item.source} · {item.asset_id}
-        </label>)}</fieldset>
-        <label>เหตุผล<textarea value={reason} onChange={event => setReason(event.target.value)} maxLength={2000} /></label>
-        <button disabled={!mutable || busy || !title.trim() || !reason.trim() || selectedEvidence.length === 0}
-                onClick={() => void createTicket()}>สร้าง ticket</button>
-      </section> : ticket && <>
-        <section className="run-panel"><h2>ข้อสรุปของผู้วิเคราะห์</h2>
-          <p>ต้นทาง {ticket.origin} · severity {ticket.severity} · สถานะ {ticket.status} · version {ticket.version}</p>
-          <p>หลักฐาน {ticket.evidence_ids.length} รายการ: {ticket.evidence_ids.join(", ")}</p>
-          {ticket.deleted_at && <p className="run-alert">Ticket ถูกลบแบบ soft delete · {ticket.deleted_at}</p>}
-          <label>หัวข้อ<input value={title} onChange={event => setTitle(event.target.value)} maxLength={120} disabled={!mutable || !!ticket.deleted_at} /></label>
-          <label>ความรุนแรง<select value={severity} onChange={event => setSeverity(event.target.value)} disabled={!mutable || !!ticket.deleted_at}>
-            {["low", "medium", "high", "critical"].map(value => <option key={value}>{value}</option>)}
-          </select></label>
-          <label>สถานะ<select value={status} onChange={event => setStatus(event.target.value)} disabled={!mutable || !!ticket.deleted_at}>
-            {["open", "investigating", "resolved", "closed"].map(value => <option key={value}>{value}</option>)}
-          </select></label>
-          <label>ประเมิน<select value={disposition} onChange={event => setDisposition(event.target.value)} disabled={!mutable || !!ticket.deleted_at}>
-            <option value="">ยังไม่สรุปใหม่</option><option value="true_positive">ภัยจริง</option>
-            <option value="false_positive">ไม่ใช่ภัย</option><option value="undetermined">ยังไม่แน่ใจ</option>
-          </select></label>
-          <label>เหตุผล<textarea value={reason} onChange={event => setReason(event.target.value)} maxLength={2000} disabled={!mutable} /></label>
-          <div className="run-button-row"><button disabled={!mutable || busy || !!ticket.deleted_at || !reason.trim()} onClick={() => void saveTicket()}>บันทึก</button>
-            {ticket.deleted_at ? <button disabled={!mutable || busy || !reason.trim()} onClick={() => void changeDeleted(true)}>กู้คืน</button> :
-              <button disabled={!mutable || busy || !reason.trim()} onClick={() => void changeDeleted(false)}>ลบแบบกู้คืนได้</button>}</div>
-        </section>
-        <div className="evidence-layout"><section className="run-panel"><h2>ประวัติการประเมิน</h2>
-          {assessments.length === 0 ? <p>ยังไม่มีข้อสรุป</p> : <ol>{assessments.map(item =>
-            <li key={item.id}>ครั้งที่ {item.revision} · {item.disposition} · {item.reason}</li>)}</ol>}
-        </section><section className="run-panel"><h2>บันทึก</h2>
-          {notes.length === 0 ? <p>ยังไม่มีบันทึก</p> : notes.map(note => <div className="note-card" key={note.id}>
-            <p>Version {note.version} · {note.deleted_at ? "ถูกลบ" : "ใช้งาน"} · หลักฐาน {note.evidence_ids.length}</p>
-            <textarea value={noteDrafts[note.id] ?? note.body} disabled={!mutable || !!note.deleted_at}
-                      onChange={event => setNoteDrafts(current => ({ ...current, [note.id]: event.target.value }))} />
-            <fieldset disabled={!mutable || !!note.deleted_at}>
-              <legend>หลักฐานของบันทึก</legend>{ticket.evidence_ids.map(id => {
-                const event = events.find(item => item.id === id);
-                const selected = noteEvidenceDrafts[note.id] ?? note.evidence_ids;
-                return <label key={id}><input type="checkbox" checked={selected.includes(id)} onChange={change =>
-                  setNoteEvidenceDrafts(current => ({ ...current, [note.id]: change.target.checked ? [...selected, id] : selected.filter(value => value !== id) }))} />
-                  {event ? `#${event.release_seq} · ${event.source} · ${event.asset_id}` : id}</label>;
-              })}</fieldset>
-            <div className="run-button-row">{note.deleted_at ? <button disabled={!mutable || busy} onClick={() => void changeNote(note, "restore")}>กู้คืน</button> : <>
-              <button disabled={!mutable || busy} onClick={() => void changeNote(note, "edit")}>แก้บันทึก</button>
-              <button disabled={!mutable || busy} onClick={() => void changeNote(note, "delete")}>ลบบันทึก</button></>}
-            <Link href={`/runs/${runId}/tickets/${ticket.id}/notes/${note.id}/versions`}>ดูประวัติ</Link></div>
-          </div>)}
-          <label>บันทึกใหม่<textarea value={newNote} onChange={event => setNewNote(event.target.value)} maxLength={2000} disabled={!mutable || !!ticket.deleted_at} /></label>
-          <fieldset disabled={!mutable || !!ticket.deleted_at}>
-            <legend>เลือกหลักฐานของบันทึก</legend>{ticket.evidence_ids.map(id => {
-              const event = events.find(item => item.id === id);
-              return <label key={id}><input type="checkbox" checked={newNoteEvidence.includes(id)} onChange={change =>
-                setNewNoteEvidence(current => change.target.checked ? [...current, id] : current.filter(value => value !== id))} />
-                {event ? `#${event.release_seq} · ${event.source} · ${event.asset_id}` : id}</label>;
-            })}</fieldset>
-          <button disabled={!mutable || busy || !!ticket.deleted_at || !newNote.trim()} onClick={() => void addNote()}>เพิ่มบันทึก</button>
-        </section></div>
-        <Assistant runId={runId} ticket={ticket} mutable={!!mutable} />
-        <section className="run-panel"><h2>Timeline</h2>
-          {timeline.length === 0 ? <p>ยังไม่มีประวัติ</p> : <ol>{timeline.map(item =>
-            <li key={`${item.kind}-${item.id}`}>{item.kind} · {item.action} · {new Date(item.occurred_at).toLocaleString("th-TH")}{item.event_id ? ` · event ${item.event_id}` : ""}</li>)}</ol>}
-        </section>
-      </>}
-    </>}
-  </main>;
+  return (
+    <main className="run-shell">
+      <div className="run-topline">
+        <Link href={`/runs/${runId}`}>กลับไปรอบฝึก</Link>
+        <span>03 — Investigation</span>
+      </div>
+      <h1>{isNew ? "สร้าง ticket" : ticket?.title || "Ticket"}</h1>
+      {sessionLoading ? (
+        <p role="status">กำลังตรวจบัญชี…</p>
+      ) : !session ? (
+        <p>
+          <Link href="/login">เข้าสู่ระบบเพื่อสืบสวน</Link>
+        </p>
+      ) : (
+        <>
+          {loading && <p role="status">กำลังโหลด…</p>}
+          {message && (
+            <p role="alert" className="run-alert">
+              {message}{" "}
+              {!isNew && (
+                <button type="button" onClick={() => void load(true)}>
+                  โหลดเวอร์ชันล่าสุด
+                </button>
+              )}
+            </p>
+          )}
+          {run && (
+            <p className="run-muted">
+              รอบ {run.status} ·{" "}
+              {mutable ? "แก้ไขได้" : "อ่านได้อย่างเดียวหลังเริ่มปิดรอบ"}
+            </p>
+          )}
+          {isNew ? (
+            <section className="run-panel">
+              <label>
+                หัวข้อ
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  maxLength={120}
+                />
+              </label>
+              <label>
+                ความรุนแรง
+                <select
+                  value={severity}
+                  onChange={(event) => setSeverity(event.target.value)}
+                >
+                  {["low", "medium", "high", "critical"].map((value) => (
+                    <option key={value}>{value}</option>
+                  ))}
+                </select>
+              </label>
+              <fieldset>
+                <legend>เลือกหลักฐานอย่างน้อยหนึ่งรายการ</legend>
+                {events.map((item) => (
+                  <label key={item.id}>
+                    <input
+                      type="checkbox"
+                      checked={selectedEvidence.includes(item.id)}
+                      onChange={(event) =>
+                        setSelectedEvidence((current) =>
+                          event.target.checked
+                            ? [...current, item.id]
+                            : current.filter((id) => id !== item.id),
+                        )
+                      }
+                    />
+                    #{item.release_seq} · {item.source} · {item.asset_id}
+                  </label>
+                ))}
+              </fieldset>
+              <label>
+                เหตุผล
+                <textarea
+                  value={reason}
+                  onChange={(event) => setReason(event.target.value)}
+                  maxLength={2000}
+                />
+              </label>
+              <button
+                disabled={
+                  !mutable ||
+                  busy ||
+                  !title.trim() ||
+                  !reason.trim() ||
+                  selectedEvidence.length === 0
+                }
+                onClick={() => void createTicket()}
+              >
+                สร้าง ticket
+              </button>
+            </section>
+          ) : (
+            ticket && (
+              <>
+                <section className="run-panel">
+                  <h2>ข้อสรุปของผู้วิเคราะห์</h2>
+                  <p>
+                    ต้นทาง {ticket.origin} · severity {ticket.severity} · สถานะ{" "}
+                    {ticket.status} · version {ticket.version}
+                  </p>
+                  <p>
+                    หลักฐาน {ticket.evidence_ids.length} รายการ:{" "}
+                    {ticket.evidence_ids.join(", ")}
+                  </p>
+                  {ticket.deleted_at && (
+                    <p className="run-alert">
+                      Ticket ถูกลบแบบ soft delete · {ticket.deleted_at}
+                    </p>
+                  )}
+                  <label>
+                    หัวข้อ
+                    <input
+                      value={title}
+                      onChange={(event) => setTitle(event.target.value)}
+                      maxLength={120}
+                      disabled={!mutable || !!ticket.deleted_at}
+                    />
+                  </label>
+                  <label>
+                    ความรุนแรง
+                    <select
+                      value={severity}
+                      onChange={(event) => setSeverity(event.target.value)}
+                      disabled={!mutable || !!ticket.deleted_at}
+                    >
+                      {["low", "medium", "high", "critical"].map((value) => (
+                        <option key={value}>{value}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    สถานะ
+                    <select
+                      value={status}
+                      onChange={(event) => setStatus(event.target.value)}
+                      disabled={!mutable || !!ticket.deleted_at}
+                    >
+                      {["open", "investigating", "resolved", "closed"].map(
+                        (value) => (
+                          <option key={value}>{value}</option>
+                        ),
+                      )}
+                    </select>
+                  </label>
+                  <label>
+                    ประเมิน
+                    <select
+                      value={disposition}
+                      onChange={(event) => setDisposition(event.target.value)}
+                      disabled={!mutable || !!ticket.deleted_at}
+                    >
+                      <option value="">ยังไม่สรุปใหม่</option>
+                      <option value="true_positive">ภัยจริง</option>
+                      <option value="false_positive">ไม่ใช่ภัย</option>
+                      <option value="undetermined">ยังไม่แน่ใจ</option>
+                    </select>
+                  </label>
+                  <label>
+                    เหตุผล
+                    <textarea
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      maxLength={2000}
+                      disabled={!mutable}
+                    />
+                  </label>
+                  <div className="run-button-row">
+                    <button
+                      disabled={
+                        !mutable ||
+                        busy ||
+                        !!ticket.deleted_at ||
+                        !reason.trim()
+                      }
+                      onClick={() => void saveTicket()}
+                    >
+                      บันทึก
+                    </button>
+                    {ticket.deleted_at ? (
+                      <button
+                        disabled={!mutable || busy || !reason.trim()}
+                        onClick={() => void changeDeleted(true)}
+                      >
+                        กู้คืน
+                      </button>
+                    ) : (
+                      <button
+                        disabled={!mutable || busy || !reason.trim()}
+                        onClick={() => void changeDeleted(false)}
+                      >
+                        ลบแบบกู้คืนได้
+                      </button>
+                    )}
+                  </div>
+                </section>
+                <div className="evidence-layout">
+                  <section className="run-panel">
+                    <h2>ประวัติการประเมิน</h2>
+                    {assessments.length === 0 ? (
+                      <p>ยังไม่มีข้อสรุป</p>
+                    ) : (
+                      <ol>
+                        {assessments.map((item) => (
+                          <li key={item.id}>
+                            ครั้งที่ {item.revision} · {item.disposition} ·{" "}
+                            {item.reason}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </section>
+                  <section className="run-panel">
+                    <h2>บันทึก</h2>
+                    {notes.length === 0 ? (
+                      <p>ยังไม่มีบันทึก</p>
+                    ) : (
+                      notes.map((note) => (
+                        <div className="note-card" key={note.id}>
+                          <p>
+                            Version {note.version} ·{" "}
+                            {note.deleted_at ? "ถูกลบ" : "ใช้งาน"} · หลักฐาน{" "}
+                            {note.evidence_ids.length}
+                          </p>
+                          <textarea
+                            value={noteDrafts[note.id] ?? note.body}
+                            disabled={!mutable || !!note.deleted_at}
+                            onChange={(event) =>
+                              setNoteDrafts((current) => ({
+                                ...current,
+                                [note.id]: event.target.value,
+                              }))
+                            }
+                          />
+                          <fieldset disabled={!mutable || !!note.deleted_at}>
+                            <legend>หลักฐานของบันทึก</legend>
+                            {ticket.evidence_ids.map((id) => {
+                              const event = events.find(
+                                (item) => item.id === id,
+                              );
+                              const selected =
+                                noteEvidenceDrafts[note.id] ??
+                                note.evidence_ids;
+                              return (
+                                <label key={id}>
+                                  <input
+                                    type="checkbox"
+                                    checked={selected.includes(id)}
+                                    onChange={(change) =>
+                                      setNoteEvidenceDrafts((current) => ({
+                                        ...current,
+                                        [note.id]: change.target.checked
+                                          ? [...selected, id]
+                                          : selected.filter(
+                                              (value) => value !== id,
+                                            ),
+                                      }))
+                                    }
+                                  />
+                                  {event
+                                    ? `#${event.release_seq} · ${event.source} · ${event.asset_id}`
+                                    : id}
+                                </label>
+                              );
+                            })}
+                          </fieldset>
+                          <div className="run-button-row">
+                            {note.deleted_at ? (
+                              <button
+                                disabled={!mutable || busy}
+                                onClick={() => void changeNote(note, "restore")}
+                              >
+                                กู้คืน
+                              </button>
+                            ) : (
+                              <>
+                                <button
+                                  disabled={!mutable || busy}
+                                  onClick={() => void changeNote(note, "edit")}
+                                >
+                                  แก้บันทึก
+                                </button>
+                                <button
+                                  disabled={!mutable || busy}
+                                  onClick={() =>
+                                    void changeNote(note, "delete")
+                                  }
+                                >
+                                  ลบบันทึก
+                                </button>
+                              </>
+                            )}
+                            <Link
+                              href={`/runs/${runId}/tickets/${ticket.id}/notes/${note.id}/versions`}
+                            >
+                              ดูประวัติ
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    <label>
+                      บันทึกใหม่
+                      <textarea
+                        value={newNote}
+                        onChange={(event) => setNewNote(event.target.value)}
+                        maxLength={2000}
+                        disabled={!mutable || !!ticket.deleted_at}
+                      />
+                    </label>
+                    <fieldset disabled={!mutable || !!ticket.deleted_at}>
+                      <legend>เลือกหลักฐานของบันทึก</legend>
+                      {ticket.evidence_ids.map((id) => {
+                        const event = events.find((item) => item.id === id);
+                        return (
+                          <label key={id}>
+                            <input
+                              type="checkbox"
+                              checked={newNoteEvidence.includes(id)}
+                              onChange={(change) =>
+                                setNewNoteEvidence((current) =>
+                                  change.target.checked
+                                    ? [...current, id]
+                                    : current.filter((value) => value !== id),
+                                )
+                              }
+                            />
+                            {event
+                              ? `#${event.release_seq} · ${event.source} · ${event.asset_id}`
+                              : id}
+                          </label>
+                        );
+                      })}
+                    </fieldset>
+                    <button
+                      disabled={
+                        !mutable ||
+                        busy ||
+                        !!ticket.deleted_at ||
+                        !newNote.trim()
+                      }
+                      onClick={() => void addNote()}
+                    >
+                      เพิ่มบันทึก
+                    </button>
+                  </section>
+                </div>
+                <Assistant runId={runId} ticket={ticket} mutable={!!mutable} />
+                <section className="run-panel">
+                  <h2>Timeline</h2>
+                  {timeline.length === 0 ? (
+                    <p>ยังไม่มีประวัติ</p>
+                  ) : (
+                    <ol>
+                      {timeline.map((item) => (
+                        <li key={`${item.kind}-${item.id}`}>
+                          {item.kind} · {item.action} ·{" "}
+                          {new Date(item.occurred_at).toLocaleString("th-TH")}
+                          {item.event_id ? ` · event ${item.event_id}` : ""}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </section>
+              </>
+            )
+          )}
+        </>
+      )}
+    </main>
+  );
 }

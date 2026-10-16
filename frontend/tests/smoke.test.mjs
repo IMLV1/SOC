@@ -9,13 +9,21 @@ test("landing page loads without fixture assets or client secrets", async () => 
   const html = await response.text();
   assert.match(html, /SOC LEARNING LAB/);
   assert.match(html, /ยังไม่เปิดให้สอบจริง/);
-  assert.doesNotMatch(html, /@demo\.test|localStorage|ground.truth|private_key/);
-  const scripts = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1]);
+  assert.doesNotMatch(
+    html,
+    /@demo\.test|localStorage|ground.truth|private_key/,
+  );
+  const scripts = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(
+    (m) => m[1],
+  );
   assert.ok(scripts.length > 0);
   for (const path of scripts) {
     const asset = await fetch(new URL(path, origin));
     assert.equal(asset.status, 200);
-    assert.doesNotMatch(await asset.text(), /@demo\.test|private_key_ref|e1c99650-03ec/);
+    assert.doesNotMatch(
+      await asset.text(),
+      /@demo\.test|private_key_ref|e1c99650-03ec/,
+    );
   }
 });
 

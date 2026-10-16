@@ -1,29 +1,62 @@
 import { test, expect } from "@playwright/test";
 
-test("Guest catalog shows public metadata without exam controls", async ({ page }) => {
+test("Guest catalog shows public metadata without exam controls", async ({
+  page,
+}) => {
   for (const width of [375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/scenarios");
-    await expect(page.getByRole("heading", { name: "สถานการณ์ฝึก" })).toBeVisible();
-    await expect(page.getByText("ข้อสอบจริงยังไม่เปิด", { exact: false })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "สถานการณ์ฝึก" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("ข้อสอบจริงยังไม่เปิด", { exact: false }),
+    ).toBeVisible();
     await expect(page.locator("article")).toHaveCount(1);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
   }
   const response = await page.request.get("/api/v1/scenarios");
   expect(response.status()).toBe(200);
-  expect(await response.text()).not.toMatch(/fixture|rubric|threat_label|SIM-T-204|records\/export/);
+  expect(await response.text()).not.toMatch(
+    /fixture|rubric|threat_label|SIM-T-204|records\/export/,
+  );
   const scenarios = (await response.json()).data;
-  expect((await page.request.post("/api/v1/runs", { data: { scenario_ids: [scenarios[0].id], mode: "exam" } })).status()).toBe(422);
-  expect((await page.request.post("/api/v1/levels/00000000-0000-4000-8000-000000000005/attempts", { data: { scenario_ids: [scenarios[0].id], mode: "exam" } })).status()).toBe(404);
+  expect(
+    (
+      await page.request.post("/api/v1/runs", {
+        data: { scenario_ids: [scenarios[0].id], mode: "exam" },
+      })
+    ).status(),
+  ).toBe(422);
+  expect(
+    (
+      await page.request.post(
+        "/api/v1/levels/00000000-0000-4000-8000-000000000005/attempts",
+        { data: { scenario_ids: [scenarios[0].id], mode: "exam" } },
+      )
+    ).status(),
+  ).toBe(404);
 });
 
 test("catalog loading, failure, retry and empty states", async ({ page }) => {
   let respond: (() => Promise<void>) | undefined;
   let mode = "loading";
-  await page.route("**/api/v1/scenarios", async route => {
+  await page.route("**/api/v1/scenarios", async (route) => {
     if (mode === "loading") {
-      await new Promise<void>(resolve => { respond = async () => { await route.fulfill({ status: 503, json: {} }); resolve(); }; });
-    } else await route.fulfill({ json: { data: [], meta: { request_id: "test", next_cursor: null } } });
+      await new Promise<void>((resolve) => {
+        respond = async () => {
+          await route.fulfill({ status: 503, json: {} });
+          resolve();
+        };
+      });
+    } else
+      await route.fulfill({
+        json: { data: [], meta: { request_id: "test", next_cursor: null } },
+      });
   });
   await page.goto("/scenarios");
   await expect(page.getByText("กำลังโหลดสถานการณ์…")).toBeVisible();
