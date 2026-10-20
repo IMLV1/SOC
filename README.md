@@ -1,33 +1,38 @@
 # Sentinel SOC Learning Lab
 
-เว็บต้นแบบสำหรับเรียนรู้การสืบสวนเหตุการณ์ Security Operations Center (SOC) จากข้อมูลจำลอง ผู้เริ่มต้นเรียนวิธีอ่าน request/response ทีละจุด ก่อนทำเคสทดสอบเพื่อเลื่อนระดับ **เริ่มต้น → กลาง → ชำนาญ**
+โครงการนี้เป็นเว็บฝึกอ่านและสืบสวนเหตุการณ์ SOC ด้วยข้อมูลจำลอง ผู้เรียนดูหลักฐาน เช่น HTTP request, response และ log แล้วฝึกอธิบายว่าเกิดอะไรขึ้น หลักฐานใดรองรับข้อสรุป และยังสรุปอะไรไม่ได้
 
-## เปิด prototype ในเครื่อง
+## สถานะปัจจุบัน
 
-ต้องมี Node.js จากโฟลเดอร์ repository:
+ระบบมีทั้ง prototype และเว็บแอปที่พัฒนาแยกกัน เว็บแอปใช้ Next.js, FastAPI และ PostgreSQL มีระบบบัญชี บทเรียน รอบฝึก ตัวตรวจจับ Ticket การวิเคราะห์ และข้อสอบที่ Instructor ตรวจได้. AI runtime ใช้ mock จนกว่า Dify integration จะผ่านการตรวจรับ
+
+## ขอบเขต RAG ที่ต้องเข้าใจให้ตรงกัน
+
+ทิศทางผลิตภัณฑ์ที่ผู้ใช้ยืนยันคือใช้บริการ RAG ภายนอก โดยระบุ Dify และให้ repository เรียกบริการผ่าน API เท่านั้น ไม่ควรอธิบายว่าทีมสร้างระบบ RAG เอง
+
+อย่างไรก็ตาม source เคยมี pipeline ภายในและ Gemini adapter; ปิดเส้นทาง Gemini ใน runtime ปัจจุบันแล้ว. เพิ่ม Dify Chat API client ฝั่ง backend แต่ยังไม่ได้ต่อเข้ากับ worker; ไม่มี Base URL/API key ในเครื่องและยังไม่มีการเรียกจริง. จึงยังไม่ถือว่าเชื่อมบริการภายนอกพร้อมแล้ว
+
+การทดสอบในเครื่องไม่ได้แปลว่าเปิดใช้บน staging หรือ production แล้ว ข้อ 14 ยังรอการตรวจคุณภาพและการกระทบยอดการเรียก provider ที่ไม่ทราบผล 6 ครั้ง ส่วนข้อ 18–19 ยังขาดหลักฐาน staging, rollback และ backup/restore ดู [รายการงานและสถานะ](docs/implementation-checklist.md)
+
+## เริ่มดูได้สองแบบ
+
+### เปิด prototype
+
+Prototype ใช้ HTML/CSS/JavaScript และข้อมูลตัวอย่างใน browser ไม่ต้องมีฐานข้อมูลหรือบัญชีจริง:
 
 ```bash
 cd prototype
 node server.cjs
 ```
 
-เปิด <http://127.0.0.1:4173/> หากพอร์ตถูกใช้ให้รัน `node server.cjs 4174` แล้วเปิดพอร์ตนั้น ดูบัญชีเดโมและรายละเอียด flow ที่ [คู่มือ prototype](prototype/README.md) ทดสอบ logic ด้วย `cd prototype && npm test`
+จากนั้นเปิด <http://127.0.0.1:4173/> วิธีใช้และข้อจำกัดอยู่ใน [คู่มือ prototype](prototype/README.md)
 
-## สถานะโครงการ
+### เปิดระบบที่เชื่อม API และฐานข้อมูล
 
-ข้อ 01 มี Next.js/FastAPI health scaffold และ Python worker entrypoint แล้ว:
-ดู [คู่มือเริ่มงาน](docs/getting-started.md), [SRS/contract gaps](docs/srs.md),
-[OpenAPI ฉบับเริ่มต้น](docs/openapi.yaml) และ [ผลตรวจ](docs/step-01-verification.md)
-ข้อ 02 เพิ่มฐานข้อมูล/migration/roles และ local Compose แล้ว ดู [คู่มือฐานข้อมูล](docs/local-development.md)
-และ [ผลตรวจข้อ 02](docs/step-02-verification.md) Native PostgreSQL และ Docker build/up/tests/persistence ผ่านแล้ว
-ข้อ 04 มีสมัครสมาชิก/login/session/logout และ Guest snapshot แล้ว ดู [คู่มือ auth](docs/auth-development.md)
-ยังไม่มีรอบฝึก/ข้อสอบหรือ provider จริง
-ข้อ 05 มี training catalog และ server-only fixtures/private truth แล้ว
-ดู [คู่มือ catalog](docs/scenario-development.md) และ [ผลตรวจข้อ 05](docs/step-05-verification.md)
+ต้องมี Docker Desktop ทำงานอยู่ก่อน จากโฟลเดอร์ repository ให้ทำตาม [คู่มือ local development](docs/local-development.md) คู่มือนี้แยกขั้นตอนสร้างฐานข้อมูล เริ่มเว็บ และรัน migration ไว้แล้ว อย่าใช้คำสั่งทดสอบที่ลบ volume กับฐานข้อมูลที่ต้องการเก็บ
 
-ข้อ 03 เพิ่ม GitHub Actions CI และ ci-gate แล้ว; local และ GitHub checks ผ่าน **branch protection ติดข้อจำกัดแพ็กเกจ private repository**
-ดู [คู่มือ CI/required checks](docs/ci-local.md) และ [ผลตรวจข้อ 03](docs/step-03-verification.md)
+## อ่านเอกสาร
 
-`prototype/` เป็น HTML/CSS/JavaScript ที่ใช้ localStorage, ข้อมูลเหตุการณ์จำลอง และ rubric จำลอง ยัง **ไม่มี backend, authentication, database หรือ AI+RAG จริง** ข้อสอบใน prototype ไม่ป้องกันการเปิด source เพื่อดูเฉลย และยังไม่ใช่เว็บไซต์ที่ deploy สาธารณะ
+เริ่มจาก [สารบัญเอกสาร](docs/README.md) ถ้าต้องการรู้ว่าทำอะไรแล้ว ให้ดู [implementation checklist](docs/implementation-checklist.md) และรายงานตรวจของข้อนั้น รายงานแต่ละฉบับระบุวันที่ สาขา/commit และสภาพแวดล้อมที่ทดสอบไว้
 
-เอกสารสำหรับพัฒนาระบบจริงอยู่ที่ [docs/README.md](docs/README.md) โดย [ข้อกำหนดเส้นทางเรียนรู้](docs/learning-path.md) ระบุ flow บทเรียน/ข้อสอบและสิ่งที่ต้องทำฝั่ง server ส่วน [ขอบเขต SOC](docs/soc-simulation.md) อธิบายภาพรวมและเกณฑ์งานส่ง
+`prototype/` เป็นตัวอย่าง flow เท่านั้น ไม่ใช่ backend ของเว็บแอป ใช้ localStorage และข้อมูลจำลอง จึงห้ามใช้เป็นหลักฐานว่าระบบบัญชี ข้อสอบ คะแนน หรือ RAG จริงปลอดภัยและทำงานครบแล้ว

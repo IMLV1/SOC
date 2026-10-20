@@ -1,16 +1,12 @@
 # SOC Platform — API Contract (Draft)
 
-วันที่: 12 ตุลาคม 2026 · อัปเดต 14 ต.ค. 2026: auth/me และ demo overview/events ใช้งานได้ในข้อ 04
-
-อัปเดตข้อ 01 (13 ต.ค. 2026): มีเฉพาะ health scaffold ใช้งานได้ ดู [SRS](srs.md)
-และ [OpenAPI](openapi.yaml) สำหรับสถานะ approved/draft; ดู [ขอบเขต auth ที่เปิดจริง](auth-development.md)
-ส่วน domain endpoints ที่เหลือด้านล่างยังเป็นแบบออกแบบ ไม่ใช่รายงานว่าเปิดแล้ว
+เอกสารนี้อธิบายสัญญา API; บางส่วนยังเป็น draft. ใน repo มี API สำหรับ auth, training, investigation, analysis, learning และ exam/review แต่บาง route ยังไม่อยู่ใน OpenAPI ที่อนุมัติ. RAG API ที่อ้างในโค้ดปัจจุบันรองรับ pipeline ภายใน; ทิศทางที่ผู้ใช้ยืนยันคือเรียกบริการภายนอก (Dify) ผ่าน API และยังต้องปรับ contract ให้ตรง. ดูป้าย `approved`/`draft` ใน [OpenAPI](openapi.yaml) และ [checklist](implementation-checklist.md)
 กติกา exam ใน SRS §3–5 มีผลเหนือ generic training projection: Instructor อ่านเฉลยสอบได้หลัง
 submit เท่านั้น; ผู้เรียนได้รับเฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม (ผู้ใช้ยืนยันแล้ว)
 
 อ่านร่วมกับ [Architecture](architecture.md) และ [Development plan](development-plan.md) ขั้นถัดไปคือแปลงเป็น `docs/openapi.yaml` ใน Phase 0 และใช้ contract tests ตรวจ implementation
 
-การจัดเก็บข้อมูลและ transaction ของแต่ละ endpoint อยู่ใน [Database design](database.md); checks และการนำ API ขึ้นระบบอยู่ใน [CI/CD design](ci-cd.md)
+ถ้าต้องการเข้าใจง่าย ๆ: API คือทางที่หน้าเว็บใช้ขอหรือบันทึกข้อมูล ส่วนสิทธิ์และ validation อยู่ฝั่ง FastAPI รายละเอียดการจัดเก็บอยู่ใน [Database](database.md); การเปิดระบบภายนอกอยู่ใน [CI/CD](ci-cd.md)
 
 Implementation ที่เลือกคือ FastAPI + Pydantic สำหรับ API และ Next.js + TypeScript สำหรับ client ใช้ Pydantic `extra='forbid'`, explicit response models และ exception handlers ให้ validation errors เป็น envelope ตามเอกสารนี้แทน default FastAPI detail; schema ของ UUID/UTC/enums และ 401/403/404/409 ต้องตรง contract Export OpenAPI จากแอปเพื่อตรวจ drift กับ docs/openapi.yaml และสร้าง client types ไม่เปลี่ยน endpoint หรือ cookie/CSRF policy ตาม framework
 
@@ -318,7 +314,7 @@ Retry ได้เฉพาะ failed/timed_out/invalid_output/quota_exceeded �
 | GET/POST | `/admin/runs/{run_id}/comments` | อ่าน/เพิ่ม Instructor comment; POST ใช้ CSRF; ไม่แก้ assessment หรือนักเรียน note |
 | POST | `/admin/runs/{run_id}/experiments` | เฉพาะ assigned Instructor และ completed run; A=legacy rules detector, B=pinned rules/anomaly detector, C=`unavailable` จน global provider/budget controls พร้อม |
 
-Evaluation GET คืน metadata, cutoffs, dataset hash, `truncated`, deterministic detection metrics และ versions; snapshot เต็มดาวน์โหลดผ่าน JSON export. Human metrics ระบุ `status=unavailable` เพราะ learner exam grading ยังไม่ implement; ไม่ใช้ detection evaluation endpoint คำนวณคะแนนผู้เรียน. Detection denominator มาจาก detections ไม่ใช่ manual tickets; soft-deleted ticket จึงไม่ทำให้ detection หายจากผล.
+Evaluation GET คืนข้อมูล snapshot และ metrics ของการตรวจจับ ส่วนคะแนนข้อสอบของผู้เรียนอ่านจาก exam result/review routes แยกกัน ไม่ใช้ detection evaluation endpoint คำนวณคะแนนผู้เรียน Detection denominator มาจาก detections ไม่ใช่ manual tickets; soft-deleted ticket จึงไม่ทำให้ detection หายจากผล.
 
 Experiment source ต้อง completed และมีสิทธิ์กำกับ. A/B ใช้ frozen event/truth snapshot เดียวกันและเรียก detector implementation จริง; ไม่รับ scenario label เข้า detector. C ไม่ใช้ mock แทน provider จริง. รอบที่จบก่อน schedule ครบมี `truncated=true`.
 
@@ -375,9 +371,11 @@ Frontend ใช้ API ข้างต้นและส่วนขยาย RA
 
 Database เชื่อมผ่าน PostgreSQL driver ไม่ใช่ browser REST API; hosting health/backup ใช้ระบบของผู้ให้บริการที่เลือก ไม่ต้องเพิ่ม mail/SIEM/EDR API ใน MVP นี้
 
-## 15. LangChain RAG extension
+## 15. RAG API เดิม (ยังไม่ตรงทิศทางปัจจุบัน)
 
-ส่วนขยายนี้เป็นแบบออกแบบที่ยังไม่ติดตั้ง ใช้ [RAG design](rag-langchain.md) เป็นรายละเอียดของ snapshot/citations/knowledge ingestion และเพิ่มใน OpenAPI ก่อนเริ่ม implementation ไม่ส่ง knowledge/embedding credential ให้ Next.js
+> Contract ด้านล่างออกแบบให้ backend จัดการ retrieval เอง. ผู้ใช้ยืนยันภายหลังให้ใช้บริการ RAG ภายนอกผ่าน API; schema/route ด้านล่างจึงเป็น contract เดิมที่ยังต้องประเมินและปรับ ไม่ใช่ข้อกำหนดใหม่สำหรับ Dify.
+
+RAG implementation ปัจจุบันอยู่ใน backend, แต่ทิศทาง RAG service ภายนอกยังไม่เชื่อม. ส่วนนี้บันทึก snapshot/citations/ingestion ของ implementation เดิม; อย่าสับสนกับ contract ที่ต้องการให้ repository เรียก Dify API. ห้ามส่ง credentials ให้ Next.js.
 
 | Method | Endpoint | Contract เพิ่มเติม |
 |---|---|---|

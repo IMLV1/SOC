@@ -1,5 +1,7 @@
 # Prototype verification
 
+> รายงานนี้เป็นผลทดสอบ prototype ณ วันที่ที่ระบุในแต่ละส่วน. Prototype ใช้ JavaScript และข้อมูลใน browser; ผลนี้ไม่ใช่ผลทดสอบ backend, RAG service ภายนอก หรือเว็บ production.
+
 ## Learning path / promotion exam regression — 12 ตุลาคม 2026
 
 - Automated model tests ผ่าน **18/18** รวมการปลดล็อกระดับเมื่อผ่านทุกเคส, rubric จำลอง 4 ข้อ และ exam run ที่ใช้ชื่อ/initial severity เป็นกลาง; `node --check app.js`, `node --check model.js` และ `git diff --check` ผ่าน

@@ -1,5 +1,7 @@
 # SOC Learning Lab — SRS ฉบับเริ่มต้น
 
+> **วิธีอ่าน:** SRS นี้รวม requirement, decision ที่อนุมัติ และ draft เก่าหลายช่วงไว้ด้วยกัน. ใช้ decision register ล่าสุดและ checklist เป็นสถานะปัจจุบัน. ข้อความที่บอกว่า feature “ยังไม่เริ่ม/ยังไม่มี” เป็น snapshot เก่า เว้นแต่มีรายงานล่าสุดยืนยัน. RAG ข้อ 13–14 เดิมใช้ pgvector ภายใน แต่ผู้ใช้ยืนยันภายหลังให้เรียกบริการ RAG ภายนอกผ่าน API; รายละเอียดเดิมจึงยังต้องปรับให้ตรง
+
 วันที่ 13 ตุลาคม 2026 · Checklist 01 / SOC-001–002 · **Draft domain contract**
 
 ฉบับนี้รวมข้อกำหนดจาก docs ทั้งหมด ไม่ใช่รายงานว่าระบบทั้งหมดเสร็จแล้ว
@@ -257,11 +259,12 @@ global 100 requests/วัน UTC, 200,000 tokens/วัน, 5 requests/rolling 
 | D-02 | **กำหนดค่าเริ่มต้นที่ผู้ใช้มอบหมาย 18 ต.ค. 2026:** สูงสุด 3 attempt ต่อ case ต่อ rolling 24 ชั่วโมง UTC (ปัจจุบัน 3 cases/level จึงสูงสุด 9 attempts ต่อ level/24 ชั่วโมง); ไม่มี lifetime cap; หลัง failed รอ 1 ชั่วโมง; attempt ที่ไม่ submit หมดอายุใน 24 ชั่วโมงและนับเป็น failed. หนึ่ง active attempt ต่อ user (`in_progress`, `submitted`, `needs_review`); exam ไม่มี learner pause/abort; client ปิดหน้าไม่หยุด expiry. เลือก case ที่มี attempt น้อยที่สุดก่อน แล้วสุ่มเมื่อเท่ากัน; case ที่ครบ 3 attempts ใน window พักจนพ้น window; history/quota/cooldown ตรวจ transactionally | ใช้เป็น baseline สำหรับ implementation; ต้องมี DB tests ยืนยัน retake/cap ก่อนตรวจรับ exam |
 | D-03 | **กำหนดค่าเริ่มต้น 17 ต.ค. 2026:** Instructor override ต้องมีเหตุผลและสร้าง grading revision/audit ใหม่เสมอ; การแก้ pass เป็น fail ไม่ถอน level ที่ปลดล็อกแล้วและไม่ย้อนผล attempt ระดับถัดไป; ผลใหม่มีผลกับ promotion ในอนาคต | ใช้กับ review/unlock implementation; no silent recomputation |
 | D-04 | **กำหนดค่าเริ่มต้น 17 ต.ค. 2026:** learner เห็น status, คะแนนรวม/รายเกณฑ์, เกณฑ์ทั่วไป, และเฉพาะ evidence refs ที่ตนส่ง; ไม่เห็น expected answer, private case truth, model rationale, rubric hints ที่ผูกกับโจทย์ หรือ citations ที่อาจเปิด answer key; Instructor ใน assignment scope อ่าน submission/truth หลัง submit พร้อม audit | ใช้กับ result/export serializers; ต้องมี leakage regression tests |
-| D-05 | เลือก Gemini Free Tier สำหรับ analysis เฉพาะ synthetic training events ใน local (15 ต.ค. 2026); ใช้ Gemini 3.5 Flash-Lite หลัง 2.5 Flash ตอบ 404 สำหรับ project ใหม่; ผู้ใช้ยืนยันเพิ่ม gemini-embedding-2/768 และ corpus 2 เรื่องสำหรับ local ingestion/benchmark วันที่ 16 ต.ค. 2026; วันที่ 17 ต.ค. พัก real-AI quality acceptance; วันที่ 18 ต.ค. สั่งให้เดินหน้า independent review/reconcile usage โดยไม่สั่ง dispatch ใหม่; production privacy/paid mode ยังรอ | local synthetic และ corpus ที่อนุมัติเท่านั้น; เพดาน 0 บาท/100 dispatches/200,000 tokens ต่อ UTC day/5 ต่อ 60 วินาที; provider จริงยัง opt-in และไม่มี real dispatch เพิ่มจนกว่าจะสั่งใหม่ |
+| D-05 | **ข้อตัดสินใจล่าสุด:** ใช้ Dify เป็นบริการ AI/RAG ภายนอกเพียงรายเดียว และให้ repository เรียกผ่าน API; ไม่เรียก Gemini โดยตรง. การทดสอบ Gemini ในรายงานก่อนหน้าเป็นประวัติ ไม่ใช่ทิศทาง runtime ปัจจุบัน. Dify runtime ยังไม่เปิดจนกว่าจะกำหนด app/workflow, citations, revocation, usage/quota และ credentials | ใช้ mock ต่อไป; ห้ามเปิด real provider หรือประมาณค่าใช้จ่าย/usage จนกว่าจะตรวจงบและ config ของ Dify; production ยังไม่อนุมัติ |
 | D-06 | approved KB manifest/reviewer, hosting/PostgreSQL/pgvector, domain/registry/backup/release owner | corpus publish/deploy |
 | D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า และ promotion notification; quota ผู้สมัครใหม่ยืนยันแล้ว 10 runs/20 AI requests ต่อวัน UTC (14 ต.ค. 2026); exam attempt cap/cooldown ใช้ D-02 | public learning rollout |
 
-ไม่มีการถอน unlock ย้อนหลัง และไม่มี AI auto-pass: rubric policy ให้ `needs_review` เมื่อข้อมูลไม่ครบหรือกำกวม; จนกว่าจะมี AI grading ที่ผ่าน benchmark และ policy เพิ่มเติม การตัดสินผลสุดท้ายต้องเป็น deterministic rubric ที่ตรวจสอบได้หรือ Instructor review. Gemini Free Tier ที่ระบุข้างต้นเป็นการตัดสินใจผู้ใช้สำหรับ local synthetic analysis เท่านั้น; วันที่ 16 ต.ค. 2026 ผู้ใช้อนุมัติ embedding/RAG และ benchmark เฉพาะ local corpus สองเรื่องตาม D-05 เพิ่มแล้ว; วันที่ 17 ต.ค. พัก real-AI connection/quality acceptance ไว้ก่อน และวันที่ 18 ต.ค. สั่งทำ independent review/reconciliation โดยยังไม่สั่ง provider dispatch ใหม่; production/paid use ยังไม่อนุมัติ.
+ไม่มีการถอน unlock ย้อนหลัง และไม่มี AI auto-pass: rubric policy ให้ `needs_review` เมื่อข้อมูลไม่ครบหรือกำกวม; จนกว่าจะมี AI grading ที่ผ่าน benchmark และ policy เพิ่มเติม การตัดสินผลสุดท้ายต้องเป็น deterministic rubric ที่ตรวจสอบได้หรือ Instructor review. การตัดสินใจ D-05 ล่าสุด supersede การเลือก Gemini ในบันทึกเดิม: Dify เป็นเป้าหมายเดียว และ runtime ยังปิดจนกว่า integration/security/budget contract จะพร้อม. เก็บผล Gemini เดิมไว้ในรายงานย้อนหลังโดยไม่ใช้ยืนยันสถานะปัจจุบัน.
+
 ข้อ 05 ใช้ [training-only catalog/seed และ exam default-deny policy](scenario-development.md)
 เพื่อปิดช่องก่อนเปิด run/exam จริง; ผู้ใช้มอบหมายให้กำหนด policy baseline D-01–D-04 แล้ว แต่ draft result/attempt schema ยังไม่ approved และ exam features ยังปิดจน implement/test ผ่าน
 RAG เปิดต่อ run ด้วย opt-in หลัง publish release; mock ไม่ทดแทนผลจริง
@@ -269,11 +272,13 @@ Approval เพิ่ม route: ตกลง policy/schema → เปลี่�
 allowlist/validation/permission → generated OpenAPI drift + behavior/integration tests → ติ๊ก checklist เฉพาะที่ผ่าน
 
 
-## ข้อ 13: offline knowledge storage (15 ตุลาคม 2026)
+> **การตัดสินใจ RAG ที่อัปเดต:** ผู้ใช้ยืนยันว่ามีบริการ RAG ภายนอก (ระบุ Dify) และ repository เรียก API อย่างเดียว. ข้อกำหนดข้อ 13–14 ด้านล่างที่อธิบาย pgvector, ingestion หรือ generation ภายในเป็นข้อกำหนดเดิม และขัดกับทิศทางนี้. ต้องแก้ SRS/API/checklist ก่อนถือว่าข้อ 13–14 ผ่านตามสถาปัตยกรรมที่ต้องการ. Source ปัจจุบันยังมี implementation ภายใน จึงยังไม่ใช่ข้อเท็จจริงว่าเชื่อม Dify แล้ว.
+
+## ข้อ 13: offline knowledge storage (15 ตุลาคม 2026; ข้อกำหนดเดิม)
 
 Requirement RAG-001/002 ใช้ operator CLI admit/validate/publish/revoke ใน
 `app.knowledge` → kb schema / app.jobs; ไม่มี public ingestion หรือ API route เพิ่ม.
-Published release/config pin ใน run_versions เมื่อ SOC_KB_ENABLED=true;
+Legacy local-pipeline behavior (currently disabled); Dify release/config mapping must be defined before implementation.
 ค่าเริ่มต้น false คง run เก่าที่ไม่ใช้ RAG. Fake profile 16 มิติสำหรับ CI/local เท่านั้น.
 ผู้ใช้อนุมัติสองคู่มือทั่วไปใน backend/knowledge/manifest.json สำหรับ local/mock แล้ว.
 ดู [คู่มือ/หลักฐานข้อ 13](step-13-verification.md); triage/question/citations อยู่ข้อ 14.
@@ -305,12 +310,10 @@ Context policy v1 เลือก outcome events ก่อนแล้วเต�
 Question no_match ไม่ส่ง generation; provider/retrieval outage ไม่แก้ assessment/หยุด detector.
 Global AI capacity หมดทำให้ automatic analysis เป็น quota_exceeded แต่ ticket/detection ยัง commit.
 
-Gemini ใช้ StructuredAnalysisProvider extension ของ adapter เดิม ผ่าน LangChain Core 1.6.10;
-ไม่มี agent tools/SQL/web browsing/tracing. CI ใช้ fake profiles/generation เท่านั้น.
-Real pilot กับผลที่ยังไม่ผ่าน quality targets อยู่ใน [รายงานข้อ 14](step-14-verification.md).
+บันทึกเดิมของข้อ 14 ใช้ Gemini ผ่าน StructuredAnalysisProvider/LangChain Core และ CI ใช้ fake profiles; ทั้งหมดเป็นผลย้อนหลัง. runtime ปัจจุบันไม่เรียก Gemini และยังไม่เชื่อม Dify; ดูสถานะใน [รายงานข้อ 14](step-14-verification.md).
 
 
-ข้อ 14 เพิ่มเติม (16 ต.ค. 2026): generation จริงมี Gemini model-tokenizer preflight รวม system/schema
+บันทึกย้อนหลังข้อ 14 (16 ต.ค. 2026): generation รุ่นเดิมมี Gemini model-tokenizer preflight รวม system/schema
 และ conservative full-request window 16k/output 1200; evidence/KB มี byte cap ที่เข้มกว่าเป็นด่านแรก.
 Count request ใช้ shared request/rate cap เดียวกับ embedding/chat แต่ counted input length ไม่ใช่ generation usage.
 Calibration ใหม่สร้าง release ใหม่ ไม่ update policy/run pin เดิม; token/latency telemetry อยู่ migration 0017.

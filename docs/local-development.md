@@ -1,7 +1,6 @@
 # Local database environment — ข้อ 02
 
-Implementation, native PostgreSQL และ Docker build/up/integration/persistence ผ่านแล้ว
-ดู [ผลตรวจ](step-02-verification.md) ขอบเขตนี้เป็น local foundation ยังไม่มี domain features
+คู่มือนี้ใช้เปิดเว็บ API worker และ PostgreSQL ในเครื่อง รายงานข้อ 02 บันทึกผลตอนสร้างฐานข้อมูลครั้งแรก แต่ตอนนี้ repository มีระบบฝึกสืบสวน บทเรียน ข้อสอบ และ RAG เพิ่มแล้ว ดู [checklist ปัจจุบัน](implementation-checklist.md) ก่อนเทียบสถานะงาน
 
 ## ขอบเขตและสิทธิ์
 
@@ -9,8 +8,8 @@ PostgreSQL 17.11, SQLAlchemy async/asyncpg, Alembic one-shot, roles/grants,
 readiness, provisioning CLI และ Compose สำหรับ API/worker/Next.js
 ข้อ 04 เพิ่ม auth routes และ auth_rate_limits แล้ว ดู [คู่มือ auth](auth-development.md)
 ข้อ 05 เพิ่ม training catalog/private truth และ seed one-shot ดู [คู่มือ](scenario-development.md)
-ข้อ 06–10 เพิ่ม runner/detection/investigation/analysis; exam และ RAG ยังไม่เปิด
-ตารางด้านล่างอธิบาย database foundation ตอนข้อ 02
+ข้อ 06–10 เพิ่ม runner/detection/investigation/analysis; ข้อ 13–17 เพิ่ม knowledge/RAG, learning และ exam/review ตามรายงานแต่ละข้อ
+ตารางด้านล่างบันทึกสิทธิ์ของ database foundation ตอนข้อ 02 ไม่ใช่รายการตารางทั้งหมดใน schema ปัจจุบัน
 quota limits ต้องระบุโดย operator ไม่กำหนด default policy ของผลิตภัณฑ์แทนผู้ใช้
 
 | ส่วน | สิ่งที่มี |
@@ -62,7 +61,7 @@ API เห็นเฉพาะ api_runtime, worker เฉพาะ worker_runti
 
 เปลี่ยนพอร์ตผ่าน root `.env.example` → `.env`; password ใช้ไฟล์ ไม่ใส่ env
 frontend container build ใช้ BACKEND_ORIGIN=http://api:8000 เป็น same-origin proxy
-หน้าเริ่มต้นมีลิงก์ readiness และ auth UI ตามคู่มือข้อ 04; run/exam domain UI ยังไม่เปิด
+หน้าเริ่มต้นมี auth, run, ticket, learning และ exam UI ตามสถานะที่ติดตั้ง local; สถานะ endpoint ให้ตรวจ OpenAPI และ checklist เพราะบางรายการยังเป็น draft. โค้ด RAG ปัจจุบันยังเป็น pipeline ภายในและไม่ใช่การเชื่อม Dify API ตามทิศทางที่ผู้ใช้ยืนยัน. คุณภาพและการเปิดใช้ภายนอกยังมี acceptance ค้าง ดูรายงานข้อ 14–19
 
 ```powershell
 docker compose restart db
@@ -74,31 +73,13 @@ docker compose up -d
 down ปกติคง named volume; ไม่ใช้ `down -v` เว้นแต่ตั้งใจลบข้อมูล local ทั้งหมด
 Dockerfiles นี้เป็น local foundation ยังไม่ใช่ production release/backup/restore
 
-## Gemini Free Tier สำหรับ training จำลองในเครื่อง
+## AI/RAG provider — Dify (ยังไม่เปิดใช้จริง)
 
-ค่าเริ่มต้นเป็น `mock`. เปิด real analysis เฉพาะหลังยืนยัน Free Tier แบบไม่ผูก billing
-ใน project ที่เลือก; real run จะ pin provider/model ตอนเริ่ม และ run เก่ายังคง config เดิม
-ข้อมูล Free Tier อาจถูกใช้ปรับปรุงบริการ จึงส่งได้เฉพาะ synthetic training fixtures
-ห้ามส่ง ground truth, credentials หรือข้อมูลผู้เรียนจริง. Embedding/RAG และ exam ไม่ได้เปิด
+Dify เป็นเป้าหมาย provider ภายนอกเพียงรายเดียว; repository จะเรียก Dify API จาก backend/worker และไม่เรียก Gemini โดยตรง. Compose ใช้ mock เป็นค่าเริ่มต้น. Dify client ยังไม่ต่อกับ analysis/RAG worker, Base URL และ app key ยังไม่มี จึงห้ามตั้ง `SOC_AI_PROVIDER` เป็นโหมด real หรือคาดว่าจะได้คำตอบจาก Dify.
 
-สร้าง `.env` จาก template เมื่อไฟล์ยังไม่มี แล้วตั้งค่าต่อไปนี้ใน `.env`:
+ไฟล์ `.local/secrets/dify_app_key.txt` ถูกเตรียมเป็นไฟล์ว่างได้ด้วย `python scripts/init-local.py`; เก็บ key จริงไว้ที่นั่นเมื่อมีการตั้งค่าที่ได้รับอนุมัติ และห้ามส่ง key เข้าแชต, `.env`, frontend, logs หรือ Git. การมีไฟล์ secret เพียงอย่างเดียวไม่ได้เปิดการเชื่อมต่อ. ค่า `SOC_KB_ENABLED=true` จะถูกปฏิเสธจนกว่า Dify retrieval, citations และ revocation จะเชื่อมครบ.
 
-```dotenv
-SOC_AI_PROVIDER=gemini_free
-GEMINI_PROJECT_TIER_CONFIRMED=free_no_billing
-GEMINI_SYNTHETIC_DATA_ONLY=true
-GEMINI_CHAT_MODEL=gemini-3.5-flash-lite
-```
-
-เก็บ key แบบไม่ใส่เครื่องหมายคำพูดใน `.local/secrets/gemini_api_key.txt` เท่านั้น
-อย่าใส่ key ใน `.env`, frontend, shell history หรือคำสั่งที่พิมพ์ลง log
-Compose ส่งไฟล์นี้เป็น secret ให้ `worker` service เท่านั้น; API ตรวจ config แต่ไม่มีไฟล์ key
-จากนั้นรัน `docker compose up -d --build` และเปิด [http://127.0.0.1:3000/runs](http://127.0.0.1:3000/runs)
-analysis ใน UI ระบุ `mode=real`; mock ยังคงอยู่เมื่อใช้ `.env` ค่าเริ่มต้น
-
-ถ้า project/key/model ใช้ไม่ได้ ระบบแสดง analysis failed/invalid-output ตามสถานะจริง
-ไม่มี fallback ไป model ที่เสียเงิน. Rate card/global cost cap, 429 backoff และ production secret store
-ยังรอ; ห้ามใช้จริงใน production. หากเปลี่ยนกลับ mock ให้ตั้ง `SOC_AI_PROVIDER=mock` ก่อนเริ่ม run ใหม่
+เอกสารและ tests ที่กล่าวถึง Gemini เป็นประวัติการทดสอบก่อนเลือก Dify เท่านั้น; ไม่ใช่ขั้นตอนปัจจุบันและไม่ควรรันเพื่อเปิด provider.
 
 ## Provisioning / seed
 

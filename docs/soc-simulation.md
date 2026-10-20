@@ -4,7 +4,7 @@
 
 โปรเจกต์นี้พัฒนาสำหรับส่งอาจารย์และนำขึ้นใช้งานบนเว็บไซต์จริง ผู้เข้าชมเปิดดูเดโมแบบอ่านอย่างเดียวได้ทันที ส่วนการเริ่มรอบจำลองและจัดการ ticket ต้อง **login ด้วยบัญชีผู้ใช้** การโจมตีและผลกระทบเป็นข้อมูลจำลอง ไม่กระทบระบบจริง
 
-> **สถานะปัจจุบัน:** repository มี [HTML prototype](../prototype/README.md) ที่เปิดบน local static server ได้ พร้อมเอกสารออกแบบ แต่ยังไม่มี backend, authentication, ฐานข้อมูล หรือ AI+RAG จริง เอกสารนี้เป็นข้อกำหนดระบบเป้าหมาย ไม่ใช่รายการที่ deploy สำเร็จแล้ว อ่าน [Learning path](learning-path.md), [API draft](api.md) และ [Prototype alignment](prototype-alignment.md) คู่กัน
+> **เอกสารนี้เป็นข้อกำหนดผลิตภัณฑ์ ไม่ใช่รายงานสถานะ**: ระบบหลักมี backend, login, database, training, learning, exam และ RAG implementation ภายในแล้ว แต่ยังไม่ผ่าน acceptance ทุกข้อ. ทิศทาง RAG ที่ผู้ใช้ยืนยันคือเรียกบริการภายนอกผ่าน API ซึ่ง source ปัจจุบันยังไม่ตรงกัน และยังไม่มีหลักฐาน production acceptance ครบ ดู [checklist](implementation-checklist.md) และ [รายงานตรวจ](step-19-verification.md)
 
 ## 1. แนวคิดของระบบ
 
@@ -286,7 +286,7 @@ UI ต้องแสดงสถานะว่าง กำลังวิเ�
 สำหรับ MVP สามารถใช้ backend หนึ่งชุดกับ worker และฐานข้อมูลเดียว ยังไม่จำเป็นต้องแบ่งเป็น microservices
 
 Stack เลือก Next.js App Router/TypeScript + FastAPI/Python + PostgreSQL แล้วตาม architecture
-ข้อ 01 มี scaffold และ [คู่มือเริ่มงาน](getting-started.md); provider/hosting ยังไม่เลือก
+ข้อความในแผนส่วนนี้บันทึกช่วงเริ่มโครงการ ไม่ใช่สถานะปัจจุบัน. ปัจจุบันมี scaffold และระบบใช้งาน local แล้ว; provider/model บางส่วนมี implementation แต่ RAG service ภายนอกตามทิศทางที่ผู้ใช้ยืนยันยังไม่เชื่อม. ดู [checklist](implementation-checklist.md)
 กติกา exam ใช้ [SRS](srs.md): submit แยก training finish, Instructor อ่านเฉลยหลัง submit,
 ผู้เรียนได้เฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม
 
@@ -364,7 +364,7 @@ Stack เลือก Next.js App Router/TypeScript + FastAPI/Python + PostgreSQ
 - มี health check และ log ข้อผิดพลาด โดยไม่บันทึก secret
 - รับ fixture ที่ระบบเตรียมไว้ใน MVP ไม่เปิดให้สั่งยิง request ไปยัง URL ใดก็ได้จากหน้าเว็บ
 
-### ข้อมูลที่ต้องเติมเมื่อเริ่มพัฒนา
+### ข้อมูลตั้งต้นที่บันทึกไว้ตอนเริ่มพัฒนา
 
 - URL เดโมและสภาพแวดล้อมที่ deploy
 - เทคโนโลยีและเวอร์ชันที่ใช้
@@ -374,7 +374,7 @@ Stack เลือก Next.js App Router/TypeScript + FastAPI/Python + PostgreSQ
 - คำสั่งทดสอบ build deploy และตรวจสุขภาพระบบ
 - ค่าโควตา อายุข้อมูล และข้อจำกัดของเว็บเดโม
 
-ปัจจุบันมี [HTML prototype](../prototype/README.md) เปิดบน local server ได้ แต่ยังไม่มี URL สาธารณะหรือ backend จริง
+ต้นแบบ HTML เปิดบน local server ได้ ส่วนเว็บแอปหลักเปิดในเครื่องผ่าน Compose ตาม [คู่มือ local development](local-development.md). สถานะ staging/production ต้องตรวจจากรายงานข้อ 18–19; การเปิดหน้าเว็บอย่างเดียวไม่ใช่หลักฐานว่า acceptance ผ่าน
 
 ## 17. ขอบเขต MVP และสิ่งที่ทำภายหลัง
 

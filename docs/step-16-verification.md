@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 16 — blind exam และ immutable submission
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ตรวจ working tree บน branch `implementation-checklist` วันที่ 20 ตุลาคม 2026. ข้อนี้ยัง **ไม่ผ่านตรวจรับ**; checklist จึงยังไม่ติ๊ก
 
 ## สิ่งที่เพิ่ม

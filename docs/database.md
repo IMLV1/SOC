@@ -1,24 +1,10 @@
 # SOC Platform — Database Design
 
-อัปเดตข้อ 12 (15 ต.ค. 2026): migration `0011_provider_budget` เพิ่ม `provider_policy`
-และ `provider_calls` สำหรับ rate card/global dispatch/token holds แยก generation component.
-Reservation owner เป็น analysis หรือ experiment arm อย่างใดอย่างหนึ่ง (XOR/unique FK).
-Lock run → child → provider policy → quota ledgers เรียง scope/period.
-Unknown hold คงอยู่ข้ามวัน; terminal usage reconcile ใช้ DB owner พร้อม audit reference/time.
-ดู policy ที่ผู้ใช้ยืนยันและผลจริงใน [ข้อ 12](step-12-verification.md).
+เอกสารนี้อธิบายตารางและกติกาการบันทึกข้อมูลของระบบ ประวัติด้านล่างบางส่วนเขียนไว้ตอนเริ่มโครงการและไม่ใช่สถานะล่าสุด ปัจจุบันมี migrations สำหรับ auth, training, provider usage, knowledge/RAG, learning และ exam ดู migration ใน `backend/migrations/versions/` และ [checklist](implementation-checklist.md) เพื่อยืนยันสิ่งที่ทดสอบแล้ว
 
-วันที่: 12 ตุลาคม 2026 · สถานะ: Logical schema และแนวทาง physical schema ที่เสนอ ยังไม่มี database/migrations ติดตั้งจริง
+แนวคิดหลัก: PostgreSQL เป็นแหล่งข้อมูลจริง; migration เพิ่ม schema แบบมี version; API/worker ใช้สิทธิ์แยกกัน; คะแนน/เฉลยเก็บฝั่ง server; provider call และงานเบื้องหลังบันทึกสถานะเพื่อป้องกันการนับซ้ำหรือคืน quota โดยเดา
 
-อัปเดตข้อ 02 วันที่ 13 ต.ค.: auth foundation มี migration และทดสอบบน native PostgreSQL 17.11 แล้ว
-เฉพาะ users/sessions/challenges/quotas/assignments/audit และ ops ledger; ส่วนที่เหลือยังเป็น design
-ดู [local guide](local-development.md) และ [ผลตรวจ](step-02-verification.md); Compose execution/integration/persistence ผ่านแล้ว
-audit.run_id/FK จะเพิ่มพร้อม runs ในข้อ 06; ไม่มีตาราง feature ล่วงหน้าหรือบัญชี seed รหัสคงที่
-ข้อ 04 เพิ่ม migration 0002 auth_rate_limits, shared per-minute counters และ retention grants;
-ทดสอบ fresh/upgrade จาก 0001 แล้ว ไม่มีการแก้ checksum ของ migration เดิม
-
-ข้อ 01 เพิ่ม [SRS §4–5/7](srs.md) กำหนด training/exam mode, attempt lifecycle ร่าง และ
-global lock order: user guard → idempotency → run → attempt → child resources → sorted quota
-ใช้ subset ตาม operation ห้ามกลับลำดับ; claim job แยก transaction; ยังไม่มี migrations ในข้อ 01
+ข้อกำหนดเรื่องลำดับ lock และ transaction อยู่ใน [SRS](srs.md) การแก้ไขข้อมูลที่เกี่ยวกับหลายตารางต้องใช้ transaction และเรียง lock ตามกติกาเดิม เพื่อป้องกัน race และ deadlock
 
 อ่านร่วมกับ [Architecture](architecture.md), [API contract](api.md), [CI/CD](ci-cd.md) และ [Development plan](development-plan.md)
 
@@ -305,9 +291,7 @@ Ownership ของ MVP บังคับผ่าน service/repository predic
 ลำดับจริงต้องจัด forward references ให้ parent มีอยู่ก่อน เช่น ticket_analyses สร้างใน 005 ใช้ checksum ใน ledger และ migration advisory lock ชุดเดียว ไม่แก้ migration ที่ deploy แล้ว เขียน migration ใหม่เสมอ รวม transaction เมื่อ DDL รองรับ และแยก nontransactional operations พร้อม recovery instructions
 
 Seed แยก public catalog, synthetic demo และ private truth versioned; repeat ต้องไม่ duplicate ไม่ฝัง Instructor password ใน SQL มี provisioning command รับ secret จาก runtime input และไม่พิมพ์ลง log
-ลำดับ migration ที่ใช้งานจริงถึงข้อ 05 คือ 0001 auth foundation → 0002 auth rate limits →
-0003 training catalog/private truth; ตัวเลข 001–007 ในแผนด้านบนเป็นกลุ่มงาน ไม่ใช่ revision ที่ให้เรียกตรง
-ยังไม่มี runs/jobs/events/evaluation; ดู grants/seed/artifact isolation ใน [คู่มือข้อ 05](scenario-development.md)
+ข้อความและลำดับ migration ในย่อหน้านี้เป็นบันทึกจากช่วงเริ่มโครงการ อย่าใช้เป็นสถานะล่าสุด ปัจจุบันมี schema สำหรับ runs/jobs/events/evaluation, knowledge/RAG, learning และ exam เพิ่มแล้ว ให้ตรวจ `backend/migrations/versions/` และ [checklist](implementation-checklist.md) ก่อนสรุปสถานะ
 
 CI ต้องตรวจ fresh migration, upgrade จาก previous release, constraints ข้าม run, rollback application compatibility กับ expanded schema และ runtime role grants ดูลำดับ migration/rollout ใน [CI/CD design](ci-cd.md)
 
@@ -334,7 +318,9 @@ Restore drill ทุกเดือนและก่อน public launch: resto
 
 Physical DDL, OpenAPI และ deployment scripts เป็นงาน Phase 0–6 ต่อจากเอกสารนี้ ต้องไม่ถือว่าตารางหรือ pipeline พร้อมใช้งานจากการมีแบบออกแบบเพียงอย่างเดียว
 
-## 13. LangChain RAG schema extension
+## 13. RAG schema ใน implementation เดิม
+
+ส่วนนี้บันทึก schema ของ pipeline ภายในที่มีอยู่ใน source ไม่ใช่ทิศทางผลิตภัณฑ์ที่ผู้ใช้ยืนยันล่าสุด ซึ่งต้องเรียกบริการภายนอก (Dify) ผ่าน API เท่านั้น ความไม่ตรงกันนี้ยังต้องแก้ใน implementation; อย่าใช้แผน migration ด้านล่างเป็นคำสั่งให้สร้างระบบ RAG ภายในเพิ่ม
 
 เพิ่ม PostgreSQL extension `vector` และ schema `kb` ตาม [RAG data dictionary](rag-langchain.md#7-database-additions): documents/versions/chunks, embedding profiles และ embeddings ที่ dimension คงที่, releases/membership/active pointer พร้อม app.retrievals/items และ analysis_knowledge_refs
 

@@ -1,6 +1,6 @@
 # Sentinel — SOC Simulation Prototype
 
-เว็บต้นแบบตาม `../docs/soc-simulation.md` ฉบับ AI-Assisted SOC Simulation Platform ใช้ HTML, CSS และ JavaScript ไม่ต้องติดตั้ง dependencies
+เว็บต้นแบบสำหรับทดลองหน้าจอและ flow SOC ใช้ HTML, CSS และ JavaScript ไม่ต้องติดตั้ง dependencies. นี่เป็นโปรแกรมแยกจากเว็บแอปหลัก ใช้ข้อมูลตัวอย่างใน browser และไม่เรียก backend หรือ RAG service จริง.
 
 ## วิธีเปิด
 
@@ -10,7 +10,7 @@
 node server.cjs
 ```
 
-เปิด <http://127.0.0.1:4173> หรือเปิด `index.html` โดยตรงเพื่อดูต้นแบบ (แนะนำ local server เพื่อให้ localStorage ทำงานสม่ำเสมอ)
+เปิด <http://127.0.0.1:4173> หรือเปิด `index.html` โดยตรงเพื่อดูต้นแบบ. แนะนำ local server เพื่อให้การเก็บค่าจำลองใน browser ทำงานสม่ำเสมอ.
 
 เซิร์ฟเวอร์ผูกเฉพาะ loopback สำหรับดูบนเครื่องนี้ ยังไม่ได้ publish สู่สาธารณะ ฟอนต์ Google Fonts เป็นส่วนเสริม หากออฟไลน์จะใช้ฟอนต์ของเครื่อง
 

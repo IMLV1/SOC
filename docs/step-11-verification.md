@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 11 — Evaluation, completion และ Instructor
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ตรวจวันที่ 15 ตุลาคม 2026 บน branch `codex/step-05-scenarios` โดยเก็บงาน local เดิมไว้ทั้งหมด
 
 การตรวจรับ local ผ่าน:

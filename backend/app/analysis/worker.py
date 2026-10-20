@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import os
 import time
 from typing import Any
 from uuid import UUID, uuid4
@@ -11,22 +10,24 @@ from pydantic import ValidationError
 from sqlalchemy import text
 
 from app.analysis.budget import reserve_call, settle_call
-from app.analysis.gemini_provider import GeminiProvider, ProviderRateLimited, request_body
 from app.analysis.models import AnalysisResult, ProviderOutput, ProviderResponseError, ProviderUsage
-from app.analysis.provider import AnalysisInput, AnalysisProvider, MockProvider, validate_citations
-from app.analysis.provider_config import load_config
+from app.analysis.provider import (
+    AnalysisInput,
+    AnalysisProvider,
+    MockProvider,
+    ProviderRateLimited,
+    validate_citations,
+)
 from app.db.session import Database
 from app.worker.fencing import lock_domain, require_lease
 
 
 def configured_provider(mode: str, model_id: str) -> AnalysisProvider:
-    # Mock jobs are deterministic; real jobs must still match the version pinned on the run.
+    # Dify is the sole intended external provider, but it is not yet wired to
+    # this structured analysis contract. Never fall back to direct Gemini calls.
     if mode == "mock":
         return MockProvider()
-    config = load_config(os.environ)
-    if config.mode != "gemini_free" or config.chat_model != model_id:
-        raise RuntimeError("PINNED_PROVIDER_UNAVAILABLE")
-    return GeminiProvider(config)
+    raise RuntimeError("DIFY_ANALYSIS_ADAPTER_UNAVAILABLE")
 
 
 async def analyze_job(
@@ -68,9 +69,23 @@ async def analyze_job(
             {"id": UUID(job["payload"]["analysis_id"])},
         )
     if rag is not None:
-        from app.knowledge.worker import answer_job
-
-        await answer_job(database, job)
+        # The local pgvector/Gemini pipeline is legacy. Dify owns retrieval in
+        # the intended product flow; do not silently serve old local RAG jobs.
+        async with database.sessions() as session, session.begin():
+            if await lock_domain(session, job):
+                analysis_id = UUID(job["payload"]["analysis_id"])
+                await session.execute(
+                    text("""UPDATE app.analyses SET status='failed',
+                    error_code='DIFY_RAG_ADAPTER_UNAVAILABLE',finished_at=clock_timestamp(),
+                    version=version+1 WHERE id=:id AND status IN ('queued','running')"""),
+                    {"id": analysis_id},
+                )
+                await session.execute(
+                    text("""UPDATE app.quota_reservations SET status='released',
+                    settled_at=clock_timestamp() WHERE analysis_id=:id AND status='reserved'"""),
+                    {"id": analysis_id},
+                )
+                await require_lease(session, job)
         return
     analysis_id = UUID(job["payload"]["analysis_id"])
     attempt_id = uuid4()
@@ -89,6 +104,27 @@ async def analyze_job(
             .one()
         )
         if row["status"] not in {"queued", "running"}:
+            return
+        if row["mode"] == "real" and provider is None:
+            # Do not reserve quota or create a provider attempt until Dify's
+            # structured analysis adapter has passed its contract tests.
+            await session.execute(
+                text("""UPDATE app.analyses SET status='failed',
+                error_code='DIFY_ANALYSIS_ADAPTER_UNAVAILABLE',finished_at=clock_timestamp(),
+                version=version+1 WHERE id=:id"""),
+                {"id": analysis_id},
+            )
+            await session.execute(
+                text("""UPDATE app.quota_components SET status='released'
+                WHERE analysis_id=:id AND status='reserved'"""),
+                {"id": analysis_id},
+            )
+            await session.execute(
+                text("""UPDATE app.quota_reservations SET status='released',
+                settled_at=clock_timestamp() WHERE analysis_id=:id AND status='reserved'"""),
+                {"id": analysis_id},
+            )
+            await require_lease(session, job)
             return
         evidence = (
             (
@@ -114,11 +150,11 @@ async def analyze_job(
         )
         if row["mode"] == "real":
             # Reserve a conservative input/output bound before dispatch. If this
-            # admission fails, the worker records an unavailable result without calling the provider.
+            # admission fails, the worker records unavailable without dispatch.
             # UTF-8 bytes conservatively bound input tokens, including schema,
             # with additional headroom for provider framing. Output is bounded.
             token_bound = (
-                len(json.dumps(request_body(data), ensure_ascii=False).encode())
+                len(json.dumps(data.model_dump(mode="json"), ensure_ascii=False).encode())
                 + 4096
                 + data.max_output_tokens
             )

@@ -38,6 +38,10 @@ class StructuredAnalysisProvider(AnalysisProvider, Protocol):
     async def structured(self, body: dict[str, Any]) -> dict[str, Any]: ...
 
 
+class ProviderRateLimited(RuntimeError):
+    """Provider explicitly rejected a dispatch; retry requires a new reservation."""
+
+
 class MockProvider:
     # Deterministic synthetic output keeps CI/local behavior independent of network state.
     mode = "mock"

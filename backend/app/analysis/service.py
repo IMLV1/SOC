@@ -248,7 +248,7 @@ async def enqueue_analysis(
         for component, model, tokens in (
             (
                 "query_embedding",
-                "gemini-embedding-2" if pinned["analysis_mode"] == "real" else "fake-hash-16-v1",
+                "dify-app" if pinned["analysis_mode"] == "real" else "fake-hash-16-v1",
                 16000,
             ),
             ("generation", pinned["model_id"], 32000),

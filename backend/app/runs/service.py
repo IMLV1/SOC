@@ -238,36 +238,9 @@ async def start_run(
         },
     )
     if mode == "training" and os.getenv("SOC_KB_ENABLED", "false") == "true":
-        if (
-            analysis_mode == "real"
-            and os.getenv("SOC_RAG_REAL_CONFIRMED") != "approved-corpus-free-v1"
-        ):
-            raise AuthError(503, "KNOWLEDGE_UNAVAILABLE")
-        active = (
-            await session.execute(
-                text("SELECT release_id FROM kb.active_release WHERE id=1 FOR UPDATE")
-            )
-        ).scalar_one()
-        active = await session.scalar(text("SELECT kb.current_release()"))
-        if active is None:
-            raise AuthError(503, "KNOWLEDGE_UNAVAILABLE")
-        profile = await session.scalar(
-            text("SELECT profile_id FROM kb.releases WHERE id=:id"), {"id": active}
-        )
-        if (profile == "gemini-embedding-2-768-v1") != (analysis_mode == "real"):
-            raise AuthError(503, "KNOWLEDGE_UNAVAILABLE")
-        await session.execute(
-            text("""UPDATE app.run_versions
-          SET knowledge_release_id=:release,retrieval_config_version=:config
-          WHERE run_id=:run"""),
-            {
-                "release": active,
-                "run": run_id,
-                "config": "exact-gemini768-v1"
-                if provider_config.mode == "gemini_free"
-                else "exact-fake16-v1",
-            },
-        )
+        # Dify has not yet been wired to run-scoped citations and revocation.
+        # Refuse legacy in-process retrieval instead of presenting it as Dify.
+        raise AuthError(503, "DIFY_RAG_ADAPTER_UNAVAILABLE")
     await enqueue_release(session, run_id, 0, now, 1)
     if mode == "training":
         await session.execute(

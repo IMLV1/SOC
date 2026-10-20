@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 19 — requirement coverage และ acceptance gaps
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ตรวจ source/docs ใน branch `implementation-checklist` วันที่ 17 ตุลาคม 2026 เป็น coverage audit ไม่ใช่ final acceptance, production release หรือ deployment report; มีการตรวจซ้ำบน `codex/magic-ui-redesign` วันที่ 21 ต.ค. 2026 ตามส่วนเพิ่มเติมด้านล่าง
 
 อัปเดต local evidence 18 ต.ค. 2026: disposable Compose integration 80 passed/81 deselected, smoke 3 passed, E2E 22 passed/1 skipped, worker/evaluator checks ผ่าน. Lesson/exam E2E ครอบคลุม refresh persistence, 375/768/1440 px, การส่งคำตอบ และสถานะ `needs_review`. ขั้นตอนเหล่านี้ไม่ใช่หลักฐาน GitHub CI, staging หรือ production.

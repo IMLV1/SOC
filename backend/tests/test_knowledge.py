@@ -110,7 +110,7 @@ def test_ingestion_publish_revoke_and_acl(migrated):
 
 
 @pytest.mark.integration
-def test_release_pin_dimension_immutability_and_revoked_admission(migrated, monkeypatch):
+def test_run_refuses_legacy_local_knowledge_until_dify_is_integrated(migrated, monkeypatch):
     from test_investigation_pipeline import prepare
 
     from app.auth.service import AuthError
@@ -118,67 +118,21 @@ def test_release_pin_dimension_immutability_and_revoked_admission(migrated, monk
 
     async def run():
         user, selection = await prepare(migrated)
-        owner = Database(migrated("migration_owner"))
-        worker = Database(migrated("worker_runtime"))
         api = Database(migrated("api_runtime"))
         try:
-            async with owner.sessions() as s, s.begin():
-                rid = await admit(s, load_manifest(ROOT / "manifest.json"))
-            for _ in range(2):
-                assert await process_one(worker, "pin-test")
-            async with owner.sessions() as s, s.begin():
-                assert await validate_release(
-                    s,
-                    rid,
-                    json.loads(
-                        (Path(__file__).parent / "knowledge_queries.json").read_text(
-                            encoding="utf-8"
-                        )
-                    ),
-                )
-                await publish(s, rid, 1)
             monkeypatch.setenv("SOC_KB_ENABLED", "true")
-            async with api.sessions() as s, s.begin():
-                run, _ = await start_run(s, user, selection, uuid4())
-            async with owner.sessions() as s, s.begin():
-                pinned = await s.scalar(
-                    text("SELECT knowledge_release_id FROM app.run_versions WHERE run_id=:id"),
-                    {"id": run["id"]},
-                )
-                assert pinned == rid
-                cid = await s.scalar(text("SELECT id FROM kb.chunks LIMIT 1"))
-                vid = await s.scalar(text("SELECT id FROM kb.versions LIMIT 1"))
-                await s.execute(
-                    text("UPDATE app.runs SET status='paused',resumed_at=NULL WHERE id=:id"),
-                    {"id": run["id"]},
-                )
-            with pytest.raises(DBAPIError):
-                async with worker.sessions() as s, s.begin():
-                    await s.execute(
-                        text("INSERT INTO kb.embeddings_fake16 VALUES(:id,'[1,2]'::public.vector)"),
-                        {"id": cid},
-                    )
-            with pytest.raises(DBAPIError):
-                async with owner.sessions() as s, s.begin():
-                    await s.execute(
-                        text("UPDATE kb.versions SET body='changed' WHERE id=:id"), {"id": vid}
-                    )
-            async with owner.sessions() as s, s.begin():
-                await revoke(s, vid)
-            with pytest.raises(AuthError, match="KNOWLEDGE_UNAVAILABLE"):
-                async with api.sessions() as s, s.begin():
-                    await start_run(s, user, selection, uuid4())
-            async with owner.sessions() as s:
+            with pytest.raises(AuthError, match="DIFY_RAG_ADAPTER_UNAVAILABLE"):
+                async with api.sessions() as session, session.begin():
+                    await start_run(session, user, selection, uuid4())
+            async with api.sessions() as session:
                 assert (
-                    await s.scalar(
-                        text("SELECT knowledge_release_id FROM app.run_versions WHERE run_id=:id"),
-                        {"id": run["id"]},
+                    await session.scalar(
+                        text("SELECT count(*) FROM app.runs WHERE owner_user_id=:user"),
+                        {"user": user},
                     )
-                    == rid
+                    == 0
                 )
         finally:
-            await owner.close()
-            await worker.close()
             await api.close()
 
     asyncio.run(run())

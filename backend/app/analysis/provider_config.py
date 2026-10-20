@@ -1,11 +1,9 @@
-"""Fail-closed configuration. Account billing tier cannot be inferred from an API key."""
+"""Provider configuration. Real dispatch currently fails closed in the worker."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-
-CHAT_MODEL = "gemini-3.5-flash-lite"
-EMBEDDING_MODEL = "gemini-embedding-2"
+from urllib.parse import urlsplit
 
 
 @dataclass(frozen=True)
@@ -16,10 +14,8 @@ class ProviderConfig:
     key_file: Path | None
 
     def read_key(self) -> str:
-        # A key's presence does not prove a free-tier account; mode confirmation
-        # is checked separately before any credential is read.
-        if self.mode != "gemini_free" or self.key_file is None:
-            raise ValueError("Real provider is not enabled")
+        if self.mode != "dify" or self.key_file is None:
+            raise ValueError("Live provider is not enabled")
         try:
             value = self.key_file.read_text(encoding="utf-8").strip()
         except OSError:
@@ -30,22 +26,17 @@ class ProviderConfig:
 
 
 def load_config(env: Mapping[str, str]) -> ProviderConfig:
-    # Defaults stay deterministic. Real calls require explicit policy switches,
-    # an approved model pair, and a path to a runtime-only secret file.
+    # Local and CI stay deterministic. Direct model-provider calls are disabled;
+    # Dify is the sole intended external AI boundary. The worker currently
+    # rejects real dispatch until its structured/citation adapter is integrated.
     mode = env.get("SOC_AI_PROVIDER", "mock")
     if mode == "mock":
         return ProviderConfig(mode, "mock-v1", "fake-hash-16-v1", None)
-    if mode != "gemini_free":
-        raise ValueError("Unsupported provider mode")
-    if env.get("GEMINI_PROJECT_TIER_CONFIRMED") != "free_no_billing":
-        raise ValueError("Confirm a project without billing before enabling real calls")
-    if env.get("GEMINI_SYNTHETIC_DATA_ONLY") != "true":
-        raise ValueError("Synthetic-data policy required")
-    key = env.get("GEMINI_API_KEY_FILE", "")
-    if not key:
-        raise ValueError("Provider credential file required")
-    if env.get("GEMINI_CHAT_MODEL", CHAT_MODEL) != CHAT_MODEL:
-        raise ValueError("Unapproved chat model")
-    if env.get("GEMINI_EMBEDDING_MODEL", EMBEDDING_MODEL) != EMBEDDING_MODEL:
-        raise ValueError("Unapproved embedding model")
-    return ProviderConfig(mode, CHAT_MODEL, EMBEDDING_MODEL, Path(key))
+    if mode == "dify":
+        base_url = env.get("DIFY_API_BASE_URL", "").strip()
+        parsed = urlsplit(base_url)
+        local = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+        if not parsed.hostname or (parsed.scheme != "https" and not local):
+            raise ValueError("Dify Base URL must use HTTPS")
+        return ProviderConfig(mode, "dify-app", "dify-managed", None)
+    raise ValueError("Unsupported provider mode")

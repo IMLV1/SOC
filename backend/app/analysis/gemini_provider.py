@@ -8,12 +8,8 @@ from pydantic import ValidationError
 
 from app.analysis.gemini_smoke import call
 from app.analysis.models import AnalysisResult, ProviderOutput, ProviderResponseError, ProviderUsage
-from app.analysis.provider import AnalysisInput
+from app.analysis.provider import AnalysisInput, ProviderRateLimited
 from app.analysis.provider_config import ProviderConfig
-
-
-class ProviderRateLimited(RuntimeError):
-    """Safe explicit rejection; retry is a new budgeted logical request."""
 
 
 def _string() -> dict[str, Any]:

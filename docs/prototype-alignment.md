@@ -1,5 +1,7 @@
 # Prototype alignment
 
+> เอกสารนี้เปรียบเทียบต้นแบบกับระบบหลักตามวันที่ด้านล่าง. ใช้ [checklist](implementation-checklist.md) สำหรับสถานะปัจจุบัน; รายการ feature ในรายงานนี้อาจเก่ากว่า source ปัจจุบัน
+
 อัปเดต: 15 ตุลาคม 2026
 
 เทียบกับ [Architecture](architecture.md), [API contract](api.md) และ [Development plan](development-plan.md)

@@ -1,5 +1,10 @@
 # ผลตรวจข้อ 14 — RAG และ Ask AI
 
+> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
+
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ตรวจ local บน branch `codex/step-14-rag` ฐาน `7a5f142` (ข้อ 13); implementation ข้อ 14 ถูกรวมใน PR #13 และ GitHub Actions ผ่านสำหรับ `a4ea423` ([run 38875091514](https://github.com/IMLV1/SOC/actions/runs/38875091514)) และ `b72a549` ([run 38877535995](https://github.com/IMLV1/SOC/actions/runs/38877535995)). ตรวจซ้ำบน `main` SHA `5a1bdd4` ได้ run [38913140706](https://github.com/IMLV1/SOC/actions/runs/38913140706) ผ่านด้วย รายงานนี้ไม่ใช่หลักฐาน deploy หรือ production acceptance
 
 ## สถานะ

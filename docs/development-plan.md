@@ -1,14 +1,14 @@
 # SOC Platform — Development Plan
 
-วันที่: 12 ตุลาคม 2026 · สถานะ: แผนเสนอ ยังไม่ได้เริ่ม implementation ตามแผนนี้
+เอกสารนี้เป็น roadmap ที่เขียนวันที่ 12 ต.ค. 2026 ไม่ใช่รายการงานที่ยังไม่เริ่ม หลาย phase ถูกพัฒนาแล้ว ให้ดู [implementation checklist](implementation-checklist.md) และรายงานแต่ละข้อสำหรับสถานะปัจจุบัน
 
 เอกสารประกอบ: [Architecture](architecture.md) · [API](api.md) · [Product scope](soc-simulation.md) · [Learning path](learning-path.md) · [Prototype](../prototype/README.md)
 
-แบบออกแบบสำหรับลงมือพัฒนา: [Database](database.md) และ [CI/CD](ci-cd.md) ครอบคลุม schema, GitHub Actions, Docker artifacts, migration, deploy และ recovery
+ใช้แผนนี้เพื่อเข้าใจลำดับงานเดิม ส่วนสิ่งที่ทำจริงและ acceptance ที่ยังค้างอยู่ดูใน checklist; [Database](database.md) และ [CI/CD](ci-cd.md) แยกข้อเท็จจริงออกจากเป้าหมายที่ยังไม่ทำ
 
-เพิ่ม [LangChain RAG](rag-langchain.md) หลัง core AI พร้อม: approved knowledge → pgvector retrieval → cited triage/Ask AI → quality benchmark ตาม RAG-001–005 คาดเพิ่ม 6–10 วันทำงานจากแผนฐาน 31–40 วัน ส่วน learning path และข้อสอบเลื่อนระดับพร้อม AI/RAG grading เป็นงานใหม่ประมาณ 8–12 วันทำงานอีกก้อน กรอบรวมเบื้องต้นจึงเป็น **45–62 วันทำงาน** หากทำทั้งหมดต่อเนื่อง ยังไม่รวมเวลารอ provider/งบและไม่ใช่กำหนดส่งยืนยัน ต้องประเมินใหม่หลังทำ SRS และกำหนด rubric/ข้อสอบจริง
+แผนเดิมเสนอ RAG ภายในด้วย pgvector และ LangChain ตาม RAG-001–005 แต่ผู้ใช้ยืนยันภายหลังว่าทิศทางผลิตภัณฑ์คือใช้บริการภายนอก (Dify) ผ่าน API เท่านั้น ตัวเลขเวลาในย่อหน้าของแผนเดิมจึงไม่ใช่ประมาณการสำหรับการเชื่อมบริการภายนอก ต้องประเมินใหม่เมื่อกำหนด contract และตรวจ source ที่มีอยู่
 
-Stack ที่เลือก: **Next.js App Router + TypeScript** สำหรับ frontend และ **Python + FastAPI** สำหรับ backend; worker ใช้ Python codebase เดียวกัน ฐานข้อมูล PostgreSQL ผ่าน SQLAlchemy/asyncpg และ Alembic เครื่องมือประกอบยังต้องติดตั้งและ pin versions ใน Phase 0
+Stack ที่ใช้: **Next.js App Router + TypeScript**, **Python + FastAPI**, PostgreSQL, SQLAlchemy/asyncpg และ Alembic โดยมี Python worker แยกจาก API
 
 ## 1. เป้าหมายและสมมติฐาน
 
@@ -70,7 +70,7 @@ Frontend และ backend พัฒนาร่วมกันโดยอิ�
 | LEARN-02 | Exam bank, attempt และ blind serializer | Backend | SOC-005/006/014 | แยก demo กับข้อสอบ; API ทุกทางไม่ส่ง key/AI hint/severity ก่อน submit |
 | LEARN-03 | Grading, RAG feedback และ Instructor review | ทั้งทีม | LEARN-02, SOC-012/015, RAG-001–005 | rubric versioned, citations validated, needs_review/retake/override audited |
 
-งาน RAG ใช้ dependencies SOC-006/010/011/012: เตรียม corpus/storage ด้วย mock ได้ก่อน provider พร้อม แต่ benchmark จริงต้องเลือก embedding/chat models แล้ว SOC-014 เพิ่ม config เปรียบเทียบ C no-RAG กับ C RAG; SOC-016/017 เพิ่ม pgvector deploy/restore, citation leakage/revocation และ question flow ตาม RAG design ไม่เปลี่ยน detector policy
+แผนเดิมของ RAG ผูกกับ corpus/storage ภายใน, embedding/chat model และ pgvector. เนื่องจากผู้ใช้ยืนยันให้ repository เรียกบริการภายนอกผ่าน API ส่วนงาน RAG เหล่านี้ต้องจัดลำดับและประเมินใหม่หลังปรับ architecture; อย่าเริ่มงาน deploy ของ pgvector ตามแผนเก่าโดยถือว่าเป็นทิศทางที่อนุมัติแล้ว
 
 ยังไม่ได้สร้าง Issue/PR จริง ตารางนี้เป็น backlog สำหรับทีม ห้ามนับเป็นหลักฐานการ review หรือการทำงานร่วมกันที่เกิดขึ้นแล้ว
 

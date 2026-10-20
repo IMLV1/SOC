@@ -1,22 +1,21 @@
 # SOC Platform — Architecture
 
-วันที่ปรับปรุง: 12 ตุลาคม 2026 · สถานะ: ข้อเสนอสำหรับพัฒนา ยังไม่ใช่ระบบที่ติดตั้งแล้ว
+> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
 
-อัปเดตข้อ 01: frontend/API health/worker entrypoint มี scaffold แล้ว ดู [คู่มือ](getting-started.md)
-ข้อ 02 เพิ่ม DB และข้อ 04 เปิด auth/me/Guest snapshot แล้ว ดู [คู่มือ auth](auth-development.md)
-domain features ที่เหลือยังไม่พร้อม; [SRS](srs.md) กำหนด exam boundary และ lock order เพิ่มเติม
+เอกสารนี้อธิบายโครงสร้างระบบที่วางไว้ และบันทึกการตัดสินใจทางเทคนิค เอกสารถูกเขียนตั้งแต่ 12 ต.ค. 2026 จึงไม่ใช่สถานะล่าสุดของทุก feature ให้ดู [implementation checklist](implementation-checklist.md) เพื่อดูว่าส่วนใดทำแล้วและผ่านการตรวจแบบใด
+
+ระบบปัจจุบันแยก Next.js UI, FastAPI API, PostgreSQL, Python worker และ evaluator ออกจากกัน **ทิศทาง RAG ที่ผู้ใช้ยืนยันคือใช้บริการภายนอก (Dify) ผ่าน API เท่านั้น** แต่ source ยังเก็บ legacy RAG/Gemini modules ไว้; runtime ปัจจุบันปฏิเสธ direct Gemini และปิด local RAG entrypoint จนกว่า Dify adapter/citation contract จะพร้อม จึงยังไม่อ้างว่าเชื่อม Dify แล้ว ดู [checklist](implementation-checklist.md) และ [SRS](srs.md)
 generic finish/completed/truth ในเอกสารนี้หมายถึง training; exam submit freeze run + answer,
 Instructor อ่านเฉลยสอบหลัง submit เท่านั้น และ learner ได้เฉพาะ rubric feedback ไม่มีเฉลยเต็ม
 
 อ่านร่วมกับ [ขอบเขตโครงการ](soc-simulation.md), [Learning path](learning-path.md), [API contract](api.md) และ [แผนพัฒนา](development-plan.md)
 
-แบบออกแบบเพิ่มเติม: [Database](database.md) ลงรายละเอียดตาราง/constraints/transactions และ [CI/CD](ci-cd.md) ระบุ checks, build, deployment, migration และ recovery ทั้งสองเป็นแผน ยังไม่ได้ติดตั้งจริง
+อ่านรายละเอียดตารางและสิทธิ์ใน [Database](database.md) ส่วน [CI/CD](ci-cd.md) มีทั้งสิ่งที่ติดตั้งแล้วกับแผน staging/production ซึ่งยังไม่ครบ
 
 ## 1. สถานะและแนวทาง
 
 `prototype/` เป็นเว็บต้นแบบ HTML/CSS/JavaScript ใช้ localStorage และ AI fixture เก็บไว้เป็น reference
-ปัจจุบัน frontend/backend มี auth/DB/Guest snapshot ตามข้อ 04 แล้ว ส่วน runner/detection/exam ยังไม่ implement
-สิทธิ์และข้อมูลจริงอยู่ฝั่ง server ไม่ย้ายเฉลยไป frontend
+เว็บแอปมี auth, database, runner, detection, investigation, learning และ exam/review แล้ว สิทธิ์และข้อมูลจริงตรวจที่ server ส่วน staging/production และ RAG quality acceptance ยังไม่ครบ
 
 เอกสารนี้เติมรายละเอียดทางเทคนิคจาก `soc-simulation.md` โดยไม่ขยายไปสู่การโจมตีจริง README ที่ root เป็นทางเข้าและวิธีเปิดต้นแบบ ส่วนข้อกำหนดระบบเต็มอยู่ใน docs
 
@@ -32,8 +31,8 @@ Instructor อ่านเฉลยสอบหลัง submit เท่าน�
 | Data access | SQLAlchemy async + asyncpg | explicit transactions; ใช้ bound parameters สำหรับ SQL เฉพาะทาง |
 | Queue | ตาราง jobs ใน PostgreSQL | ลดจำนวนบริการที่ต้องดูแลในช่วงเริ่มต้น |
 | Worker | Python process จาก backend codebase | runner, detection, AI, evaluation และ retention; แยกจาก Uvicorn |
-| AI | Adapter รองรับ mock และ provider จริงหนึ่งราย | provider/model ยังรอเลือกจากผลทดสอบ ราคา และงบที่ทีมกำหนด |
-| RAG | LangChain Python + pgvector ใน PostgreSQL | ค้น approved knowledge ก่อนตอบ; แยก evidence กับ knowledge citations ตาม [RAG design](rag-langchain.md) |
+| AI | mock เป็นค่าเริ่มต้น; Dify เป็น provider ภายนอกเป้าหมายเดียว | Dify client ยังไม่ต่อ runtime; legacy Gemini adapter ถูกปิดจาก provider config |
+| RAG (ทิศทางเป้าหมาย) | เรียกบริการภายนอก เช่น Dify ผ่าน API | repository จะส่งคำถาม/หลักฐานให้ Dify และรับคำตอบพร้อม citations; legacy local pipeline ถูกปิดจาก run creation จนกว่าจะต่อ Dify ครบ |
 | Tests | pytest + HTTPX สำหรับ backend; Vitest/Testing Library สำหรับ frontend; Playwright สำหรับ E2E | prototype ยังใช้ Node test runner เดิม |
 | Deploy | HTTPS reverse proxy + API + worker + managed PostgreSQL | API และ worker restart แยกกันได้ |
 
