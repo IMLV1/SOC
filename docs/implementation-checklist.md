@@ -291,7 +291,7 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 06/09/11/15; LEARN exam
 
-สถานะปัจจุบัน: migration/seed, server-selected attempt, blind DTO, atomic submit/replay และ browser flow เริ่มข้อสอบ/ส่งคำตอบ/needs_review ผ่าน. Retake policy: 3 ครั้งต่อ case/24 ชม. (สูงสุด 9 ต่อ level เมื่อมี 3 cases), cooldown หลังตก 1 ชม.; PostgreSQL integration ยืนยัน case rotation/cap, concurrent starts ได้ active attempt เดียว และ latest-result จำกัดตามเจ้าของ; browser ทดสอบกู้ผลตกหลัง refresh และเริ่ม attempt ใหม่ (ผล Instructor จำลองเพื่อทดสอบ UI). Latest disposable Compose: 81 integration passed, smoke 3 passed, browser E2E 22 passed/1 skipped. ยังรอ GitHub CI และ browser journey ที่ Instructor review จริง จึงยังไม่ติ๊ก. ดู [ผลตรวจข้อ 16](step-16-verification.md)
+สถานะปัจจุบัน: migration/seed, server-selected attempt, blind DTO, atomic submit/replay และ browser flow เริ่มข้อสอบ/ส่งคำตอบ/needs_review ผ่าน. Retake policy: 3 ครั้งต่อ case/24 ชม. (สูงสุด 9 ต่อ level เมื่อมี 3 cases), cooldown หลังตก 1 ชม.; PostgreSQL integration ยืนยัน case rotation/cap, concurrent starts ได้ active attempt เดียว และ latest-result จำกัดตามเจ้าของ. Disposable Compose ล่าสุด 20 ต.ค. 2026 ผ่าน: integration 81, smoke 3, browser 23 passed/1 skipped; browser journey ใช้ Instructor ที่ provision/assign ในฐานทดสอบ ตรวจคำตอบผ่าน UI/API จริง และ learner เห็นผลหลัง refresh. Docker CLI ใช้จาก `Docker.app` เพราะไม่อยู่ใน `PATH`. ยังรอ GitHub CI บน commit ใหม่ จึงยังไม่ติ๊ก. ดู [ผลตรวจข้อ 16](step-16-verification.md)
 
 ```text
 ทำข้อ 16: implement exam bank, server-selected attempts, one-active-exam/quota checks และ blind serializers
@@ -307,7 +307,7 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 12/14/16; LEARN grading
 
-สถานะ: frozen submission, deterministic rubric, assignment-scoped review/audit, concurrent review, unlock ครบทุก case และ override history/non-revocation ผ่าน PostgreSQL integration; ยังขาด browser flow ของ learner feedback/Instructor review และ coverage ของ interleavings เพิ่มเติม จึงยังไม่ติ๊ก; AI grading จริงยังไม่เปิด ดู [ผลตรวจข้อ 17](step-17-verification.md)
+สถานะ: frozen submission, deterministic rubric, assignment-scoped review/audit, concurrent review, unlock ครบทุก case และ override history/non-revocation ผ่าน PostgreSQL integration; browser journey Instructor review → learner feedback ผ่าน API/PostgreSQL จริงแล้วใน disposable Compose. ยังรอ GitHub CI บน commit ใหม่และ coverage interleavings เพิ่มเติม; ข้อ 17 ขึ้นกับตรวจรับข้อ 14 ตามลำดับ และ AI grading จริงยังไม่เปิด จึงยังไม่ติ๊ก ดู [ผลตรวจข้อ 17](step-17-verification.md)
 
 ```text
 ทำข้อ 17: implement versioned rubric, deterministic checks และ AI/RAG grading หลัง frozen submission

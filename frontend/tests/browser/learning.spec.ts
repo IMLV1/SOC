@@ -1,7 +1,48 @@
-import { expect, test } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+import { expect, test, type Browser } from "@playwright/test";
+
+async function reviewWithAssignedInstructor(browser: Browser, learnerPage: import("@playwright/test").Page, analystId: string) {
+  const instructorId = process.env.SOC_TEST_INSTRUCTOR_ID;
+  const instructorPassword = process.env.SOC_TEST_INSTRUCTOR_PASSWORD;
+  if (!instructorId || !instructorPassword) return false;
+
+  execFileSync(
+    process.env.SOC_DOCKER_BIN ?? "docker",
+    ["compose", "run", "--rm", "-T", "--no-deps", "seed", "python", "-m", "app.db.provision", "assign", "--instructor", instructorId, "--analyst", analystId],
+    { cwd: process.env.SOC_REPO_ROOT ?? process.cwd(), env: process.env, stdio: "pipe" },
+  );
+
+  const instructorContext = await browser.newContext({
+    baseURL: process.env.SOC_SMOKE_ORIGIN ?? "http://127.0.0.1:3000",
+  });
+  const instructorPage = await instructorContext.newPage();
+  try {
+    await instructorPage.goto("/login");
+    await instructorPage.getByLabel("อีเมล", { exact: true }).fill(process.env.SOC_TEST_INSTRUCTOR_EMAIL ?? "");
+    await instructorPage.getByLabel("รหัสผ่าน", { exact: true }).fill(instructorPassword);
+    await instructorPage.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
+    await expect(instructorPage).toHaveURL(/\/account$/);
+    await instructorPage.goto("/instructor/exams");
+    await instructorPage.getByRole("link", { name: /Learning Analyst · needs_review/ }).click();
+    await expect(instructorPage.getByRole("heading", { name: "ตรวจคำตอบข้อสอบ" })).toBeVisible();
+    await instructorPage.getByLabel("analysis").selectOption("0");
+    await instructorPage.getByLabel("reasoning").selectOption("0");
+    await instructorPage.getByLabel("เหตุผลการตรวจ").fill("ตรวจหลักฐานจาก event ที่ส่งจริงแล้ว ต้องทบทวนการวิเคราะห์ก่อนสอบใหม่");
+    await instructorPage.getByRole("button", { name: "บันทึกผลตรวจ" }).click();
+    await expect(instructorPage.getByRole("heading", { name: "ผล: failed" })).toBeVisible();
+  } finally {
+    await instructorContext.close();
+  }
+
+  await learnerPage.reload();
+  await expect(learnerPage.getByText("ผลข้อสอบ: failed")).toBeVisible();
+  await expect(learnerPage.getByText("ควรทบทวนแนวทางของเกณฑ์นี้").first()).toBeVisible();
+  return true;
+}
 
 test("lesson progress is saved on the server, resumes after refresh, and stays usable on mobile/tablet/desktop", async ({
   page,
+  browser,
 }) => {
   const email = `learning-${Date.now()}@example.test`;
   const password = `Test-only-${Date.now()}-password`;
@@ -61,19 +102,29 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
   await expect(page.getByText("ผลข้อสอบ: needs_review")).toBeVisible();
   await expect(page.getByText("ส่งคำตอบแล้ว รอ Instructor ตรวจ ไม่มีการประเมินผ่านอัตโนมัติ")).toBeVisible();
 
-  // Model a later Instructor decision and verify the retake screen can be
-  // recovered after refresh without altering the backend-owned exam result.
-  await page.route("**/api/v1/exam/attempts/active", (route) =>
-    route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "NOT_FOUND" } }) }),
-  );
-  await page.route("**/api/v1/exam/attempts/latest/result", (route) =>
-    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data: { attempt_id: "16000000-0000-4000-8000-000000000001", status: "failed", score: 4, maximum: 10, criteria: [] } }) }),
-  );
+  const sessionResponse = await page.request.get("/api/v1/auth/session");
+  const analystId = (await sessionResponse.json()).data.user.id as string;
+  const reviewedAgainstLiveApi = await reviewWithAssignedInstructor(browser, page, analystId);
+  if (!reviewedAgainstLiveApi) {
+    // Non-Compose development runs model the later Instructor decision; the
+    // disposable CI Compose harness provisions and assigns a real Instructor.
+    await page.route("**/api/v1/exam/attempts/active", (route) =>
+      route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "NOT_FOUND" } }) }),
+    );
+    await page.route("**/api/v1/exam/attempts/latest/result", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data: { attempt_id: "16000000-0000-4000-8000-000000000001", status: "failed", score: 4, maximum: 10, criteria: [] } }) }),
+    );
+  }
+
+  // Exercise the retake recovery screen after either the live review or the
+  // isolated UI fallback has produced a failed result.
   await page.route("**/api/v1/learning/levels/*/attempts", (route) =>
     route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ data: { id: "16000000-0000-4000-8000-000000000002", level_id: "15000000-0000-4000-8000-000000000001", status: "in_progress", version: 1, expires_at: new Date(Date.now() + 3600000).toISOString(), events: [{ id: "16000000-0000-4000-8000-000000000003", release_seq: 1, event_time: new Date().toISOString(), source: "proxy", asset_id: "web-01", username: null, src_ip: null, request: null, response: null, log: {} }], answer: null }, meta: { request_id: "browser-retake" } }) }),
   );
-  await page.reload();
-  await expect(page.getByText("ผลข้อสอบ: failed")).toBeVisible();
+  if (!reviewedAgainstLiveApi) {
+    await page.reload();
+    await expect(page.getByText("ผลข้อสอบ: failed")).toBeVisible();
+  }
   await expect(page.getByRole("button", { name: "เริ่ม attempt ถัดไป" })).toBeVisible();
   await page.getByRole("button", { name: "เริ่ม attempt ถัดไป" }).click();
   await expect(page.getByRole("heading", { name: "Investigation case" })).toBeVisible();

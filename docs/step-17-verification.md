@@ -19,4 +19,8 @@
 
 ## ยังต้องยืนยัน
 
-ยังขาด browser E2E ของ learner feedback กับ Instructor review; integration race/override/unlock coverage ฝั่ง PostgreSQL ผ่านเฉพาะ flow ที่ระบุข้างต้น ยังไม่ครอบคลุมทุก interleaving. AI grading จริงและ citations ยังไม่เปิดตาม scope ที่ผู้ใช้ระบุ.
+ณ รายงานเดิมยังขาด browser E2E ของ learner feedback กับ Instructor review; มีหลักฐานเพิ่มในวันที่ 20 ต.ค. 2026 ด้านล่าง. Integration race/override/unlock coverage ฝั่ง PostgreSQL ยังไม่ครอบคลุมทุก interleaving. AI grading จริงและ citations ยังไม่เปิดตาม scope ที่ผู้ใช้ระบุ.
+
+## เพิ่มเติม 20 ต.ค. 2026
+
+เพิ่ม browser UI regression ใน `frontend/tests/browser/exam-review.spec.ts` และ full-stack browser journey ใน `frontend/tests/browser/learning.spec.ts`: Instructor จริงใน disposable DB ตรวจคำตอบของ Analyst ที่ assigned ผ่านหน้าเว็บ/API และ Analyst เห็นผล/feedback หลัง refresh. วันที่ 20 ต.ค. 2026 local disposable Compose ผ่าน integration 81 tests, smoke 3 tests, browser 23 passed/1 skipped; PostgreSQL integration ครอบคลุม assignment, concurrent review, unlock และ override. ยังรอ GitHub CI บน changes ล่าสุดและ coverage interleavings เพิ่มเติม; Step 17 ยังขึ้นกับการตรวจรับ Step 14 ตามลำดับ checklist จึงยังไม่ติ๊ก.
