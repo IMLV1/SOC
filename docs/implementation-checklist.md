@@ -297,7 +297,7 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 
 - [x] ผ่าน local acceptance และ GitHub CI — หลัง 06/09/11/15; LEARN exam; GitHub run 39411788826 ผ่านทุก job บน `75ae111`; ดู [ผลตรวจข้อ 16](step-16-verification.md)
 
-สถานะปัจจุบัน: migration/seed, server-selected attempt, blind DTO, atomic submit/replay และ browser flow เริ่มข้อสอบ/ส่งคำตอบ/needs_review ผ่าน. Retake policy: 3 ครั้งต่อ case/24 ชม. (สูงสุด 9 ต่อ level เมื่อมี 3 cases), cooldown หลังตก 1 ชม.; PostgreSQL integration ยืนยัน case rotation/cap, concurrent starts ได้ active attempt เดียว และ latest-result จำกัดตามเจ้าของ. Disposable Compose ล่าสุด 20 ต.ค. 2026 ผ่าน: integration 81, smoke 3, browser 23 passed/1 skipped; browser journey ใช้ Instructor ที่ provision/assign ในฐานทดสอบ ตรวจคำตอบผ่าน UI/API จริง และ learner เห็นผลหลัง refresh. GitHub CI ทุก job ผ่านบน `75ae111` (run 39411788826); สาเหตุที่ CI รอบก่อนล้มคือ UID ของ container อ่านไฟล์รหัสผ่านชั่วคราวไม่ได้ และแก้โดยรัน provisioning ด้วย UID/GID เจ้าของไฟล์. ดู [ผลตรวจข้อ 16](step-16-verification.md)
+สถานะปัจจุบัน: migration/seed, server-selected attempt, blind DTO, atomic submit/replay และ browser flow เริ่มข้อสอบ/ส่งคำตอบ/needs_review ผ่าน. Retake policy: 3 ครั้งต่อ case/24 ชม. (สูงสุด 9 ต่อ level เมื่อมี 3 cases), cooldown หลังตก 1 ชม.; PostgreSQL integration ยืนยัน case rotation/cap, concurrent starts ได้ active attempt เดียว และ latest-result จำกัดตามเจ้าของ. Disposable Compose ล่าสุด 21 ต.ค. 2026 บน branch `codex/retake-browser-acceptance` ผ่าน: integration 77 passed/82 deselected, smoke 3, browser 26 passed/1 skipped; browser journey Instructor review/feedback และเริ่ม retake ใหม่หลัง cooldown หมดผ่าน. GitHub CI บน commit `75ae111` (run 39411788826) ผ่านก่อน branch นี้; CI ของ branch ปัจจุบันยังรอยืนยัน. ดู [ผลตรวจข้อ 16](step-16-verification.md)
 
 ```text
 ทำข้อ 16: implement exam bank, server-selected attempts, one-active-exam/quota checks และ blind serializers
@@ -345,7 +345,7 @@ worker heartbeat, queue failures, migrations, pgvector และ critical flows 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 18; SOC-017
 
-สถานะ ณ 21 ต.ค. 2026: local Compose ยืนยัน lesson → exam/submit → Instructor review/feedback และ cooldown UX; PostgreSQL test ครอบคลุม concurrent retake start หลัง attempt ก่อนหน้าตกและ cooldown หมด. ยังขาด browser journey ที่เริ่ม retake หลัง cooldown หมด, GitHub CI บน changes ล่าสุด, export/accessibility/load audit และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
+สถานะ ณ 21 ต.ค. 2026: local Compose ยืนยัน lesson → exam/submit → Instructor review/feedback → รอ cooldown → เริ่ม retake ใหม่; PostgreSQL test ครอบคลุม concurrent retake start หลัง attempt ก่อนหน้าตกและ cooldown หมด. ยังขาด GitHub CI บน branch ปัจจุบัน, export/accessibility/load audit และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
 
 ```text
 ทำข้อ 19: ตรวจ requirement coverage ของ docs ทั้งหมดกับ implementation และเติมช่องว่างที่อยู่ใน scope
@@ -381,7 +381,7 @@ deploy production เฉพาะเมื่อ environment พร้อมแ�
 | 03 | ผ่าน local และ GitHub CI | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); ทุก job ผ่านบน GitHub และ failure/cancelled ไม่เป็น success | Branch protection/rulesets API 403 เพราะ private repository plan; ยังไม่ยืนยัน enforced merge blocking; ไม่ deploy |
 | 04 | ผ่าน local และ GitHub auth/Guest acceptance ตามรายงาน | [คู่มือ](auth-development.md), [ผลตรวจ](step-04-verification.md); integration 26, foundation/contract 13, HTTP smoke 3, Chromium E2E 2 และทั้ง 5 GitHub jobs ผ่าน | รายงานนี้บันทึกช่วงก่อนมี runner/ข้อสอบ; ดู checklist และรายงานใหม่ก่อนอ้างสถานะปัจจุบัน |
 | 05 | ผ่าน local fixtures/catalog/boundary ตามรายงาน | [คู่มือ](scenario-development.md), [ผลตรวจ](step-05-verification.md); migration/seed/grants/selector, backend 50 ไม่ซ้ำ, HTTP 3, browser 4, bundle 1 และ static/build ผ่าน | รายงานนี้เป็น snapshot ก่อนพัฒนาขั้นถัดไป ไม่ใช่สถานะล่าสุดของ runner/exam |
-| 16 | ผ่าน local acceptance และ GitHub CI บน SHA ที่บันทึก | [ผลตรวจ](step-16-verification.md); 21 ต.ค. disposable Compose: PostgreSQL integration 81, smoke 3, browser 26 passed/1 skipped; real failed-attempt retake race หลัง cooldown หมด และ browser cooldown rejection ผ่าน | ยังไม่มี browser journey ที่เริ่ม attempt หลัง cooldown หมด, GitHub CI บน changes ล่าสุด หรือ staging acceptance |
-| 19 | กำลังตรวจรับ | [ผลตรวจ](step-19-verification.md); local Compose 21 ต.ค. ตรวจ feedback/review, cooldown UX, retake start race; frontend lint/typecheck, Ruff check/format และ diff check ผ่าน | ยังขาด browser retake หลัง cooldown, GitHub CI SHA ล่าสุด, export/accessibility/load coverage และ staging/rollback/restore |
+| 16 | ผ่าน local acceptance และ GitHub CI บน SHA ที่บันทึก | [ผลตรวจ](step-16-verification.md); 21 ต.ค. disposable Compose: PostgreSQL integration 77 passed/82 deselected, smoke 3, browser 26 passed/1 skipped; browser เริ่ม retake หลัง cooldown ผ่าน | GitHub CI บน branch ปัจจุบันและ staging acceptance ยังรอยืนยัน |
+| 19 | กำลังตรวจรับ | [ผลตรวจ](step-19-verification.md); local Compose ตรวจ feedback/review, cooldown และ retake start; frontend lint/typecheck, Ruff check/format และ diff check ผ่าน | ยังขาด GitHub CI SHA ล่าสุด, export/accessibility/load coverage และ staging/rollback/restore |
 
 ถ้าข้อหนึ่งยังไม่ผ่าน ให้ใช้ prompt ต่อว่า: “แก้ข้อ NN ต่อจากผลทดสอบล่าสุดให้ผ่าน acceptance ที่ยังค้าง โดยไม่เริ่มข้อถัดไปและไม่เปลี่ยน test ให้ยอมรับพฤติกรรมผิด”

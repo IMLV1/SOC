@@ -1551,7 +1551,7 @@ Local acceptance for step 15 is now covered by the PostgreSQL and browser tests 
 
 ## ยังต้องยืนยัน
 
-ยังไม่มี browser E2E ที่เดินเวลาจน cooldown หมดแล้วเริ่ม attempt จริง; การเริ่ม retake หลัง cooldown และ race ตรวจใน PostgreSQL integration ส่วน browser ยืนยัน cooldown UX ผ่าน API จริงใน Compose. Compose integration และ browser flow ไม่ใช่ staging/deployment acceptance; เรียก Alembic ผ่าน migration wrapper ตาม harness.
+Browser E2E ที่เพิ่มภายหลังเดินจากผล failed ผ่าน cooldown ไปเริ่ม attempt ใหม่ได้จริงบน disposable Compose; ดูหัวข้อ “ตรวจ browser retake หลัง cooldown” ในรายงานข้อ 16 ด้านบน. Compose integration และ browser flow ไม่ใช่ staging/deployment acceptance; เรียก Alembic ผ่าน migration wrapper ตาม harness.
 
 ## เพิ่มเติม 20 ต.ค. 2026
 
@@ -1559,7 +1559,7 @@ Local acceptance for step 15 is now covered by the PostgreSQL and browser tests 
 
 ## ตรวจซ้ำ 21 ต.ค. 2026
 
-บน checkout ปัจจุบัน (branch `codex/magic-ui-redesign`) `scripts/ci-compose.sh` ผ่าน migration/health, PostgreSQL integration **81 passed**, HTTP smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. เพิ่มการยืนยันว่า concurrent retry เกิดหลัง attempt ก่อนหน้าถูกปิดเป็น `failed` และ cooldown ถูกเลื่อนพ้นแล้วจริง; browser test ครอบคลุม response `EXAM_COOLDOWN_ACTIVE` และคงผลสอบตกไว้เมื่อ retry ถูกปฏิเสธ. Ruff check/format สำหรับ test backend, frontend lint/typecheck และ `git diff --check` ผ่าน. GitHub CI บน changes ล่าสุดยังรอยืนยัน; ไม่มี staging/deployment acceptance.
+บน checkout ก่อนหน้า (branch `codex/magic-ui-redesign`) `scripts/ci-compose.sh` ผ่าน migration/health, PostgreSQL integration **81 passed**, HTTP smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. ผล branch ปัจจุบันและ browser retake หลัง cooldown อยู่ในหัวข้อ “ตรวจ browser retake หลัง cooldown” ของรายงานข้อ 16.
 
 ### เอกสารต้นฉบับ: [step-17-verification.md](step-17-verification.md)
 
@@ -1647,13 +1647,13 @@ Local acceptance for step 15 is now covered by the PostgreSQL and browser tests 
 | Scenario/training runner/investigation | training catalog, runs/jobs, detection, tickets, analysis และ tests แยกตามโดเมน | local/CI evidence ของ SHA ปัจจุบันยังต้องยืนยัน |
 | RAG/Ask AI | retrieval/citation/revocation/usage controls และ [ข้อ 14](step-14-verification.md) | ผู้ใช้ขอให้ทำ review/reconcile แล้ว; ยังรอผู้ตรวจอิสระและ provider report สำหรับ 6 unknown calls |
 | Learning path | lesson/progress API, migration, Next.js page, PostgreSQL persistence/owner/gate tests และ browser refresh/responsive flow | Local acceptance ผ่าน; ยังไม่มี GitHub CI บน changes ล่าสุด หรือ accessibility audit เต็มรูปแบบ; ดู [ข้อ 15](step-15-verification.md) |
-| Exam/submit/retake | exam bank, server-selected attempts, blind DTO, atomic submit และ browser exam/submit/needs_review flow | PostgreSQL integration ยืนยัน cap/rotation และ concurrent start หลัง attempt ก่อนหน้าตกและ cooldown หมด; browser ยืนยัน cooldown rejection UX. ยังไม่มี browser journey ที่เริ่ม retake หลัง cooldown หมด; [ข้อ 16](step-16-verification.md) |
+| Exam/submit/retake | exam bank, server-selected attempts, blind DTO, atomic submit และ browser exam/submit/needs_review flow | PostgreSQL integration ยืนยัน cap/rotation และ concurrent start หลัง cooldown; browser ยืนยัน cooldown rejection และเริ่ม attempt ใหม่หลัง cooldown หมด; [ข้อ 16](step-16-verification.md) |
 | Grading/review/unlock | deterministic rubric, Instructor review, audit/history, concurrent review และ unlock tests | Instructor review → learner feedback ผ่าน browser และ PostgreSQL จริงใน disposable Compose; AI grading ไม่เปิด และ acceptance ข้อ 17 ยังขึ้นกับข้อ 14; [ข้อ 17](step-17-verification.md) |
 | Staging/production operations | Dockerfiles, local Compose/integration harness และ health/check commands | local engine พร้อม แต่ยังไม่มี staging/registry/hosting evidence; [ข้อ 18](step-18-verification.md) ยังไม่ผ่าน |
 
 ## Acceptance flows ที่ยังรันไม่ได้ครบ
 
-Guest → register/login → lesson progress/refresh → exam/submit → Instructor review → learner feedback หลัง refresh ผ่าน browser acceptance บน disposable Compose. Browser ตรวจ cooldown rejection หลังผลตก; PostgreSQL integration ทดสอบ retry race หลัง cooldown หมดจาก attempt ก่อนหน้าที่ตกจริง. ยังขาด browser journey ที่เดินจาก fail/cooldown หมดไปสู่ retake จริง. Training/investigation/RAG มี tests แยก แต่การรวม E2E บน release candidate, export coverage, accessibility audit, load targets, migration failure/rollback และ restore drill ยังไม่มีหลักฐาน staging/prod ที่ตรวจได้ในรอบนี้.
+Guest → register/login → lesson progress/refresh → exam/submit → Instructor review → learner feedback หลัง refresh ผ่าน browser acceptance บน disposable Compose. Browser ตรวจ cooldown rejection และเดินจากผลตกจนเริ่ม retake ใหม่หลัง cooldown หมด. Training/investigation/RAG มี tests แยก แต่การรวม E2E บน release candidate, export coverage, accessibility audit, load targets, migration failure/rollback และ restore drill ยังไม่มีหลักฐาน staging/prod ที่ตรวจได้ในรอบนี้.
 
 ## ผลสรุป
 
@@ -1661,7 +1661,7 @@ Coverage audit นี้ชี้ช่องว่างและแหล่�
 
 ## ตรวจซ้ำ 21 ต.ค. 2026
 
-บน branch `codex/magic-ui-redesign`, `scripts/ci-compose.sh` ผ่าน migration/health, integration **81 passed**, smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. `frontend/tests/browser/learning.spec.ts` ผ่าน Instructor review/feedback จริงในฐานทดสอบ และตรวจ UI แสดง cooldown เมื่อ retry ทันทีถูกปฏิเสธ; `backend/tests/test_exam_integration.py` ทดสอบ concurrent retake start หลังมี attempt ที่ตกและ cooldown หมดจากฐานทดสอบ จึงได้ `[201, 409]` โดยเหลือ active attempt เพียงรายการเดียว. Frontend lint/typecheck, Ruff check/format ของ backend integration test และ `git diff --check` ผ่าน. GitHub CI ของ changes ล่าสุด, browser ที่เริ่ม retake หลัง cooldown หมด, export/accessibility/load audits และ staging/production acceptance ยังไม่มีหลักฐาน จึงยังไม่ปิดข้อ 19.
+บน branch `codex/retake-browser-acceptance` จาก `origin/main`, `scripts/ci-compose.sh` ผ่าน migration/health, integration **77 passed / 82 deselected**, smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. Browser ผ่าน Instructor review/feedback จริง และ journey จาก failed/cooldown ไปเริ่ม attempt ใหม่; PostgreSQL integration ยังยืนยัน concurrent retake start ได้ active attempt เดียว. Frontend lint/typecheck ผ่าน. GitHub CI ของ branch นี้, export/accessibility/load audits และ staging/production acceptance ยังรอยืนยัน จึงยังไม่ปิดข้อ 19.
 
 ### เอกสารต้นฉบับ: [steps-11-13-follow-up.md](steps-11-13-follow-up.md)
 
