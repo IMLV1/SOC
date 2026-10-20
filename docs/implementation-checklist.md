@@ -250,7 +250,7 @@ provider embeddings จริงต้องผ่านการเลือก
 
 ### 14 — LangChain RAG และ Ask AI
 
-- [ ] ตรวจรับ Step 14 ทั้งข้อ — implementation และ GitHub CI ผ่านแล้ว; ผู้ใช้สั่งปิด quality review/reconciliation ในรอบนี้ แต่ยังขาดผู้ตรวจอิสระและ provider usage evidence ดู [ผลตรวจข้อ 14](step-14-verification.md)
+- [ ] ตรวจรับ Step 14 ทั้งข้อ — implementation และ GitHub CI ล่าสุดผ่านแล้ว แต่ independent review, paired answer benchmark ของ release v2 และ provider usage reconciliation ยังไม่ผ่าน ดู [ผลตรวจข้อ 14](step-14-verification.md)
 - [x] Local API/UI, frozen citations/retry, revocation และ race/security regressions ผ่าน; CI ใช้ fake embeddings
 - [x] Real Free Tier smoke และ RAG/no-RAG pilot 50 คำถาม วัดแยกไทย/อังกฤษ เก็บ failures/call IDs/usage ตามจริง
 - [x] เพิ่ม model tokenizer preflight, shared dispatch cap, telemetry และ calibration release ใหม่; real smoke ผ่าน
@@ -258,7 +258,7 @@ provider embeddings จริงต้องผ่านการเลือก
 - [x] ทำ agent self-review: relevance 100 คำถาม/claims 57 รายการ พร้อมเหตุผลและ unsupported cases; ไม่ใช่ human acceptance ดู [รายงาน self-review](step-14-agent-review.md)
 - [ ] ผู้ตรวจอิสระยืนยัน relevance/grounding (supported claims ≥90%) และ paired answer benchmark ของ release v2; review packets พร้อม แต่ผู้เขียน implementation/agent ห้ามลงคะแนนแทนผู้ตรวจ และยังไม่ dispatch provider เพิ่ม ดู [คู่มือผู้ตรวจ](step-14-review-guide.md)
 - [ ] Reconcile unknown usage 6 calls ด้วยข้อมูล provider ที่ยืนยันได้; AI Studio project ไม่มีข้อมูลที่ใช้จับคู่ และ Google Cloud Console ยังอยู่หน้า Terms of Service จึงไม่มีหลักฐาน 0 tokens หรือ usage report
-- [x] GitHub CI ผ่านบน GitHub สำหรับ `a4ea423` และ `b72a549` (run 38875091514, 38877535995); ไม่ใช่หลักฐาน human quality review หรือ deployment
+- [x] GitHub CI ผ่านบน GitHub สำหรับ `a4ea423` และ `b72a549` (run 38875091514, 38877535995) และ main หลัง merge PR #15 ที่ SHA `3ebe256` (run 39395631902); ไม่ใช่หลักฐาน human quality review หรือ deployment
 
 ```text
 ทำข้อ 14: implement authorized retrieval → LangChain structured generation → citation validation

@@ -95,3 +95,11 @@ Benchmark ใช้ Question-v1 schema เดียวกันทั้งส�
 ## Agent self-review ที่ผู้ใช้อนุญาต
 
 ตรวจเบื้องต้นครบแล้ว ดู [รายงานและข้อพบราย claim](step-14-agent-review.md): รองรับ 53/57 claims, ไม่ครบ 4; RAG EN 17/17 และกลุ่มคำถาม TH 18/19. Relevance v2 ยังคง TH Recall@5=0.95/EN=1.00 และมี Thai miss 1 ข้อ. ผลนี้เป็นการตรวจโดย agent ที่เขียน implementation เอง ไม่ใช่ human review; original human pending files, provider artifacts และสถานะตรวจรับข้อ 14 ยังคงเดิม. ไม่มี real API calls เพิ่มจากการ review นี้
+
+## ตรวจหลักฐาน read-only ซ้ำ 20 ต.ค. 2026
+
+- เปิด Google AI Studio Usage ในบัญชีที่ลงชื่ออยู่โดยไม่เปลี่ยน project/config: `Default Gemini Project`, Free tier, ช่วง 28 วัน หน้าสรุปคำขอ, error, token และ embedding แสดง `No data available` ทั้งหมด แม้ช่วงนี้ครอบคลุมวันที่ dispatch ใน ledger; ไม่ถือว่าเป็นหลักฐานว่า 6 calls ใช้ 0 tokens หรือไม่มีค่าใช้จ่าย. หน้า dashboard แจ้งว่าข้อมูลอาจหน่วงได้ถึงประมาณ 15 นาที; เอกสาร Google ระบุจุดตรวจ usage ที่ Dashboard > Usage ([เอกสาร billing/usage](https://ai.google.dev/gemini-api/docs/billing)).
+- เปิดหน้า Logs and Datasets แบบอ่านอย่างเดียว พบสถานะ `Disabled`; ไม่เปิด logging หรือเปลี่ยน telemetry settings. เอกสาร Google ระบุว่าการเก็บ Gemini API logs ใช้ได้เฉพาะ project ใน paid tier จึงไม่เปิด paid tier เพื่อไล่หาหลักฐาน usage ([เอกสาร Logs and Datasets](https://ai.google.dev/gemini-api/docs/logs-datasets)).
+- Google Cloud Console Metrics ยังแสดง Terms of Service ที่ยังไม่ยอมรับ; ไม่เลือก checkbox หรือกดยอมรับแทนเจ้าของบัญชี จึงไม่มี Cloud Monitoring report เพิ่ม.
+- รัน offline assessors ซ้ำจาก `backend/`: retrieval v2 และ paired relevance/grounding คืน `pending_review`, `sample_count=0`; agent self-review 53/57 claims ยังไม่ใช่ independent human acceptance.
+- ไม่ได้ dispatch provider calls เพิ่ม. สถานะ 6 calls คงเป็น `unknown`; usage dashboard ที่ไม่มีข้อมูลและ logging ที่ปิดอยู่ไม่สามารถจับคู่ provider usage กับ internal call IDs ได้. ยังขาดผู้ตรวจอิสระเพื่อยืนยัน labels และหลังจากนั้นจึงทำ paired answer benchmark ของ release v2 ได้โดยไม่ปนผล developer labels.
