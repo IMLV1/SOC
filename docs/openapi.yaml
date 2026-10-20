@@ -4596,6 +4596,40 @@ paths:
           $ref: '#/components/responses/DomainError'
         '503':
           $ref: '#/components/responses/DomainError'
+  /api/v1/exam/attempts/latest/result:
+    get:
+      operationId: get_exam_attempts_latest_result
+      summary: GET /exam/attempts/latest/result
+      description: 'DRAFT / IMPLEMENTED, CONTRACT REVIEW PENDING. Source: api.md. Returns the
+        authenticated owner’s latest finalized result for refresh recovery; no answer key.
+
+        Result DTO and disclosure rules remain subject to exam contract review.'
+      security:
+      - SessionCookie: []
+      x-contract-status: draft
+      x-requirements:
+      - FR-016
+      x-authorization: authenticated owner; resource outside scope returns 404
+      x-schema-status: draft; unspecified response bodies are deliberately not schema-approved
+      responses:
+        default:
+          $ref: '#/components/responses/DomainError'
+        '200':
+          description: Latest finalized outcome; response schema pending contract approval.
+        '400':
+          $ref: '#/components/responses/DomainError'
+        '401':
+          $ref: '#/components/responses/DomainError'
+        '404':
+          $ref: '#/components/responses/DomainError'
+        '409':
+          $ref: '#/components/responses/DomainError'
+        '422':
+          $ref: '#/components/responses/DomainError'
+        '429':
+          $ref: '#/components/responses/DomainError'
+        '503':
+          $ref: '#/components/responses/DomainError'
   /api/v1/lessons/{lesson_id}:
     get:
       operationId: get_lessons_lesson_id
