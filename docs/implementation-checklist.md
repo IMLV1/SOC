@@ -280,7 +280,7 @@ provider embeddings จริงต้องผ่านการเลือก
 
 - [x] ผ่าน local acceptance — หลัง 04/05; lesson persistence/owner/gate integration และ `/learning` browser refresh/responsive flow ผ่าน 18 ต.ค. 2026; ดู [ผลตรวจข้อ 15](step-15-verification.md)
 
-สถานะปัจจุบัน: local acceptance ผ่าน; disposable Compose 80 integration passed, smoke 3 passed, browser E2E 22 passed/1 skipped และ lesson/gate integration ผ่าน. ดู [ผลตรวจข้อ 15](step-15-verification.md)
+สถานะปัจจุบัน: local acceptance ผ่าน; disposable Compose ล่าสุด 77 integration passed/82 deselected, smoke 3 passed, browser E2E 26 passed/1 skipped รวม journey retake; GitHub CI run 39495958300 ผ่านครบทุก job บน `c4abb42`. ดู [ผลตรวจข้อ 15](step-15-verification.md)
 
 ```text
 ทำข้อ 15 ตาม learning-path.md: implement learning levels/lessons/progress และ onboarding ใน Next.js
@@ -313,7 +313,7 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 12/14/16; LEARN grading
 
-สถานะ: frozen submission, deterministic rubric, assignment-scoped review/audit, concurrent review, unlock ครบทุก case และ override history/non-revocation ผ่าน PostgreSQL integration; browser journey Instructor review → learner feedback ผ่าน API/PostgreSQL จริงแล้วใน disposable Compose. GitHub CI ผ่านบน `75ae111` (run 39411788826); ยังขาด coverage interleavings เพิ่มเติม และข้อ 17 ขึ้นกับตรวจรับข้อ 14 ตามลำดับ ส่วน AI grading จริงยังไม่เปิด จึงยังไม่ติ๊ก ดู [ผลตรวจข้อ 17](step-17-verification.md)
+สถานะ: frozen submission, deterministic rubric, assignment-scoped review/audit, concurrent review, unlock ครบทุก case และ override history/non-revocation ผ่าน PostgreSQL integration; browser journey Instructor review → learner feedback ผ่าน API/PostgreSQL จริงแล้วใน disposable Compose. GitHub CI run 39495958300 ผ่านครบทุก job บน `c4abb42`; ยังขาด coverage interleavings เพิ่มเติม และข้อ 17 ขึ้นกับตรวจรับข้อ 14 ตามลำดับ ส่วน AI grading จริงยังไม่เปิด จึงยังไม่ติ๊ก ดู [ผลตรวจข้อ 17](step-17-verification.md)
 
 ```text
 ทำข้อ 17: implement versioned rubric, deterministic checks และ AI/RAG grading หลัง frozen submission
@@ -329,7 +329,7 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 17 และ quality gates; SOC-016
 
-สถานะ: Docker Engine พร้อมและ local CI Compose ผ่าน (80 integration, smoke 3, browser 22/1 skip); ยังไม่มี staging/registry/hosting ที่เลือก จึงยังไม่มี deploy, rollback หรือ backup/restore evidence; ดู [ผลตรวจข้อ 18](step-18-verification.md)
+สถานะ: Docker Engine พร้อมและ local CI Compose ล่าสุดผ่าน (77 integration passed/82 deselected, smoke 3, browser 26/1 skip); ยังไม่มี staging/registry/hosting ที่เลือก จึงยังไม่มี deploy, rollback หรือ backup/restore evidence; ดู [ผลตรวจข้อ 18](step-18-verification.md)
 
 ```text
 ทำข้อ 18: เตรียม production Docker images ของ Next.js และ FastAPI/Python worker,
@@ -345,7 +345,7 @@ worker heartbeat, queue failures, migrations, pgvector และ critical flows 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 18; SOC-017
 
-สถานะ ณ 21 ต.ค. 2026: local Compose ยืนยัน lesson → exam/submit → Instructor review/feedback → รอ cooldown → เริ่ม retake ใหม่; PostgreSQL test ครอบคลุม concurrent retake start หลัง attempt ก่อนหน้าตกและ cooldown หมด. ยังขาด GitHub CI บน branch ปัจจุบัน, export/accessibility/load audit และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
+สถานะ ณ 21 ต.ค. 2026: local Compose ยืนยัน lesson → exam/submit → Instructor review/feedback → รอ cooldown → เริ่ม retake ใหม่; PostgreSQL test ครอบคลุม concurrent retake start หลัง attempt ก่อนหน้าตกและ cooldown หมด. GitHub CI run 39495958300 ผ่านครบทุก job บน `c4abb42`; ยังขาด export/accessibility/load audit และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
 
 ```text
 ทำข้อ 19: ตรวจ requirement coverage ของ docs ทั้งหมดกับ implementation และเติมช่องว่างที่อยู่ใน scope
