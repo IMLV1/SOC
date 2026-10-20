@@ -4,6 +4,11 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   page,
 }) => {
   test.setTimeout(120000);
+  let csrfBootstraps = 0;
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/api/v1/auth/csrf")
+      csrfBootstraps += 1;
+  });
   const email = `runner-${Date.now()}@example.test`;
   const password = `Test-only-${Date.now()}-password`;
   await page.goto("/register");
@@ -32,6 +37,7 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   // Pause while the run is certainly active; waiting for investigation output
   // can outlast the short simulated run and make this control disappear.
   await expect(page.getByRole("button", { name: "พักรอบ" })).toBeVisible();
+  const csrfRequestsBeforePause = csrfBootstraps;
   const pauseResponse = page.waitForResponse(
     (response) => response.request().method() === "POST" && response.url().includes("/pause"),
     { timeout: 15000 },
@@ -42,6 +48,7 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   const paused = await pauseResponse;
   expect(paused.status()).toBe(200);
   expect((await paused.json()).data.status).toBe("paused");
+  expect(csrfBootstraps).toBe(csrfRequestsBeforePause);
   await expect(page.getByRole("button", { name: "ทำต่อ" })).toBeVisible({
     timeout: 15000,
   });
