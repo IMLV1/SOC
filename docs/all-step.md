@@ -1661,7 +1661,7 @@ Coverage audit นี้ชี้ช่องว่างและแหล่�
 
 ## ตรวจซ้ำ 21 ต.ค. 2026
 
-บน branch `codex/retake-browser-acceptance` จาก `origin/main`, `scripts/ci-compose.sh` ผ่าน migration/health, integration **77 passed / 82 deselected**, smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. Browser ผ่าน Instructor review/feedback จริง และ journey จาก failed/cooldown ไปเริ่ม attempt ใหม่; PostgreSQL integration ยังยืนยัน concurrent retake start ได้ active attempt เดียว. Frontend lint/typecheck ผ่าน. GitHub CI ของ branch นี้, export/accessibility/load audits และ staging/production acceptance ยังรอยืนยัน จึงยังไม่ปิดข้อ 19.
+บน branch `codex/retake-browser-acceptance` จาก `origin/main`, `scripts/ci-compose.sh` ผ่าน migration/health, integration **77 passed / 82 deselected**, smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. Browser ผ่าน Instructor review/feedback จริง และ journey จาก failed/cooldown ไปเริ่ม attempt ใหม่; PostgreSQL integration ยังยืนยัน concurrent retake start ได้ active attempt เดียว. Frontend lint/typecheck ผ่าน. GitHub CI run [39494965944](https://github.com/IMLV1/SOC/actions/runs/39494965944) ผ่านครบทุก job บน `5bfcdb2`; export/accessibility/load audits และ staging/production acceptance ยังไม่มีหลักฐาน จึงยังไม่ปิดข้อ 19.
 
 ### เอกสารต้นฉบับ: [steps-11-13-follow-up.md](steps-11-13-follow-up.md)
 

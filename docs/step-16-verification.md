@@ -28,7 +28,7 @@
 
 บน branch `codex/retake-browser-acceptance` จาก `origin/main` เพิ่ม browser journey หลัง Instructor ตรวจให้ attempt เป็น `failed`: test ยืนยัน latest result เป็น failed, เลื่อนเวลาเฉพาะแถวนี้ใน disposable `soc-ci-*` PostgreSQL ให้พ้น cooldown ผ่าน migration-owner one-shot command, กดปุ่มเริ่ม attempt ถัดไปใน UI แล้วตรวจหน้า exam และ API ว่ามี attempt ใหม่สถานะ `in_progress` และ ID ต่างจาก attempt เดิม. Helper ตรวจ UUID และปฏิเสธทำงานนอก Compose project ที่ขึ้นต้น `soc-ci-`; ไม่มีการเปลี่ยนเวลาบนฐานข้อมูลผู้ใช้หรือระบบจริง.
 
-ผล `scripts/ci-compose.sh` บน HEAD `80df15810ca6625462fd784dd12ab371d29db4c2`: migration/seed/health ผ่าน, PostgreSQL integration **77 passed / 82 deselected**, HTTP smoke **3 passed**, worker/evaluator readiness ผ่าน, browser E2E **26 passed / 1 skipped**. Browser journey ตรวจทั้ง rejection ระหว่าง cooldown และเริ่ม retake สำเร็จหลัง cooldown หมด. Frontend lint/typecheck ผ่าน และ `git diff --check` ผ่านก่อนแก้รายงานนี้. GitHub CI สำหรับ branch ใหม่นี้ยังรอยืนยัน; ผล local นี้ไม่ใช่ staging/deployment acceptance.
+ผล `scripts/ci-compose.sh` บน HEAD `80df15810ca6625462fd784dd12ab371d29db4c2`: migration/seed/health ผ่าน, PostgreSQL integration **77 passed / 82 deselected**, HTTP smoke **3 passed**, worker/evaluator readiness ผ่าน, browser E2E **26 passed / 1 skipped**. Browser journey ตรวจทั้ง rejection ระหว่าง cooldown และเริ่ม retake สำเร็จหลัง cooldown หมด. Frontend lint/typecheck ผ่าน และ `git diff --check` ผ่านก่อนแก้รายงานนี้. หลัง commit `5bfcdb2c78ede754e0d7faa3b4b291af52172ce0` ถูก push แล้ว GitHub CI run [39494965944](https://github.com/IMLV1/SOC/actions/runs/39494965944) ผ่านครบทุก job. ผลนี้ไม่ใช่ staging/deployment acceptance.
 
 ## เพิ่มเติม 20 ต.ค. 2026
 
