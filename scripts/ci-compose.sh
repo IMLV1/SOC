@@ -49,6 +49,7 @@ export SOC_TEST_INSTRUCTOR_PASSWORD="$(python3 -c 'import secrets; print(secrets
 soc_ci_instructor_password_file="$(mktemp)"
 printf '%s' "$SOC_TEST_INSTRUCTOR_PASSWORD" > "$soc_ci_instructor_password_file"
 instructor_result="$(docker compose run --rm -T --no-deps \
+  --user "$(id -u):$(id -g)" \
   -v "$soc_ci_instructor_password_file:/tmp/soc-ci-instructor-password:ro" seed \
   python -m app.db.provision user \
   --email "$SOC_TEST_INSTRUCTOR_EMAIL" \
