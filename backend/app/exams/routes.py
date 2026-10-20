@@ -463,7 +463,7 @@ async def get_latest_final_result(request: Request) -> ResultEnvelope:
         )
         if attempt is None:
             raise auth.AuthError(404, "NOT_FOUND")
-        result = await _result(session, attempt)
+        result = await _result(session, dict(attempt))
     return ResultEnvelope(data=result, meta=meta(request))
 
 
