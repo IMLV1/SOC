@@ -13,7 +13,7 @@ from app.db.session import Database
 from app.detection.worker import detect_run
 from app.knowledge.service import ingest
 from app.runs.service import effective_ms, enqueue_release, server_time
-from app.scenarios.fixtures import FixtureEvent, content_hash, load_training_fixture
+from app.scenarios.fixtures import FixtureEvent, content_hash, load_fixture
 from app.worker.fencing import lock_domain, require_lease
 
 FIXTURE_ROOT = Path(__file__).resolve().parents[2] / "fixtures/events/training"
@@ -159,7 +159,7 @@ async def release_events(database: Database, job: dict[str, Any]) -> None:
             (
                 await session.execute(
                     text("""SELECT i.id,i.ordinal,s.stable_key,
-            s.version,s.fixture_hash FROM app.scenario_instances i
+            s.version,s.fixture_hash,s.purpose FROM app.scenario_instances i
             JOIN app.scenarios s ON s.id=i.scenario_id WHERE i.run_id=:run
             ORDER BY i.ordinal"""),
                     {"run": run_id},
@@ -170,8 +170,12 @@ async def release_events(database: Database, job: dict[str, Any]) -> None:
         )
         schedule: list[tuple[int, int, str, UUID, FixtureEvent]] = []
         for instance in instance_rows:
-            path = FIXTURE_ROOT / f"{instance['stable_key'].lower()}-v{instance['version']}.json"
-            fixture = load_training_fixture(path)
+            path = (
+                FIXTURE_ROOT.parent
+                / instance["purpose"]
+                / f"{instance['stable_key'].lower()}-v{instance['version']}.json"
+            )
+            fixture = load_fixture(path, instance["purpose"])
             if content_hash(fixture.model_dump(mode="json")) != instance["fixture_hash"]:
                 raise ValueError("Pinned fixture hash mismatch")
             schedule.extend(
@@ -215,13 +219,17 @@ async def release_events(database: Database, job: dict[str, Any]) -> None:
                 text("UPDATE app.runs SET release_cursor=:cursor WHERE id=:id"),
                 {"cursor": cursor, "id": run_id},
             )
-            await session.execute(
-                text("""INSERT INTO app.jobs
+            run_mode = await session.scalar(
+                text("SELECT mode FROM app.runs WHERE id=:run"), {"run": run_id}
+            )
+            if run_mode == "training":
+                await session.execute(
+                    text("""INSERT INTO app.jobs
                 (id,run_id,type,dedupe_key,payload)
                 VALUES (:id,:run,'detect_events',:dedupe,'{}'::jsonb)
                 ON CONFLICT(dedupe_key) DO NOTHING"""),
-                {"id": uuid4(), "run": run_id, "dedupe": f"detect:{run_id}:{cursor}"},
-            )
+                    {"id": uuid4(), "run": run_id, "dedupe": f"detect:{run_id}:{cursor}"},
+                )
         if elapsed >= row["duration_ms"]:
             await session.execute(
                 text("""UPDATE app.runs SET status='reviewing',

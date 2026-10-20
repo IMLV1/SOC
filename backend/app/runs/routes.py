@@ -107,7 +107,7 @@ async def list_runs(
                 await session.execute(
                     text("""SELECT id,status,version,elapsed_ms,duration_ms,expires_at,
                 seed,analysis_mode,resumed_at,created_at
-                FROM app.runs WHERE owner_user_id=:owner
+                FROM app.runs WHERE owner_user_id=:owner AND mode='training'
                 AND (CAST(:status AS text) IS NULL OR status=:status)
                 AND (CAST(:cursor_at AS timestamptz) IS NULL OR
                      (created_at,id)<(CAST(:cursor_at AS timestamptz),CAST(:cursor_id AS uuid)))

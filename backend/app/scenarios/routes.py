@@ -33,7 +33,7 @@ async def catalog(
         rows = await session.execute(
             text(
                 f"SELECT {PUBLIC_COLUMNS} FROM app.scenarios "
-                "WHERE enabled AND id > :after ORDER BY id LIMIT :count"
+                "WHERE enabled AND purpose='training' AND id > :after ORDER BY id LIMIT :count"
             ),
             {"after": after, "count": limit + 1},
         )
@@ -58,7 +58,7 @@ async def select_training(
     rows = await session.execute(
         text(
             f"SELECT {PUBLIC_COLUMNS} FROM app.scenarios "
-            "WHERE enabled AND id = ANY(:ids) ORDER BY id"
+            "WHERE enabled AND purpose='training' AND id = ANY(:ids) ORDER BY id"
         ),
         {"ids": selection.scenario_ids},
     )

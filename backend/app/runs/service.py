@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.analysis.provider_config import load_config
 from app.auth.service import AuthError
 from app.detection.policy import BASELINE_VERSION, CONFIG, CORRELATION_VERSION, RULE_VERSION
-from app.scenarios.models import TrainingSelection
+from app.scenarios.models import ScenarioView, TrainingSelection
 from app.scenarios.routes import select_training
 
 RUN_COLUMNS = "id,status,version,elapsed_ms,duration_ms,expires_at,seed,analysis_mode,resumed_at"
@@ -55,7 +55,8 @@ async def get_owned_run(
             await session.execute(
                 text(
                     f"SELECT {RUN_COLUMNS},owner_user_id,release_cursor,created_at "
-                    f"FROM app.runs WHERE id=:id AND owner_user_id=:owner{suffix}"
+                    f"FROM app.runs WHERE id=:id AND owner_user_id=:owner "
+                    f"AND mode='training'{suffix}"
                 ),
                 {"id": run_id, "owner": owner_id},
             )
@@ -69,20 +70,30 @@ async def get_owned_run(
 
 
 async def start_run(
-    session: AsyncSession, owner_id: UUID, body: TrainingSelection, key: UUID
+    session: AsyncSession,
+    owner_id: UUID,
+    body: TrainingSelection,
+    key: UUID,
+    *,
+    mode: str = "training",
+    route_key: str = "/runs",
+    request_digest: str | None = None,
+    selected_scenarios: list[ScenarioView] | None = None,
 ) -> tuple[dict[str, Any], bool]:
     # Serializes starts for one account, including different idempotency keys.
     await session.execute(
         text("SELECT pg_advisory_xact_lock(hashtextextended(:owner,73102006))"),
         {"owner": str(owner_id)},
     )
-    digest = request_hash(body)
+    if mode not in {"training", "exam"}:
+        raise ValueError("Unsupported run mode")
+    digest = request_digest or request_hash(body)
     previous = (
         (
             await session.execute(
                 text("""SELECT request_hash,response_json FROM app.idempotency_keys
-                WHERE user_id=:owner AND method='POST' AND route_key='/runs' AND key=:key"""),
-                {"owner": owner_id, "key": key},
+                WHERE user_id=:owner AND method='POST' AND route_key=:route AND key=:key"""),
+                {"owner": owner_id, "route": route_key, "key": key},
             )
         )
         .mappings()
@@ -92,43 +103,68 @@ async def start_run(
         if previous["request_hash"] != digest:
             raise AuthError(409, "IDEMPOTENCY_CONFLICT")
         return dict(previous["response_json"]), False
-    selected = await select_training(session, body)
-    if await session.scalar(
-        text("SELECT 1 FROM app.runs WHERE owner_user_id=:owner AND status='running'"),
+    if selected_scenarios is not None:
+        selected = selected_scenarios
+    elif mode == "training":
+        selected = await select_training(session, body)
+    else:
+        raise ValueError("Exam runs require server-selected cases")
+    has_conflicting_run = await session.scalar(
+        text(
+            "SELECT 1 FROM app.runs WHERE owner_user_id=:owner AND "
+            + (
+                "status IN ('running','paused','reviewing','completing')"
+                if mode == "exam"
+                else "status='running'"
+            )
+        ),
         {"owner": owner_id},
-    ):
+    )
+    has_active_exam = mode == "training" and await session.scalar(
+        text("""SELECT 1 FROM app.exam_attempts WHERE owner_user_id=:owner
+           AND status IN ('in_progress','submitted','needs_review')"""),
+        {"owner": owner_id},
+    )
+    if has_conflicting_run or has_active_exam:
         raise AuthError(409, "RUN_ALREADY_RUNNING")
-    quota = await session.scalar(
-        text("SELECT daily_runs FROM app.user_quotas WHERE user_id=:owner FOR UPDATE"),
-        {"owner": owner_id},
-    )
-    if quota is None:
-        raise AuthError(403, "FORBIDDEN")
-    today = await session.scalar(text("SELECT (clock_timestamp() AT TIME ZONE 'UTC')::date"))
-    await session.execute(
-        text("""INSERT INTO app.quota_ledgers(id,scope_key,user_id,period_start)
-            VALUES (:id,:scope,:owner,:today) ON CONFLICT(scope_key,period_start) DO NOTHING"""),
-        {"id": uuid4(), "scope": f"user:{owner_id}", "owner": owner_id, "today": today},
-    )
-    used = await session.scalar(
-        text("""SELECT run_count FROM app.quota_ledgers
-            WHERE scope_key=:scope AND period_start=:today FOR UPDATE"""),
-        {"scope": f"user:{owner_id}", "today": today},
-    )
-    if used is None or used >= quota:
-        raise AuthError(429, "RUN_QUOTA_EXCEEDED")
+    today = None
+    if mode == "training":
+        quota = await session.scalar(
+            text("SELECT daily_runs FROM app.user_quotas WHERE user_id=:owner FOR UPDATE"),
+            {"owner": owner_id},
+        )
+        if quota is None:
+            raise AuthError(403, "FORBIDDEN")
+        today = await session.scalar(text("SELECT (clock_timestamp() AT TIME ZONE 'UTC')::date"))
+        await session.execute(
+            text("""INSERT INTO app.quota_ledgers(id,scope_key,user_id,period_start)
+                VALUES (:id,:scope,:owner,:today)
+                ON CONFLICT(scope_key,period_start) DO NOTHING"""),
+            {"id": uuid4(), "scope": f"user:{owner_id}", "owner": owner_id, "today": today},
+        )
+        used = await session.scalar(
+            text("""SELECT run_count FROM app.quota_ledgers
+                WHERE scope_key=:scope AND period_start=:today FOR UPDATE"""),
+            {"scope": f"user:{owner_id}", "today": today},
+        )
+        if used is None or used >= quota:
+            raise AuthError(429, "RUN_QUOTA_EXCEEDED")
     now = await server_time(session)
     run_id = uuid4()
-    provider_config = load_config(os.environ)
-    analysis_mode = "mock" if provider_config.mode == "mock" else "real"
-    model_id = provider_config.chat_model
+    provider_config = (
+        load_config({**os.environ, "SOC_AI_PROVIDER": "mock"})
+        if mode == "exam"
+        else load_config(os.environ)
+    )
+    analysis_mode = "mock" if mode == "exam" or provider_config.mode == "mock" else "real"
+    model_id = "exam-no-ai-v1" if mode == "exam" else provider_config.chat_model
     seed = body.seed if body.seed is not None else secrets.randbelow(2147483648)
     duration = max(item.duration_ms for item in selected)
     await session.execute(
         text("""INSERT INTO app.runs
-            (id,owner_user_id,status,seed,resumed_at,duration_ms,expires_at,analysis_mode)
+            (id,owner_user_id,status,seed,resumed_at,duration_ms,expires_at,analysis_mode,mode)
             VALUES (:id,:owner,'running',:seed,CAST(:now AS timestamptz),:duration,
-                    CAST(:now AS timestamptz) + interval '30 days',:analysis_mode)"""),
+                    CAST(:now AS timestamptz) + interval '30 days',:analysis_mode,:mode)"""),
         {
             "id": run_id,
             "owner": owner_id,
@@ -136,6 +172,7 @@ async def start_run(
             "now": now,
             "duration": duration,
             "analysis_mode": analysis_mode,
+            "mode": mode,
         },
     )
     fixture_hashes = []
@@ -148,12 +185,24 @@ async def start_run(
         )
         fixture_hashes.append(
             str(
-                await session.scalar(text("SELECT app.training_fixture_hash(:id)"), {"id": item.id})
+                await session.scalar(
+                    text(
+                        "SELECT app."
+                        + ("training_fixture_hash" if mode == "training" else "exam_fixture_hash")
+                        + "(:id)"
+                    ),
+                    {"id": item.id},
+                )
             )
         )
         truth_versions[str(item.id)] = int(
             await session.scalar(
-                text("SELECT app.training_truth_version(:scenario)"), {"scenario": item.id}
+                text(
+                    "SELECT app."
+                    + ("training_truth_version" if mode == "training" else "exam_truth_version")
+                    + "(:scenario)"
+                ),
+                {"scenario": item.id},
             )
             or 1
         )
@@ -183,7 +232,7 @@ async def start_run(
             "truth_versions": json.dumps(truth_versions),
         },
     )
-    if os.getenv("SOC_KB_ENABLED", "false") == "true":
+    if mode == "training" and os.getenv("SOC_KB_ENABLED", "false") == "true":
         if (
             analysis_mode == "real"
             and os.getenv("SOC_RAG_REAL_CONFIRMED") != "approved-corpus-free-v1"
@@ -215,29 +264,43 @@ async def start_run(
             },
         )
     await enqueue_release(session, run_id, 0, now, 1)
-    await session.execute(
-        text("""UPDATE app.quota_ledgers SET run_count=run_count+1,version=version+1
-            WHERE scope_key=:scope AND period_start=:today"""),
-        {"scope": f"user:{owner_id}", "today": today},
+    if mode == "training":
+        await session.execute(
+            text("""UPDATE app.quota_ledgers SET run_count=run_count+1,version=version+1
+                WHERE scope_key=:scope AND period_start=:today"""),
+            {"scope": f"user:{owner_id}", "today": today},
+        )
+    row = (
+        (
+            await session.execute(
+                text(
+                    f"SELECT {RUN_COLUMNS} FROM app.runs WHERE id=:id "
+                    "AND owner_user_id=:owner AND mode=:mode"
+                ),
+                {"id": run_id, "owner": owner_id, "mode": mode},
+            )
+        )
+        .mappings()
+        .one()
     )
-    row = await get_owned_run(session, run_id, owner_id)
     result = json.loads(json.dumps(run_view(row, now), default=str))
     await session.execute(
         text("""INSERT INTO app.idempotency_keys
             (id,user_id,method,route_key,key,request_hash,status,response_status,response_json,resource_id,expires_at)
-            VALUES (:id,:owner,'POST','/runs',:key,:hash,'completed',201,CAST(:body AS jsonb),:run,
+            VALUES (:id,:owner,'POST',:route,:key,:hash,'completed',201,CAST(:body AS jsonb),:run,
                     CAST(:now AS timestamptz) + interval '30 days')"""),
         {
             "id": uuid4(),
             "owner": owner_id,
             "key": key,
+            "route": route_key,
             "hash": digest,
             "body": json.dumps(result, default=str),
             "run": run_id,
             "now": now,
         },
     )
-    await audit_run(session, owner_id, run_id, "run.start")
+    await audit_run(session, owner_id, run_id, "exam.start" if mode == "exam" else "run.start")
     return result, True
 
 
@@ -272,6 +335,15 @@ async def audit_run(session: AsyncSession, owner_id: UUID, run_id: UUID, action:
 async def change_state(
     session: AsyncSession, run_id: UUID, owner_id: UUID, action: str, expected: int
 ) -> dict[str, Any]:
+    await session.execute(
+        text("SELECT pg_advisory_xact_lock(hashtextextended(:owner,73102006))"),
+        {"owner": str(owner_id)},
+    )
+    if action == "resume" and await session.scalar(
+        text("SELECT 1 FROM app.runs WHERE owner_user_id=:owner AND status='running'"),
+        {"owner": owner_id},
+    ):
+        raise AuthError(409, "RUN_ALREADY_RUNNING")
     row = await get_owned_run(session, run_id, owner_id, lock=True)
     if row["version"] != expected:
         raise AuthError(409, "VERSION_CONFLICT")

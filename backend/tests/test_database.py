@@ -116,6 +116,14 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "retrieval_items",
             "analysis_knowledge_refs",
             "quota_components",
+            "learning_levels",
+            "lessons",
+            "user_lesson_progress",
+            "exam_cases",
+            "exam_attempts",
+            "exam_answers",
+            "grading_revisions",
+            "level_unlocks",
         }
 
     asyncio.run(scenario())

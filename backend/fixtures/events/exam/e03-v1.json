@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "purpose": "exam",
+  "scenario_id": "624f6eda-9044-48ea-8ee8-91fdf1e50003",
+  "duration_ms": 75000,
+  "events": [
+    {"key":"e001","release_offset_ms":0,"event_offset_ms":0,"source":"change_management","asset_id":"PORTAL-04","username":"release.operator","src_ip":"203.0.113.70","request":{"method":"POST","path":"/change/CHG-204"},"response":{"status":201,"bytes_sent":64},"log":{"event_type":"change_approved","change_ref":"CHG-204","scope":"portal-banner"}},
+    {"key":"e002","release_offset_ms":18000,"event_offset_ms":18000,"source":"web","asset_id":"PORTAL-04","username":"release.operator","src_ip":"203.0.113.70","request":{"method":"POST","path":"/portal/banner"},"response":{"status":204,"bytes_sent":0},"log":{"event_type":"configuration_updated","change_ref":"CHG-204"}},
+    {"key":"e003","release_offset_ms":36000,"event_offset_ms":36000,"source":"change_management","asset_id":"PORTAL-04","username":"release.operator","src_ip":"203.0.113.70","request":{"method":"GET","path":"/change/CHG-204"},"response":{"status":200,"bytes_sent":88},"log":{"event_type":"change_completed","change_ref":"CHG-204","scope":"portal-banner"}}
+  ]
+}

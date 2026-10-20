@@ -44,6 +44,9 @@ GitHub CI ข้อ 03 ผ่านแล้ว แต่ required check/branch 
 ดู [คู่มือ RAG](rag-development.md) และ [ผลตรวจ/ข้อจำกัด benchmark](step-14-verification.md).
 ค่าเริ่มต้นยังเป็น mock/RAG disabled; Render preview ไม่ถูกเปลี่ยนในงานนี้.
 
+ข้อ 15 เพิ่มเส้นทางเรียนรู้และ server-side progress เบื้องต้น; ดู [ผลตรวจข้อ 15](step-15-verification.md). ข้อสอบ/การปลดล็อกระดับยังไม่เปิด.
+ข้อ 16 ยังไม่เปิด exam endpoints ระหว่างรอ policy retake/quota/lifecycle; ดู [preflight ข้อ 16](step-16-verification.md).
+
 - [คู่มือผู้ตรวจ relevance และ grounded claims ข้อ 14](step-14-review-guide.md)
 
 - [Agent self-review ข้อ 14 และข้อพบเรื่อง grounding/ภาษา](step-14-agent-review.md)
@@ -51,3 +54,6 @@ GitHub CI ข้อ 03 ผ่านแล้ว แต่ required check/branch 
 - [เตรียม Google login/OAuth Client และสิ่งที่ยังไม่เปิดใช้งาน](google-login-setup.md)
 
 - [แผนระบบลืมรหัสผ่านทางอีเมล (Draft)](password-reset-plan.md)
+- [ผลตรวจข้อ 17](step-17-verification.md)
+- [ผลตรวจข้อ 18](step-18-verification.md)
+- [ผลตรวจข้อ 19](step-19-verification.md)

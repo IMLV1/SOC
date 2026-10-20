@@ -22,7 +22,7 @@ docker compose config --quiet
 docker compose build
 docker compose up -d --wait --wait-timeout 120
 docker compose exec -T api python -c "from pathlib import Path; assert not Path('/app/fixtures').exists()"
-docker compose exec -T worker python -c "from pathlib import Path; assert Path('/app/fixtures/events/training/s02-v1.json').is_file(); assert not Path('/app/fixtures/ground-truth').exists(); assert not Path('/app/fixtures/catalog.json').exists()"
+docker compose exec -T worker python -c "from pathlib import Path; assert Path('/app/fixtures/events/training/s02-v1.json').is_file(); assert Path('/app/fixtures/events/exam/e01-v1.json').is_file(); assert not Path('/app/fixtures/ground-truth').exists(); assert not Path('/app/fixtures/exam/ground-truth.json').exists(); assert not Path('/app/fixtures/exam/catalog.json').exists(); assert not Path('/app/fixtures/catalog.json').exists()"
 docker compose exec -T frontend node -e "const fs=require('fs'); if(fs.existsSync('/app/fixtures')||fs.existsSync('/app/backend'))process.exit(1)"
 mkdir -p test-results
 # Only synthetic JUnit reports; permit the test container's non-root UID to write them.

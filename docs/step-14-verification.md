@@ -1,6 +1,6 @@
 # ผลตรวจข้อ 14 — RAG และ Ask AI
 
-ตรวจ local บน branch `codex/step-14-rag` ฐาน `7a5f142` (ข้อ 13); changes ข้อ 14 ยังไม่ commit และยังไม่ได้รัน GitHub CI ของ changes นี้ รายงานนี้ไม่ใช่หลักฐาน deploy หรือ production acceptance
+ตรวจ local บน branch `codex/step-14-rag` ฐาน `7a5f142` (ข้อ 13); implementation ข้อ 14 ถูกรวมใน PR #13 และ GitHub Actions ผ่านสำหรับ `a4ea423` ([run 38875091514](https://github.com/IMLV1/SOC/actions/runs/38875091514)) และ `b72a549` ([run 38877535995](https://github.com/IMLV1/SOC/actions/runs/38877535995)). ตรวจซ้ำบน `main` SHA `5a1bdd4` ได้ run [38913140706](https://github.com/IMLV1/SOC/actions/runs/38913140706) ผ่านด้วย รายงานนี้ไม่ใช่หลักฐาน deploy หรือ production acceptance
 
 ## สถานะ
 
@@ -73,9 +73,23 @@ Benchmark ใช้ Question-v1 schema เดียวกันทั้งส�
 1. ผู้ตรวจอิสระยืนยัน relevant chunks ของชุด v2 และตรวจ supported claims ≥90% จาก evidence/context ที่แนบ ดูคู่มือ review; ไม่ให้ agent ที่เขียนงานลงคะแนนแทนมนุษย์
 2. วัด full paired answer comparison บน release/config v2 หลังได้ labels ที่ผู้ตรวจยืนยัน; เก็บ baseline v1 ที่มี 4 invalid outputs/1 provider failure ไว้ ไม่ใช้ retrieval-only เป็นหลักฐานคุณภาพคำตอบ
 3. Reconcile unknown usage ด้วยรายงาน provider ที่ยืนยันได้และ audit; เก็บ ledger ใน local container `soc-ci-rag14-real-db` ไม่ลบเพื่อเริ่มนับงบใหม่
-4. Commit/review และยืนยัน GitHub CI ของ SHA ที่จะส่งจริง; ยังไม่มีการ push/PR/deploy ข้อ 14 จากงานนี้
+4. GitHub CI ผ่านแล้วตาม run IDs ข้างต้น; การตรวจรับเชิงคุณภาพและ unknown usage ยัง pending จึงยังไม่ปิดข้อ 14
 
-ตรวจซ้ำจาก root: `backend/.venv/Scripts/python.exe scripts/check-doc-links.py` และ `git diff --check`; backend checks รันจาก `backend/` ตาม AGENTS เพื่อให้ strict config มีผล
+## ตรวจเพิ่ม 17 ต.ค. 2026
+
+- ผู้ใช้กำหนดให้เลื่อน real-AI quality acceptance และ reconciliation ไปทำภายหลัง; ไม่มีการเรียก provider เพิ่ม และการเชื่อมต่อจริงยังคง opt-in ตาม config
+- เปิด Google AI Studio Usage แบบ read-only ในบัญชีที่เปิดอยู่ เลือก `Default Gemini Project` ช่วง 28 วันแล้ว dashboard แสดง `No data available`; นี่ไม่ยืนยันว่า 6 unknown calls ใช้ 0 tokens เพราะยังจับคู่ project/call IDs ไม่ได้
+- ลิงก์ metrics ไป Google Cloud Console แต่หน้า Console ขอให้ยอมรับ Terms of Service ก่อนดู metrics จึงหยุดไว้ที่หน้านั้น ไม่ยอมรับข้อตกลงแทนผู้ใช้ และยังไม่มี provider report สำหรับ reconcile
+- รัน offline assessors กับ pending packets: `assess-retrieval` และ `assess` คืน `pending_review` (exit 2; reviewed sample count 0) ตามคาด เพราะยังไม่มีผู้ตรวจกรอกผล
+
+ตรวจเอกสารจาก repository root ด้วย `python3 scripts/check-doc-links.py` และ `git diff --check`; backend checks รันจาก `backend/` ตาม AGENTS เพื่อให้ strict config มีผล
+
+## ตรวจตามคำสั่งผู้ใช้ 18 ต.ค. 2026
+
+- ผู้ใช้สั่งให้เดินหน้าปิด independent quality review และ reconcile unknown usage; real provider dispatch ยังปิดไว้ ไม่มีการส่งคำถามหรือข้อมูลเพิ่มไป Gemini.
+- ตรวจหน้า Google Cloud Console Metrics ในบัญชีที่เปิดอยู่แบบ read-only; หน้าแรกขอให้ยอมรับ Google Cloud Platform/บริการ Terms of Service ก่อนดำเนินต่อ และ checkbox ยังไม่ถูกเลือก. ไม่ยอมรับข้อตกลงแทนผู้ใช้. จึงยังไม่มี usage report ที่จับคู่กับ 6 internal call IDs ได้.
+- Human review packets ยังคง pending. ผู้ช่วยเป็น agent ที่จัดทำ implementation และ prior self-review; กรอก reviewer/labels แทนคนอิสระจะทำให้หลักฐานคลาดเคลื่อน จึงคงผล 53/57 agent-supported claims เป็น self-review เท่านั้น.
+- ขั้นต่อไปที่จำเป็น: ผู้ใช้หรือผู้ตรวจอิสระกรอก review packet; สำหรับ usage ต้องให้เจ้าของบัญชียอมรับ Terms of Service และตรวจ project/ช่วงเวลาให้ตรงกับวันที่เรียกก่อนดาวน์โหลด usage details. หาก report ไม่มี call-level mapping จะคง 6 calls เป็น unknown hold ต่อ ไม่เปลี่ยนเป็น 0.
 
 
 ## Agent self-review ที่ผู้ใช้อนุญาต

@@ -196,8 +196,18 @@ def test_seed_conflict_rolls_back_and_exam_import_is_rejected(migrated, tmp_path
             async with db.sessions() as session:
                 assert await session.scalar(text("SELECT count(*) FROM app.scenarios")) == 5
                 assert await session.scalar(text("SELECT count(*) FROM private.ground_truth")) == 10
-                with pytest.raises(DBAPIError):
-                    await session.execute(text("UPDATE app.scenarios SET purpose='exam'"))
+                # The exam migration adds this catalog purpose. A purpose flip
+                # alone does not provision an exam case or its private truth.
+                scenario_id = await session.scalar(
+                    text("UPDATE app.scenarios SET purpose='exam' RETURNING id")
+                )
+                assert (
+                    await session.scalar(
+                        text("SELECT count(*) FROM app.exam_cases WHERE scenario_id=:id"),
+                        {"id": scenario_id},
+                    )
+                    == 0
+                )
         finally:
             await db.close()
 

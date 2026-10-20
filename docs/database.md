@@ -376,4 +376,6 @@ exam_answers หนึ่งแถวต่อ attempt ป้องกันส�
 
 `app.google_flows`: state_hash PK, binding/session/nonce hashes, server-only PKCE verifier, purpose login/link, target user/session ของ link, expiry 5 นาที และ consumed_at Consume atomic ใน transaction แยกก่อน network และล้าง verifier; ตรวจ session/expiry ซ้ำก่อน commit identity/session Expired unconsumed flows ลบด้วย retention_runtime ก่อนลบ auth_sessions ที่อ้างถึงได้ Retention scheduler ยังเป็น backlog ไม่อ้างว่าลบอัตโนมัติแล้ว
 
+Migration `0019_learning_path` เพิ่ม `app.learning_levels`, versioned `app.lessons` (immutable training content) และ `app.user_lesson_progress` (JSON step IDs, version และ completion time). `api_runtime` อ่าน catalog และแก้เฉพาะ progress ของตนผ่าน owner-filtered queries; lesson content ต้องถูก seed ด้วย one-shot operator command `python -m app.learning.seed` หลัง migration. ไม่มี passed/unlocked field ใน schema หรือ request.
+
 Google-only users มี password_hash=NULL Password registration ยัง hash Argon2id ตามเดิม การเปลี่ยนนี้ไม่เปิด password enrollment/reset; ไม่ใช้รหัสผ่านค่าเริ่มต้น Identity callbacks ใช้ transaction advisory guard 73102018 ก่อน user/session และ constraints ป้องกัน race ไม่เปลี่ยน lock order ของ runs/attempts/quota

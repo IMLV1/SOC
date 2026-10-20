@@ -4521,7 +4521,7 @@ paths:
     get:
       operationId: get_learning_path
       summary: GET /learning-path
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. public level/lesson metadata
+      description: 'DRAFT / IMPLEMENTED, CONTRACT REVIEW PENDING. Source: api.md. Guest sees level/lesson metadata only; lesson body requires login.
         เท่านั้น ไม่ส่ง exam bank หรือ answer key
 
         Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
@@ -4560,7 +4560,7 @@ paths:
     get:
       operationId: get_me_learning_path
       summary: GET /me/learning-path
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 บทเรียนที่เรียนจบ,
+      description: 'DRAFT / IMPLEMENTED, CONTRACT REVIEW PENDING. Source: api.md. 200 บทเรียนที่เรียนจบ,
         เคสที่ผ่าน, ระดับที่เปิด และ next action ของบัญชี
 
         Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
@@ -4600,8 +4600,7 @@ paths:
     get:
       operationId: get_lessons_lesson_id
       summary: GET /lessons/{lesson_id}
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 ตัวอย่างฝึก versioned
-        5 ขั้น และคำอธิบาย; ไม่มี fixture ข้อสอบ
+      description: 'DRAFT / IMPLEMENTED, CONTRACT REVIEW PENDING. Source: api.md. SessionCookie required before lesson content is read. 200 ตัวอย่างฝึก versioned 5 ขั้น และคำอธิบาย; ไม่มี fixture ข้อสอบ
 
         Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
         schemas require feature review before enabling.'
@@ -4645,8 +4644,7 @@ paths:
     post:
       operationId: post_lessons_lesson_id_steps_step_id_complete
       summary: POST /lessons/{lesson_id}/steps/{step_id}/complete
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. บันทึกการทำขั้นของเจ้าของ
-        session; 200 progress/version; ตรวจ step ที่มีอยู่และลำดับ
+      description: 'DRAFT / IMPLEMENTED, CONTRACT REVIEW PENDING. Source: api.md. JSON `{expected_version}` mutation; session owner; 200 progress/version; validate known step and order.
 
         Apply srs.md exam policy to every direct/nested response. Detailed payload/filter
         schemas require feature review before enabling.'
@@ -4698,7 +4696,7 @@ paths:
     post:
       operationId: post_lessons_lesson_id_complete
       summary: POST /lessons/{lesson_id}/complete
-      description: 'DRAFT / NOT IMPLEMENTED. Source: api.md. 200 เมื่อครบทุกขั้น;
+      description: 'DRAFT / IMPLEMENTED, CONTRACT REVIEW PENDING. Source: api.md. JSON `{expected_version}`; 200 เมื่อครบทุกขั้น;
         idempotent; ไม่รับ `user_id`/`passed` จาก client
 
         Apply srs.md exam policy to every direct/nested response. Detailed payload/filter

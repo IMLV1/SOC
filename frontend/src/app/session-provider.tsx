@@ -134,6 +134,13 @@ export default function SessionProvider({
           >
             สถานการณ์ฝึก
           </Link>
+          <Link
+            href="/learning"
+            onClick={() => setNavOpen(false)}
+            aria-current={pathname.startsWith("/learning") ? "page" : undefined}
+          >
+            เส้นทางเรียนรู้
+          </Link>
           {session && (
             <Link
               href="/runs"

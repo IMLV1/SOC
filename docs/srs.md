@@ -48,7 +48,7 @@ role Instructor เพียงอย่างเดียวไม่ให้�
 | คำตอบหนึ่งหรือหลายรายการ | learning ระบุ 1:N answers; database §14 ใช้ attempt_id PK | หนึ่ง final answer ต่อ attempt/หนึ่งเคสตาม submit API; retake เป็น attempt ใหม่; แก้ความสัมพันธ์เชิงเอกสารให้เป็น 0..1 frozen answer |
 | Lock attempt + run ไม่เรียง | database §14 เทียบ run-first §6 และ RAG §8 | ใช้ global ordering §5; ห้าม attempt → run |
 | LEARN ID ซ้ำคนละความหมาย | plan LEARN-01–03 เป็น backlog; learning LEARN-01–07 เป็น requirements | ใช้ FR IDs ด้านล่าง; อ้างเดิมพร้อมชื่อเอกสาร ไม่ถือว่า ID สองชุดตรงกัน |
-| Exam statuses, result schema, abort/expiry, rubric ไม่ครบ | api §16/database §14 | lifecycle ร่าง §4; policy ที่เปลี่ยนสิทธิ์หรือคะแนนยัง pending §8; ไม่เปิด endpoint จริงก่อนอนุมัติ |
+| Exam statuses/result schema | api §16/database §14 | lifecycle และ policy เริ่มต้นอยู่ §4/§8; ยังไม่เปิด endpoint จน implement และผ่าน security/integration tests |
 
 เอกสารเดิมคงรายละเอียดไว้ พร้อมหมายเหตุเชื่อมฉบับนี้ ไม่ใช้ draft schemas เป็นการอนุมัติ
 สิทธิ์หรือคะแนนโดยปริยาย OpenAPI ระบุ `x-contract-status` ทุก operation และ `x-schema-status`
@@ -114,7 +114,7 @@ needs_review --authorized instructor revision--> finalized หรือ needs_re
 `failed` ใน result หมายถึงสอบไม่ผ่าน; run.failed หมายถึงระบบล้มเหลว ไม่ใช่คะแนนศูนย์
 run สามารถ completed ขณะ attempt ยัง pending/needs_review ได้ ไม่ทำให้เปิดเฉลยแก่ learner
 grading revision append-only; finalized ที่ถูก review ใหม่ไม่เขียนทับ revision เก่า
-ผลของการ review ต่อ unlock ต้องรอ policy §8 จึงยังไม่เปิด review mutation จริง
+ผล review ไม่ถอน unlock เดิมตาม policy §8; review mutation ยังไม่เปิดจน implementation พร้อม
 
 Submit: ตรวจ session/owner/CSRF/Idempotency-Key และ version → ตรวจ attempt in_progress,
 run ยัง mutable, evidence ที่ต้องใช้ครบตาม rubric และ refs เป็น released events ใน run เดียวกัน
@@ -127,8 +127,8 @@ validation fail 422 ไม่มี answer/job/cutoff บางส่วนห�
 key/body เดิม replay resource เดิมหลังตรวจสิทธิ์; key เดิม/body ต่าง 409;
 key ใหม่ขณะ frozen แล้วไม่เขียน answer ใหม่ (ร่าง: 409 ALREADY_SUBMITTED)
 สองแท็บต้องมี final answer เดียวด้วย PK(attempt_id), row lock และ transaction
-retake สร้าง attempt/run ใหม่และคงประวัติ; quota/cooldown/case selection ยัง pending
-นิยาม active attempt, pause/abort/expiry และการนับ paused exam รอการตัดสินใจ ไม่ infer จาก
+retake สร้าง attempt/run ใหม่และคงประวัติ; ใช้ quota/cooldown/case rotation ตาม §8
+นิยาม active attempt และ expiry ใช้ policy §8 ไม่ infer จาก
 partial UNIQUE owner WHERE run.status=running ซึ่งเป็นข้อจำกัดคนละเรื่อง
 
 ## 5. Transaction และลำดับ lock เดียวกัน
@@ -178,7 +178,7 @@ production client จนรายละเอียด request/response/authoriz
 | FR-010 / SOC-015 | UC-10 assigned Instructor → account/quota/comments/review | operator `app.db.provision`; `/admin/runs*`; Instructor | account/quota/assignment ผ่าน CLI ที่มี audit; unassigned 404; Analyst admin 403; comments แยกจาก assessment/note; exam truth หลัง submit ยังไม่มี endpoint |
 | FR-011 / SOC-014 | UC-11 Instructor dataset completed → experiment A/B/C | `POST /admin/runs/{run_id}/experiments`; Experiments | A/B ใช้ detector จริงกับ frozen dataset เดียวกัน; C unavailable จน provider/budget controls พร้อม; metrics แยกจาก human scoring |
 | FR-012 / RAG-001–005 | UC-12 mutable training ticket → question → validated citations | ticket `/questions`, analysis `/sources/*`; Ask AI | revocation ทุก projection, retry frozen release, no_match ไม่เรียก chat |
-| FR-013 / learning LEARN-01/02 | UC-13 login → onboarding → step lessons → progress | `/learning-path`, `/me/learning-path`, `/lessons/*`; Learning | refresh ไม่หาย, versioned steps/order, completion ไม่เท่ากับผ่านสอบ |
+| FR-013 / learning LEARN-01/02 | UC-13 login → onboarding → step lessons → progress | `/learning-path`, `/me/learning-path`, `/lessons/*`; Learning | refresh ไม่หาย, versioned steps/order, completion ไม่เท่ากับผ่านสอบ; ผู้ใช้ยืนยัน 17 ต.ค. 2026 ว่าต้อง login ก่อนอ่าน lesson body (Guest อ่าน metadata/demo เท่านั้น) |
 | FR-014 / learning LEARN-03/04 | UC-14 prerequisites ผ่าน → server เลือก case/attempt | `/levels/{level_id}/attempts`, `/attempts/{attempt_id}`; Exam | direct API bypass ไม่ได้, blind serializer ทุก route, demo fixture แยก |
 | FR-015 / learning LEARN-05 | UC-15 เจ้าของ evidence ครบ → submit immutable answer | `/attempts/{attempt_id}/submit`; Submit | 422 ไม่ freeze ถ้าไม่ครบ; concurrent submit ได้ answer เดียว; finish bypass ไม่ได้ |
 | FR-016 / learning LEARN-06/07 | UC-16 submitted → grading → feedback/review/retake | attempt `/result`, `/admin/attempts/*`; Feedback | outage/ambiguity needs_review; rubric/model/release/snapshot pinned; learner ไม่มี key |
@@ -244,7 +244,7 @@ Training soft delete เก็บ ticket/evidence/audit และมี restore 
 role ต่างหาก ไม่ purge งานยังทำ/unknown reservation; exam retention/feedback redaction ต้องกำหนดก่อน public
 PostgreSQL 17.11/digest ผ่าน local integration ตั้งแต่ข้อ 02; production hosting/pgvector compatibility ยังรอข้อ 13/18
 
-## 8. Decision register — ยังไม่ตัดสินแทนผู้ใช้
+## 8. Decision register — ข้อสรุปที่ผู้ใช้มอบหมายให้กำหนด และเรื่องที่ยังค้าง
 
 ข้อ 12 ได้ข้อยืนยันผู้ใช้ 15 ต.ค. 2026: Free Tier/no billing, budget 0 บาท,
 global 100 requests/วัน UTC, 200,000 tokens/วัน, 5 requests/rolling minute;
@@ -253,18 +253,18 @@ global 100 requests/วัน UTC, 200,000 tokens/วัน, 5 requests/rolling 
 
 | ID | ต้องตัดสินใจ | กั้นงานใด |
 |---|---|---|
-| D-01 | rubric/version/น้ำหนัก/คะแนนผ่าน; severity/disposition ที่ยอมรับ; evidence completeness และความกำกวม | exam create/submit/grading จริง |
-| D-02 | retake จำนวนครั้ง/cooldown/quota/case rotation; active รวม pending/needs_review หรือไม่; pause/abort/expiry | attempt admission/index/lifecycle จริง |
-| D-03 | override pass→fail หลัง unlock: คงสิทธิ์/ถอนสิทธิ์/ผลต่อ attempt ระดับถัดไป; ผู้อนุมัติและการแจ้งผู้เรียน | review/unlock mutation จริง |
-| D-04 | feedback รายข้อเผยได้แค่ไหนโดยไม่เป็นเฉลยเต็ม; grading citation source access/withdrawal | learner result/export schema approval |
-| D-05 | เลือก Gemini Free Tier สำหรับ analysis เฉพาะ synthetic training events ใน local (15 ต.ค. 2026); ใช้ Gemini 3.5 Flash-Lite หลัง 2.5 Flash ตอบ 404 สำหรับ project ใหม่; ผู้ใช้ยืนยันเพิ่ม gemini-embedding-2/768 และ corpus 2 เรื่องสำหรับ local ingestion/benchmark วันที่ 16 ต.ค. 2026; production privacy/paid mode ยังรอ | local synthetic และ corpus ที่อนุมัติเท่านั้น; เพดาน 0 บาท/100 dispatches/200,000 tokens ต่อ UTC day/5 ต่อ 60 วินาที |
+| D-01 | **กำหนดค่าเริ่มต้น 17 ต.ค. 2026 ตามที่ผู้ใช้มอบหมาย:** rubric `soc-foundations-v1` มี 4 เกณฑ์ (evidence, analysis, classification, reasoning) คะแนน 0–2 ต่อเกณฑ์; ผ่านเมื่อได้อย่างน้อย 6/8 และเกณฑ์ critical (evidence, analysis) ได้อย่างน้อย 1; หลักฐานต้องเป็น event ที่ release แล้วใน run เดียวกัน. Classification เทียบ private expected severity และ disposition จาก enum `true_positive|false_positive|undetermined`; ไม่เพิ่ม `benign_positive`. Missing/invalid/ambiguous grading เป็น `needs_review`; ห้ามใช้ความยาวข้อความเป็นคะแนน | ใช้เป็น policy เริ่มต้นสำหรับ implementation; ต้องทดสอบ grading ก่อนเปิด exam |
+| D-02 | **กำหนดค่าเริ่มต้นที่ผู้ใช้มอบหมาย 18 ต.ค. 2026:** สูงสุด 3 attempt ต่อ case ต่อ rolling 24 ชั่วโมง UTC (ปัจจุบัน 3 cases/level จึงสูงสุด 9 attempts ต่อ level/24 ชั่วโมง); ไม่มี lifetime cap; หลัง failed รอ 1 ชั่วโมง; attempt ที่ไม่ submit หมดอายุใน 24 ชั่วโมงและนับเป็น failed. หนึ่ง active attempt ต่อ user (`in_progress`, `submitted`, `needs_review`); exam ไม่มี learner pause/abort; client ปิดหน้าไม่หยุด expiry. เลือก case ที่มี attempt น้อยที่สุดก่อน แล้วสุ่มเมื่อเท่ากัน; case ที่ครบ 3 attempts ใน window พักจนพ้น window; history/quota/cooldown ตรวจ transactionally | ใช้เป็น baseline สำหรับ implementation; ต้องมี DB tests ยืนยัน retake/cap ก่อนตรวจรับ exam |
+| D-03 | **กำหนดค่าเริ่มต้น 17 ต.ค. 2026:** Instructor override ต้องมีเหตุผลและสร้าง grading revision/audit ใหม่เสมอ; การแก้ pass เป็น fail ไม่ถอน level ที่ปลดล็อกแล้วและไม่ย้อนผล attempt ระดับถัดไป; ผลใหม่มีผลกับ promotion ในอนาคต | ใช้กับ review/unlock implementation; no silent recomputation |
+| D-04 | **กำหนดค่าเริ่มต้น 17 ต.ค. 2026:** learner เห็น status, คะแนนรวม/รายเกณฑ์, เกณฑ์ทั่วไป, และเฉพาะ evidence refs ที่ตนส่ง; ไม่เห็น expected answer, private case truth, model rationale, rubric hints ที่ผูกกับโจทย์ หรือ citations ที่อาจเปิด answer key; Instructor ใน assignment scope อ่าน submission/truth หลัง submit พร้อม audit | ใช้กับ result/export serializers; ต้องมี leakage regression tests |
+| D-05 | เลือก Gemini Free Tier สำหรับ analysis เฉพาะ synthetic training events ใน local (15 ต.ค. 2026); ใช้ Gemini 3.5 Flash-Lite หลัง 2.5 Flash ตอบ 404 สำหรับ project ใหม่; ผู้ใช้ยืนยันเพิ่ม gemini-embedding-2/768 และ corpus 2 เรื่องสำหรับ local ingestion/benchmark วันที่ 16 ต.ค. 2026; วันที่ 17 ต.ค. พัก real-AI quality acceptance; วันที่ 18 ต.ค. สั่งให้เดินหน้า independent review/reconcile usage โดยไม่สั่ง dispatch ใหม่; production privacy/paid mode ยังรอ | local synthetic และ corpus ที่อนุมัติเท่านั้น; เพดาน 0 บาท/100 dispatches/200,000 tokens ต่อ UTC day/5 ต่อ 60 วินาที; provider จริงยัง opt-in และไม่มี real dispatch เพิ่มจนกว่าจะสั่งใหม่ |
 | D-06 | approved KB manifest/reviewer, hosting/PostgreSQL/pgvector, domain/registry/backup/release owner | corpus publish/deploy |
-| D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า และ promotion notification; quota ผู้สมัครใหม่ยืนยันแล้ว 10 runs/20 AI requests ต่อวัน UTC (14 ต.ค. 2026) ส่วน exam/retake ยัง pending | public learning rollout |
+| D-07 | learning/exam retention, policy version change ต่อผู้เรียนเก่า และ promotion notification; quota ผู้สมัครใหม่ยืนยันแล้ว 10 runs/20 AI requests ต่อวัน UTC (14 ต.ค. 2026); exam attempt cap/cooldown ใช้ D-02 | public learning rollout |
 
-ไม่มี default คะแนนผ่านหรือ auto-revoke unlock. Gemini Free Tier ที่ระบุข้างต้นเป็นการตัดสินใจผู้ใช้สำหรับ local synthetic analysis เท่านั้น; วันที่ 16 ต.ค. 2026 ผู้ใช้อนุมัติ embedding/RAG และ benchmark เฉพาะ local corpus สองเรื่องตาม D-05 เพิ่มแล้ว; production/paid use ยังไม่อนุมัติ.
+ไม่มีการถอน unlock ย้อนหลัง และไม่มี AI auto-pass: rubric policy ให้ `needs_review` เมื่อข้อมูลไม่ครบหรือกำกวม; จนกว่าจะมี AI grading ที่ผ่าน benchmark และ policy เพิ่มเติม การตัดสินผลสุดท้ายต้องเป็น deterministic rubric ที่ตรวจสอบได้หรือ Instructor review. Gemini Free Tier ที่ระบุข้างต้นเป็นการตัดสินใจผู้ใช้สำหรับ local synthetic analysis เท่านั้น; วันที่ 16 ต.ค. 2026 ผู้ใช้อนุมัติ embedding/RAG และ benchmark เฉพาะ local corpus สองเรื่องตาม D-05 เพิ่มแล้ว; วันที่ 17 ต.ค. พัก real-AI connection/quality acceptance ไว้ก่อน และวันที่ 18 ต.ค. สั่งทำ independent review/reconciliation โดยยังไม่สั่ง provider dispatch ใหม่; production/paid use ยังไม่อนุมัติ.
 ข้อ 05 ใช้ [training-only catalog/seed และ exam default-deny policy](scenario-development.md)
-เพื่อปิดช่องก่อนเปิด run/exam จริง; ไม่อนุมัติ draft rubric/result/attempt schema โดยปริยาย
-RAG เปิดต่อ run ด้วย opt-in หลัง publish release; exam features ยังปิดจน dependencies/decisions พร้อม; mock ไม่ทดแทนผลจริง
+เพื่อปิดช่องก่อนเปิด run/exam จริง; ผู้ใช้มอบหมายให้กำหนด policy baseline D-01–D-04 แล้ว แต่ draft result/attempt schema ยังไม่ approved และ exam features ยังปิดจน implement/test ผ่าน
+RAG เปิดต่อ run ด้วย opt-in หลัง publish release; mock ไม่ทดแทนผลจริง
 Approval เพิ่ม route: ตกลง policy/schema → เปลี่ยน operation เป็น approved → implement response
 allowlist/validation/permission → generated OpenAPI drift + behavior/integration tests → ติ๊ก checklist เฉพาะที่ผ่าน
 
