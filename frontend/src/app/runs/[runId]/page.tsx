@@ -175,7 +175,7 @@ export default function RunDetailPage() {
     setError("");
     try {
       let current = run;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
+      for (let attempt = 0; attempt < 5; attempt += 1) {
         try {
           setRun(
             await write<Run>(`/runs/${runId}/${action}`, {
@@ -184,7 +184,7 @@ export default function RunDetailPage() {
           );
           return;
         } catch (cause) {
-          if (!(cause instanceof ApiError) || cause.status !== 409 || attempt > 0) {
+          if (!(cause instanceof ApiError) || cause.status !== 409 || attempt === 4) {
             throw cause;
           }
           const latest = await read<Run>(`/runs/${runId}`);
