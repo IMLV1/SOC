@@ -339,7 +339,7 @@ worker heartbeat, queue failures, migrations, pgvector และ critical flows 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 18; SOC-017
 
-สถานะ: lesson local acceptance และ regression suites ผ่าน; ยังขาด E2E สอบ/feedback/review/retake, submit/retake race coverage, GitHub CI บน changes ล่าสุด และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
+สถานะ ณ 21 ต.ค. 2026: local Compose ยืนยัน lesson → exam/submit → Instructor review/feedback และ cooldown UX; PostgreSQL test ครอบคลุม concurrent retake start หลัง attempt ก่อนหน้าตกและ cooldown หมด. ยังขาด browser journey ที่เริ่ม retake หลัง cooldown หมด, GitHub CI บน changes ล่าสุด, export/accessibility/load audit และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
 
 ```text
 ทำข้อ 19: ตรวจ requirement coverage ของ docs ทั้งหมดกับ implementation และเติมช่องว่างที่อยู่ใน scope
@@ -375,5 +375,7 @@ deploy production เฉพาะเมื่อ environment พร้อมแ�
 | 03 | ผ่าน local และ GitHub CI | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); ทุก job ผ่านบน GitHub และ failure/cancelled ไม่เป็น success | Branch protection/rulesets API 403 เพราะ private repository plan; ยังไม่ยืนยัน enforced merge blocking; ไม่ deploy |
 | 04 | ผ่าน local และ GitHub auth/Guest acceptance | [คู่มือ](auth-development.md), [ผลตรวจ](step-04-verification.md); integration 26, foundation/contract 13, HTTP smoke 3, Chromium E2E 2 และทั้ง 5 GitHub jobs ผ่าน | Branch protection ยังติดข้อจำกัดแพ็กเกจ; ไม่มี runner/exam/admin CRUD/provider |
 | 05 | ผ่าน local fixtures/catalog/boundary | [คู่มือ](scenario-development.md), [ผลตรวจ](step-05-verification.md); migration/seed/grants/selector, backend 50 ไม่ซ้ำ, HTTP 3, browser 4, bundle 1 และ static/build ผ่าน | รอยืนยันบน GitHub; เปิดเฉพาะ S02 catalog, ยังไม่มี runner/exam gate/grading/provider |
+| 16 | ผ่าน local acceptance และ GitHub CI บน SHA ที่บันทึก | [ผลตรวจ](step-16-verification.md); 21 ต.ค. disposable Compose: PostgreSQL integration 81, smoke 3, browser 26 passed/1 skipped; real failed-attempt retake race หลัง cooldown หมด และ browser cooldown rejection ผ่าน | ยังไม่มี browser journey ที่เริ่ม attempt หลัง cooldown หมด, GitHub CI บน changes ล่าสุด หรือ staging acceptance |
+| 19 | กำลังตรวจรับ | [ผลตรวจ](step-19-verification.md); local Compose 21 ต.ค. ตรวจ feedback/review, cooldown UX, retake start race; frontend lint/typecheck, Ruff check/format และ diff check ผ่าน | ยังขาด browser retake หลัง cooldown, GitHub CI SHA ล่าสุด, export/accessibility/load coverage และ staging/rollback/restore |
 
 ถ้าข้อหนึ่งยังไม่ผ่าน ให้ใช้ prompt ต่อว่า: “แก้ข้อ NN ต่อจากผลทดสอบล่าสุดให้ผ่าน acceptance ที่ยังค้าง โดยไม่เริ่มข้อถัดไปและไม่เปลี่ยน test ให้ยอมรับพฤติกรรมผิด”

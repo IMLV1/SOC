@@ -1605,6 +1605,7 @@ select {
   border-radius: 11px;
   color: var(--ink);
   background: rgba(5, 8, 13, 0.64);
+  font-size: max(1rem, 16px);
   transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
 

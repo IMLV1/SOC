@@ -516,6 +516,7 @@ def test_retake_rotates_cases_and_caps_three_attempts_per_case(migrated, monkeyp
 @pytest.mark.integration
 def test_concurrent_retake_start_creates_only_one_active_attempt(migrated, monkeypatch):
     users, tokens = asyncio.run(prepare_exam(migrated))
+    analyst = users[0]
     analyst_token = tokens[0]
     monkeypatch.setattr("app.main.database_url", lambda role: migrated(role))
     monkeypatch.setenv("AUTH_ORIGINS", "http://testserver")
@@ -524,6 +525,39 @@ def test_concurrent_retake_start_creates_only_one_active_attempt(migrated, monke
     with TestClient(app, headers={"Origin": "http://testserver"}) as learner:
         learner.cookies.set(auth.SESSION, analyst_token)
         csrf = auth.csrf(analyst_token)
+
+        # Establish a genuine retake state: a previous attempt has failed and
+        # the policy cooldown has elapsed before the two new starts race.
+        first = learner.post(
+            f"/api/v1/learning/levels/{LEVEL_ID}/attempts",
+            json={"expected_progress_version": 1},
+            headers={"X-CSRF-Token": csrf, "Idempotency-Key": str(uuid4())},
+        )
+        assert first.status_code == 201, first.text
+
+        async def expire_cooldown():
+            database = Database(migrated("migration_owner"))
+            try:
+                async with database.sessions() as session, session.begin():
+                    await session.execute(
+                        text("""UPDATE app.exam_attempts SET status='failed',
+                           submitted_at=clock_timestamp()-interval '2 hours',
+                           finalized_at=clock_timestamp()-interval '2 hours'
+                           WHERE id=:attempt AND owner_user_id=:owner"""),
+                        {"attempt": first.json()["data"]["id"], "owner": analyst},
+                    )
+                    await session.execute(
+                        text("""UPDATE app.runs SET status='failed',resumed_at=NULL,
+                           failure_code='EXAM_TEST_FAILED' WHERE id=:run"""),
+                        {"run": first.json()["data"]["run_id"]},
+                    )
+            finally:
+                await database.close()
+
+        asyncio.run(expire_cooldown())
+        latest = learner.get("/api/v1/exam/attempts/latest/result")
+        assert latest.status_code == 200
+        assert latest.json()["data"]["status"] == "failed"
 
         def start(key):
             return learner.post(

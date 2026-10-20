@@ -13,7 +13,7 @@
 
 ## ผลตรวจ local
 
-อัปเดต 20 ต.ค. 2026: disposable Compose ผ่าน migration/seed/health checks; integration suite **81 passed / 81 deselected**, smoke **3 passed**, browser E2E **22 passed / 1 skipped**. Integration ยืนยัน start/idempotency, blind projection, submit/replay, owner isolation, lesson gate, concurrent Instructor review, unlock เมื่อผ่านครบทุก case, revision/audit, override ที่ไม่ถอน unlock และ concurrent retake start (มี active attempt ได้เพียงหนึ่งเดียว). Browser E2E ครอบคลุมเริ่มข้อสอบ ส่งคำตอบ สถานะ `needs_review` และหน้ากู้ผลตก/เริ่ม retake หลัง refresh โดย mock เฉพาะ Instructor outcome; ไม่อ้างว่าเป็น end-to-end grading จริง. Retake policy กำหนด 3 attempts/case/24h (สูงสุด 9/level), case rotation/cap และ cooldown 1h หลัง fail. API ล่าสุด-result จำกัด ownership ผ่าน integration.
+ผลตรวจล่าสุด 21 ต.ค. 2026: disposable Compose ผ่าน migration/seed/health checks; integration suite **81 passed / 81 deselected**, smoke **3 passed**, browser E2E **26 passed / 1 skipped**. Integration ยืนยัน start/idempotency, blind projection, submit/replay, owner isolation, lesson gate, concurrent Instructor review, unlock เมื่อผ่านครบทุก case, revision/audit, override ที่ไม่ถอน unlock, case cap และการแข่งเริ่ม retake หลัง attempt ก่อนหน้าตกและ cooldown หมด (มี active attempt ได้เพียงหนึ่งเดียว). Browser E2E ครอบคลุมเริ่มข้อสอบ ส่งคำตอบ `needs_review`, Instructor review จริงใน disposable DB, learner feedback หลัง refresh และการปฏิเสธ retry ระหว่าง cooldown. Retake policy กำหนด 3 attempts/case/24h (สูงสุด 9/level), case rotation/cap และ cooldown 1h หลัง fail. API ล่าสุด-result จำกัด ownership ผ่าน integration.
 
 - Ruff lint/format ของไฟล์ backend ที่แก้, mypy และ `pytest -m 'not integration'`: ผ่าน; **93 passed** (deselected count แปรตาม integration tests ที่เพิ่ม; ล่าสุด 80).
 - เพิ่ม `test_exam_integration.py` ครอบคลุม start/idempotency, frozen submit/replay, owner isolation และ assignment-scoped review; Compose integration suite ผ่านจริงบน PostgreSQL.
@@ -23,8 +23,12 @@
 
 ## ยังต้องยืนยัน
 
-browser retake initiation ยังคงใช้ mock เพื่อทดสอบ UI; Instructor review flow จริงมีหลักฐานเพิ่มวันที่ 20 ต.ค. 2026 ด้านล่าง. Compose integration และ browser flow ไม่ใช่ staging/deployment acceptance; เรียก Alembic ผ่าน migration wrapper ตาม harness.
+ยังไม่มี browser E2E ที่เดินเวลาจน cooldown หมดแล้วเริ่ม attempt จริง; การเริ่ม retake หลัง cooldown และ race ตรวจใน PostgreSQL integration ส่วน browser ยืนยัน cooldown UX ผ่าน API จริงใน Compose. Compose integration และ browser flow ไม่ใช่ staging/deployment acceptance; เรียก Alembic ผ่าน migration wrapper ตาม harness.
 
 ## เพิ่มเติม 20 ต.ค. 2026
 
 เพิ่ม `frontend/tests/browser/exam-review.spec.ts` สำหรับ UI contract ด้วย fixture และต่อยอด `frontend/tests/browser/learning.spec.ts` ให้ใน disposable Compose ทำ browser journey จริง: Analyst สมัคร/เรียน/ส่งข้อสอบ → operator provisions Instructor ชั่วคราวและ assign เฉพาะ Analyst → Instructor login/ตรวจคำตอบผ่าน UI/API → Analyst refresh แล้วเห็นผลและ feedback จาก PostgreSQL. รหัสผ่านสุ่มเฉพาะ run อยู่ในไฟล์ชั่วคราวและฐาน/volume ถูกลบโดย harness. วันที่ 20 ต.ค. 2026 `scripts/ci-compose.sh` ผ่าน: backend/PostgreSQL integration **81 passed**, smoke **3 passed**, browser **23 passed / 1 skipped**. GitHub CI ทุก job ผ่านบน commit `75ae111870c1c4da1ae152b0d16519ad723d5901` (run [39411788826](https://github.com/IMLV1/SOC/actions/runs/39411788826)). รอบก่อนหน้าล้มเพราะ container ใช้ UID `soc` ซึ่งอ่านไฟล์รหัสผ่านชั่วคราวที่สร้างเป็น mode `0600` โดย CI runner ไม่ได้; `scripts/ci-compose.sh` กำหนด UID/GID ให้ตรงเจ้าของไฟล์ก่อน provision. Docker CLI บนเครื่องนี้เรียกผ่าน `PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin"`.
+
+## ตรวจซ้ำ 21 ต.ค. 2026
+
+บน checkout ปัจจุบัน (branch `codex/magic-ui-redesign`) `scripts/ci-compose.sh` ผ่าน migration/health, PostgreSQL integration **81 passed**, HTTP smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. เพิ่มการยืนยันว่า concurrent retry เกิดหลัง attempt ก่อนหน้าถูกปิดเป็น `failed` และ cooldown ถูกเลื่อนพ้นแล้วจริง; browser test ครอบคลุม response `EXAM_COOLDOWN_ACTIVE` และคงผลสอบตกไว้เมื่อ retry ถูกปฏิเสธ. Ruff check/format สำหรับ test backend, frontend lint/typecheck และ `git diff --check` ผ่าน. GitHub CI บน changes ล่าสุดยังรอยืนยัน; ไม่มี staging/deployment acceptance.
