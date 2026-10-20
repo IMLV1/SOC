@@ -4,6 +4,11 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   page,
 }) => {
   test.setTimeout(120000);
+  let csrfBootstraps = 0;
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/api/v1/auth/csrf")
+      csrfBootstraps += 1;
+  });
   const email = `runner-${Date.now()}@example.test`;
   const password = `Test-only-${Date.now()}-password`;
   await page.goto("/register");
@@ -29,6 +34,27 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   await expect(
     page.getByRole("heading", { name: "สำรวจเหตุการณ์" }),
   ).toBeVisible();
+  // Pause while the run is certainly active; waiting for investigation output
+  // can outlast the short simulated run and make this control disappear.
+  await expect(page.getByRole("button", { name: "พักรอบ" })).toBeVisible();
+  const csrfRequestsBeforePause = csrfBootstraps;
+  const pauseResponse = page.waitForResponse(
+    (response) => response.request().method() === "POST" && response.url().includes("/pause"),
+    { timeout: 15000 },
+  );
+  const pauseButton = page.getByRole("button", { name: "พักรอบ" });
+  await pauseButton.click();
+  await expect(pauseButton).toBeDisabled();
+  const paused = await pauseResponse;
+  expect(paused.status()).toBe(200);
+  expect((await paused.json()).data.status).toBe("paused");
+  expect(csrfBootstraps).toBe(csrfRequestsBeforePause);
+  await expect(page.getByRole("button", { name: "ทำต่อ" })).toBeVisible({
+    timeout: 15000,
+  });
+  await page.reload();
+  await expect(page.getByRole("button", { name: "ทำต่อ" })).toBeVisible();
+  await page.getByRole("button", { name: "ทำต่อ" }).click();
   await expect(
     page
       .locator("section[aria-labelledby='alerts-title'] .run-list li")
@@ -70,13 +96,9 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   await page.locator(".event-list button").first().click();
   await expect(page.getByRole("heading", { name: "Response" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Log" })).toBeVisible();
-  await page.getByRole("button", { name: "พักรอบ" }).click();
-  await expect(page.getByRole("button", { name: "ทำต่อ" })).toBeVisible();
   await page.reload();
   await expect(page.locator(".event-list button").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Request" })).toBeVisible();
-  await page.getByRole("button", { name: "ทำต่อ" }).click();
-  await expect(page.getByRole("button", { name: "พักรอบ" })).toBeVisible();
   for (const width of [375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     expect(

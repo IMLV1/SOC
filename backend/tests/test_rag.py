@@ -397,12 +397,13 @@ def test_question_http_scope_cas_idempotency_and_finish_race(migrated, monkeypat
             owner = Database(migrated("migration_owner"))
             invalid_run = uuid4()
             try:
-                with pytest.raises(IntegrityError):
-                    async with owner.sessions() as s, s.begin():
-                        await s.execute(text("UPDATE app.scenarios SET purpose='exam'"))
+                # Exam scenarios are a supported catalog purpose now. Turning the
+                # scenarios for an existing run into exam scenarios must still make
+                # the RAG admission predicate fail closed.
                 async with owner.sessions() as s, s.begin():
-                    # Existing schema rejects exam admission. An owned run without
-                    # an approved training identity must fail closed as well.
+                    await s.execute(text("UPDATE app.scenarios SET purpose='exam'"))
+                async with owner.sessions() as s, s.begin():
+                    # An owned run without a training identity must fail closed.
                     await s.execute(
                         text("""INSERT INTO app.runs
                         (id,owner_user_id,status,seed,duration_ms,expires_at)
@@ -422,6 +423,18 @@ def test_question_http_scope_cas_idempotency_and_finish_race(migrated, monkeypat
             denied.status_code == 403 and denied.json()["error"]["code"] == "AI_UNAVAILABLE_IN_EXAM"
         )
         assert client.get(f"/api/v1/runs/{invalid_run}/analyses").status_code == 403
+
+        # Restore the shared catalog rows before testing the valid training
+        # run's question/finish race below.
+        async def restore_training_scenarios():
+            owner = Database(migrated("migration_owner"))
+            try:
+                async with owner.sessions() as s, s.begin():
+                    await s.execute(text("UPDATE app.scenarios SET purpose='training'"))
+            finally:
+                await owner.close()
+
+        asyncio.run(restore_training_scenarios())
         # Concurrent API transactions use the same run lock. Either the question
         # commits before freeze or receives RUN_READ_ONLY; never admitted afterwards.
         new_headers = headers | {"Idempotency-Key": str(uuid4())}

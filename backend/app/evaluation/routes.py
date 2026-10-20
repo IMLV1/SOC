@@ -29,7 +29,8 @@ async def evaluation_row(session: Any, run_id: UUID) -> Any:
         (
             await session.execute(
                 text("""SELECT e.* FROM app.evaluations e
-        JOIN app.runs r ON r.id=e.run_id WHERE e.run_id=:run AND r.status='completed'"""),
+        JOIN app.runs r ON r.id=e.run_id WHERE e.run_id=:run AND r.mode='training'
+          AND r.status='completed'"""),
                 {"run": run_id},
             )
         )
@@ -45,7 +46,8 @@ async def get_evaluation(run_id: UUID, request: Request) -> dict[str, Any]:
         await authorize_owner(
             user,
             await session.scalar(
-                text("SELECT owner_user_id FROM app.runs WHERE id=:run"), {"run": run_id}
+                text("SELECT owner_user_id FROM app.runs WHERE id=:run AND mode='training'"),
+                {"run": run_id},
             )
             or UUID(int=0),
         )
@@ -72,7 +74,8 @@ async def export_evaluation(run_id: UUID, request: Request) -> Response:
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.require_user(session, request)
         owner = await session.scalar(
-            text("SELECT owner_user_id FROM app.runs WHERE id=:run"), {"run": run_id}
+            text("SELECT owner_user_id FROM app.runs WHERE id=:run AND mode='training'"),
+            {"run": run_id},
         )
         if owner is None:
             raise auth.AuthError(404, "NOT_FOUND")
@@ -106,7 +109,11 @@ async def owner_ground_truth(run_id: UUID, request: Request) -> dict[str, Any]:
         row = (
             (
                 await session.execute(
-                    text("SELECT owner_user_id,status FROM app.runs WHERE id=:run"), {"run": run_id}
+                    text(
+                        "SELECT owner_user_id,status FROM app.runs "
+                        "WHERE id=:run AND mode='training'"
+                    ),
+                    {"run": run_id},
                 )
             )
             .mappings()
@@ -142,7 +149,8 @@ async def owner_ground_truth(run_id: UUID, request: Request) -> dict[str, Any]:
 
 async def assigned_run(session: Any, user: Any, run_id: UUID) -> UUID:
     owner = await session.scalar(
-        text("SELECT owner_user_id FROM app.runs WHERE id=:run"), {"run": run_id}
+        text("SELECT owner_user_id FROM app.runs WHERE id=:run AND mode='training'"),
+        {"run": run_id},
     )
     if owner is None:
         raise auth.AuthError(404, "NOT_FOUND")
@@ -165,7 +173,7 @@ async def instructor_runs(request: Request) -> dict[str, Any]:
                       ON r.owner_user_id=ia.analyst_user_id
                     JOIN app.users u ON u.id=r.owner_user_id
                     LEFT JOIN app.evaluations e ON e.run_id=r.id AND e.status='completed'
-                    WHERE ia.instructor_user_id=:instructor
+                    WHERE ia.instructor_user_id=:instructor AND r.mode='training'
                     ORDER BY r.created_at DESC,r.id DESC LIMIT 100"""),
                     {"instructor": user["id"]},
                 )
@@ -211,7 +219,7 @@ async def instructor_truth(run_id: UUID, request: Request) -> dict[str, Any]:
         user = await auth.require_user(session, request)
         await assigned_run(session, user, run_id)
         status = await session.scalar(
-            text("SELECT status FROM app.runs WHERE id=:run"), {"run": run_id}
+            text("SELECT status FROM app.runs WHERE id=:run AND mode='training'"), {"run": run_id}
         )
         if status in {"running", "paused", "reviewing"}:
             truth_query = "SELECT * FROM private.assigned_training_truth(:user,:run)"
@@ -327,7 +335,7 @@ async def create_experiment(run_id: UUID, request: Request) -> dict[str, Any]:
                 await session.execute(
                     text("""SELECT e.id,e.scenario_instance_id,e.fixture_event_key,e.source,
             e.username,e.src_ip,e.asset_id,e.event_time,e.response_json,e.log_json,r.created_at
-            FROM app.events e JOIN app.runs r ON r.id=e.run_id
+            FROM app.events e JOIN app.runs r ON r.id=e.run_id AND r.mode='training'
             WHERE e.run_id=:run AND e.release_seq<=:cutoff ORDER BY e.release_seq"""),
                     {"run": run_id, "cutoff": evaluation["release_cutoff"]},
                 )

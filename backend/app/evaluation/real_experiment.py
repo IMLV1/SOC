@@ -37,7 +37,8 @@ async def execute_arm(database: Database, arm: UUID) -> None:
             .one()
         )
         await session.execute(
-            text("SELECT id FROM app.runs WHERE id=:id FOR UPDATE"), {"id": row["dataset_run_id"]}
+            text("SELECT id FROM app.runs WHERE id=:id AND mode='training' FOR UPDATE"),
+            {"id": row["dataset_run_id"]},
         )
         state = await session.scalar(
             text("SELECT status FROM app.experiment_arms WHERE id=:id FOR UPDATE"), {"id": arm}
@@ -46,7 +47,7 @@ async def execute_arm(database: Database, arm: UUID) -> None:
             text("""SELECT 1 FROM app.instructor_assignments ia
             JOIN app.runs r ON r.owner_user_id=ia.analyst_user_id
             JOIN app.users u ON u.id=ia.instructor_user_id
-            WHERE r.id=:run AND r.status='completed'
+            WHERE r.id=:run AND r.mode='training' AND r.status='completed'
               AND EXISTS(SELECT 1 FROM app.scenario_instances si WHERE si.run_id=r.id)
               AND NOT EXISTS(SELECT 1 FROM app.scenario_instances si
                   JOIN app.scenarios s ON s.id=si.scenario_id
@@ -136,7 +137,8 @@ async def execute_arm(database: Database, arm: UUID) -> None:
         status, error = "failed", "PROVIDER_ERROR"
     async with database.sessions() as session, session.begin():
         await session.execute(
-            text("SELECT id FROM app.runs WHERE id=:id FOR UPDATE"), {"id": row["dataset_run_id"]}
+            text("SELECT id FROM app.runs WHERE id=:id AND mode='training' FOR UPDATE"),
+            {"id": row["dataset_run_id"]},
         )
         await session.execute(
             text("SELECT id FROM app.experiment_arms WHERE id=:id FOR UPDATE"), {"id": arm}

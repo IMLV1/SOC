@@ -34,6 +34,7 @@ export default function InstructorRunsPage() {
   return (
     <main className="run-shell">
       <h1>Instructor · รอบที่ได้รับมอบหมาย</h1>
+      <p><Link href="/instructor/exams">ตรวจข้อสอบใน assignment ของคุณ</Link></p>
       {loading ? (
         <p role="status">กำลังตรวจบัญชี…</p>
       ) : !session ? (

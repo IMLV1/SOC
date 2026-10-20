@@ -174,11 +174,26 @@ export default function RunDetailPage() {
     setBusy(true);
     setError("");
     try {
-      setRun(
-        await write<Run>(`/runs/${runId}/${action}`, {
-          expected_version: run.version,
-        }),
-      );
+      let current = run;
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        try {
+          setRun(
+            await write<Run>(`/runs/${runId}/${action}`, {
+              expected_version: current.version,
+            }),
+          );
+          return;
+        } catch (cause) {
+          if (!(cause instanceof ApiError) || cause.status !== 409 || attempt === 4) {
+            throw cause;
+          }
+          const latest = await read<Run>(`/runs/${runId}`);
+          setRun(latest);
+          const expectedStatus = action === "pause" ? "running" : "paused";
+          if (latest.status !== expectedStatus) return;
+          current = latest;
+        }
+      }
     } catch (cause) {
       setError(
         cause instanceof ApiError && cause.status === 409

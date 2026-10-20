@@ -19,6 +19,7 @@ from app.db.session import Database
 from app.demo import router as demo_router
 from app.evaluation.routes import admin_router as instructor_evaluation_router
 from app.evaluation.routes import router as evaluation_router
+from app.exams.routes import router as exam_router
 from app.http_models import (
     ErrorDetail,
     ErrorEnvelope,
@@ -31,6 +32,7 @@ from app.http_models import (
 from app.investigation.routes import admin_router as admin_ticket_router
 from app.investigation.routes import router as ticket_router
 from app.knowledge.routes import router as rag_router
+from app.learning.routes import router as learning_router
 from app.runs.routes import router as run_router
 from app.scenarios.routes import router as scenario_router
 
@@ -60,6 +62,8 @@ app.include_router(ticket_router)
 app.include_router(admin_ticket_router)
 app.include_router(analysis_router)
 app.include_router(rag_router)
+app.include_router(learning_router)
+app.include_router(exam_router)
 app.include_router(evaluation_router)
 app.include_router(instructor_evaluation_router)
 

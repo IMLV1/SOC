@@ -445,7 +445,8 @@ async def note_versions(
 async def assigned_run(session: AsyncSession, request: Request, run_id: UUID) -> Mapping[str, Any]:
     user = await auth.require_user(session, request)
     owner = await session.scalar(
-        text("SELECT owner_user_id FROM app.runs WHERE id=:run"), {"run": run_id}
+        text("SELECT owner_user_id FROM app.runs WHERE id=:run AND mode='training'"),
+        {"run": run_id},
     )
     if owner is None:
         raise auth.AuthError(404, "NOT_FOUND")
@@ -471,7 +472,8 @@ async def admin_patch(
         await auth.csrf_check(session, request)
         user = await assigned_run(session, request, run_id)
         run_status = await session.scalar(
-            text("SELECT status FROM app.runs WHERE id=:run FOR UPDATE"), {"run": run_id}
+            text("SELECT status FROM app.runs WHERE id=:run AND mode='training' FOR UPDATE"),
+            {"run": run_id},
         )
         if run_status not in {"running", "paused", "reviewing"}:
             raise auth.AuthError(409, "RUN_READ_ONLY")

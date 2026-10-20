@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "purpose": "exam",
+  "scenario_id": "624f6eda-9044-48ea-8ee8-91fdf1e50001",
+  "duration_ms": 75000,
+  "events": [
+    {"key":"e001","release_offset_ms":0,"event_offset_ms":0,"source":"authentication","asset_id":"AUTH-01","username":"staff.member","src_ip":"192.0.2.91","request":{"method":"POST","path":"/session"},"response":{"status":401,"bytes_sent":0},"log":{"event_type":"login_failed","session_id":null}},
+    {"key":"e002","release_offset_ms":12000,"event_offset_ms":12000,"source":"authentication","asset_id":"AUTH-01","username":"staff.member","src_ip":"192.0.2.91","request":{"method":"POST","path":"/session"},"response":{"status":401,"bytes_sent":0},"log":{"event_type":"login_failed","session_id":null}},
+    {"key":"e003","release_offset_ms":28000,"event_offset_ms":28000,"source":"authentication","asset_id":"AUTH-01","username":"staff.member","src_ip":"192.0.2.91","request":{"method":"POST","path":"/session"},"response":{"status":200,"bytes_sent":96},"log":{"event_type":"login_success","session_id":"sess-38f2"}},
+    {"key":"e004","release_offset_ms":43000,"event_offset_ms":43000,"source":"web","asset_id":"PORTAL-02","username":"staff.member","src_ip":"192.0.2.91","request":{"method":"GET","path":"/admin/report"},"response":{"status":200,"bytes_sent":8420},"log":{"event_type":"protected_resource_read","session_id":"sess-38f2"}}
+  ]
+}

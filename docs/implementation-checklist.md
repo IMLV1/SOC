@@ -250,15 +250,15 @@ provider embeddings จริงต้องผ่านการเลือก
 
 ### 14 — LangChain RAG และ Ask AI
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 12/13; RAG-003/004/005; ยังไม่ผ่าน quality acceptance ดู [ผลตรวจข้อ 14](step-14-verification.md)
+- [ ] ตรวจรับ Step 14 ทั้งข้อ — implementation และ GitHub CI ผ่านแล้ว; ผู้ใช้สั่งปิด quality review/reconciliation ในรอบนี้ แต่ยังขาดผู้ตรวจอิสระและ provider usage evidence ดู [ผลตรวจข้อ 14](step-14-verification.md)
 - [x] Local API/UI, frozen citations/retry, revocation และ race/security regressions ผ่าน; CI ใช้ fake embeddings
 - [x] Real Free Tier smoke และ RAG/no-RAG pilot 50 คำถาม วัดแยกไทย/อังกฤษ เก็บ failures/call IDs/usage ตามจริง
 - [x] เพิ่ม model tokenizer preflight, shared dispatch cap, telemetry และ calibration release ใหม่; real smoke ผ่าน
 - [x] วัด retrieval v2 บน 50 คำถามใหม่แยก validation: TH Recall@5=0.95 / EN=1.00 ตาม developer labels; เก็บ baseline TH=0.80 ตามจริง
 - [x] ทำ agent self-review: relevance 100 คำถาม/claims 57 รายการ พร้อมเหตุผลและ unsupported cases; ไม่ใช่ human acceptance ดู [รายงาน self-review](step-14-agent-review.md)
-- [ ] ผู้ตรวจยืนยัน relevance/grounding (supported claims ≥90%) และ paired answer benchmark ของ release v2; ดู [คู่มือผู้ตรวจ](step-14-review-guide.md)
-- [ ] Reconcile unknown usage 6 calls ด้วยข้อมูล provider ที่ยืนยันได้
-- [ ] GitHub CI ของ changes ข้อ 14 — รอยืนยันบน GitHub
+- [ ] ผู้ตรวจอิสระยืนยัน relevance/grounding (supported claims ≥90%) และ paired answer benchmark ของ release v2; review packets พร้อม แต่ผู้เขียน implementation/agent ห้ามลงคะแนนแทนผู้ตรวจ และยังไม่ dispatch provider เพิ่ม ดู [คู่มือผู้ตรวจ](step-14-review-guide.md)
+- [ ] Reconcile unknown usage 6 calls ด้วยข้อมูล provider ที่ยืนยันได้; AI Studio project ไม่มีข้อมูลที่ใช้จับคู่ และ Google Cloud Console ยังอยู่หน้า Terms of Service จึงไม่มีหลักฐาน 0 tokens หรือ usage report
+- [x] GitHub CI ผ่านบน GitHub สำหรับ `a4ea423` และ `b72a549` (run 38875091514, 38877535995); ไม่ใช่หลักฐาน human quality review หรือ deployment
 
 ```text
 ทำข้อ 14: implement authorized retrieval → LangChain structured generation → citation validation
@@ -272,7 +272,9 @@ provider embeddings จริงต้องผ่านการเลือก
 
 ### 15 — Learning path, onboarding และ server-side progress
 
-- [ ] เสร็จและตรวจรับแล้ว — หลัง 04/05; ลำดับแนะนำหลัง 14; LEARN พื้นฐาน
+- [x] ผ่าน local acceptance — หลัง 04/05; lesson persistence/owner/gate integration และ `/learning` browser refresh/responsive flow ผ่าน 18 ต.ค. 2026; ดู [ผลตรวจข้อ 15](step-15-verification.md)
+
+สถานะปัจจุบัน: local acceptance ผ่าน; disposable Compose 80 integration passed, smoke 3 passed, browser E2E 22 passed/1 skipped และ lesson/gate integration ผ่าน. ดู [ผลตรวจข้อ 15](step-15-verification.md)
 
 ```text
 ทำข้อ 15 ตาม learning-path.md: implement learning levels/lessons/progress และ onboarding ใน Next.js
@@ -281,11 +283,15 @@ provider embeddings จริงต้องผ่านการเลือก
 Guest อ่าน demo ได้ ทบทวนบทเรียนได้ และ refresh แล้วเรียนต่อได้
 ```
 
+**หมายเหตุการตัดสินใจ:** ผู้ใช้ยืนยัน 17 ต.ค. 2026 ว่าต้อง login ก่อนอ่านเนื้อหาบทเรียน จึงให้ Guest ดูเฉพาะ metadata/demo ตาม [ผลตรวจข้อ 15](step-15-verification.md); รายละเอียดเกณฑ์รับงานยังรอ checks ที่ระบุในรายงาน
+
 **ผ่านเมื่อ:** ผู้เรียนใหม่เริ่มต้นถูกระดับ, จบบทเรียนไม่เท่ากับผ่านข้อสอบ, แก้ localStorage/เรียก API ตรงแล้ว bypass gate ไม่ได้
 
 ### 16 — Blind exam, immutable submission และ retake
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 06/09/11/15; LEARN exam
+
+สถานะปัจจุบัน: migration/seed, server-selected attempt, blind DTO, atomic submit/replay และ browser flow เริ่มข้อสอบ/ส่งคำตอบ/needs_review ผ่าน. Retake policy: 3 ครั้งต่อ case/24 ชม. (สูงสุด 9 ต่อ level เมื่อมี 3 cases), cooldown หลังตก 1 ชม.; PostgreSQL integration ยืนยัน case rotation/cap, concurrent starts ได้ active attempt เดียว และ latest-result จำกัดตามเจ้าของ; browser ทดสอบกู้ผลตกหลัง refresh และเริ่ม attempt ใหม่ (ผล Instructor จำลองเพื่อทดสอบ UI). Latest disposable Compose: 81 integration passed, smoke 3 passed, browser E2E 22 passed/1 skipped. ยังรอ GitHub CI และ browser journey ที่ Instructor review จริง จึงยังไม่ติ๊ก. ดู [ผลตรวจข้อ 16](step-16-verification.md)
 
 ```text
 ทำข้อ 16: implement exam bank, server-selected attempts, one-active-exam/quota checks และ blind serializers
@@ -301,12 +307,14 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 12/14/16; LEARN grading
 
+สถานะ: frozen submission, deterministic rubric, assignment-scoped review/audit, concurrent review, unlock ครบทุก case และ override history/non-revocation ผ่าน PostgreSQL integration; ยังขาด browser flow ของ learner feedback/Instructor review และ coverage ของ interleavings เพิ่มเติม จึงยังไม่ติ๊ก; AI grading จริงยังไม่เปิด ดู [ผลตรวจข้อ 17](step-17-verification.md)
+
 ```text
 ทำข้อ 17: implement versioned rubric, deterministic checks และ AI/RAG grading หลัง frozen submission
 ใช้ grading role แยก private key จาก learner/detector/triage; ไม่ส่งเฉลยเข้า shared knowledge corpus
 เก็บ grading revisions/citations/model/knowledge versions; ambiguity/outage/invalid citation เป็น needs_review
 เพิ่ม Instructor review/override พร้อมเหตุผล/audit และ atomic level unlock ตาม policy ที่ตกลงไว้
-ถ้า rubric หรือผลของ override ต่อ unlock ยังไม่ชัด ให้ถามก่อนกำหนดคะแนนผ่านหรือถอนสิทธิ์เอง
+ยึด policy D-01–D-04 ใน SRS §8; เปลี่ยน policy ต้องเพิ่ม version/review decision ก่อนใช้กับ attempt ใหม่
 ```
 
 **ผ่านเมื่อ:** AI ไม่ปลดล็อกเอง, ผ่านทุกเคสจึงเลื่อนระดับ, override ไม่ลบประวัติ, retake ไม่เขียนทับ attempt เดิม และมี tests submit/grade/unlock races
@@ -314,6 +322,8 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 ### 18 — Staging deployment และ operational checks
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 17 และ quality gates; SOC-016
+
+สถานะ: Docker Engine พร้อมและ local CI Compose ผ่าน (80 integration, smoke 3, browser 22/1 skip); ยังไม่มี staging/registry/hosting ที่เลือก จึงยังไม่มี deploy, rollback หรือ backup/restore evidence; ดู [ผลตรวจข้อ 18](step-18-verification.md)
 
 ```text
 ทำข้อ 18: เตรียม production Docker images ของ Next.js และ FastAPI/Python worker,
@@ -328,6 +338,8 @@ worker heartbeat, queue failures, migrations, pgvector และ critical flows 
 ### 19 — Acceptance, production และส่งมอบ
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 18; SOC-017
+
+สถานะ: lesson local acceptance และ regression suites ผ่าน; ยังขาด E2E สอบ/feedback/review/retake, submit/retake race coverage, GitHub CI บน changes ล่าสุด และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
 
 ```text
 ทำข้อ 19: ตรวจ requirement coverage ของ docs ทั้งหมดกับ implementation และเติมช่องว่างที่อยู่ใน scope

@@ -88,6 +88,15 @@ button:disabled {
   color: var(--text);
   border-color: #527069;
 }
+.learning-page { display: grid; gap: 18px; }
+.learning-page > h1, .learning-page > p { margin: 0; }
+.learning-card { padding: clamp(20px, 4vw, 36px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.learning-card h2 { margin-top: 0; }
+.lesson-steps { display: grid; gap: 8px; padding-left: 1.5rem; }
+.lesson-steps li { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.lesson-steps li span + span { float: right; color: var(--muted); }
+.lesson-done { color: var(--accent) !important; }
+.lesson-evidence { overflow-wrap: anywhere; white-space: pre-wrap; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #09111a; color: var(--accent); }
 :where(a, button, input, textarea, select, summary):focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 4px;

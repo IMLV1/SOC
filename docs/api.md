@@ -318,7 +318,7 @@ Retry ได้เฉพาะ failed/timed_out/invalid_output/quota_exceeded �
 | GET/POST | `/admin/runs/{run_id}/comments` | อ่าน/เพิ่ม Instructor comment; POST ใช้ CSRF; ไม่แก้ assessment หรือนักเรียน note |
 | POST | `/admin/runs/{run_id}/experiments` | เฉพาะ assigned Instructor และ completed run; A=legacy rules detector, B=pinned rules/anomaly detector, C=`unavailable` จน global provider/budget controls พร้อม |
 
-Evaluation GET คืน metadata, cutoffs, dataset hash, `truncated`, deterministic detection metrics และ versions; snapshot เต็มดาวน์โหลดผ่าน JSON export. Human metrics ระบุ `status=unavailable` และ `HUMAN_SCORING_POLICY_UNDECIDED`; ยังไม่คำนวณคะแนน learner เพราะ rubric/scoring policy ยังไม่ได้รับอนุมัติ. Detection denominator มาจาก detections ไม่ใช่ manual tickets; soft-deleted ticket จึงไม่ทำให้ detection หายจากผล.
+Evaluation GET คืน metadata, cutoffs, dataset hash, `truncated`, deterministic detection metrics และ versions; snapshot เต็มดาวน์โหลดผ่าน JSON export. Human metrics ระบุ `status=unavailable` เพราะ learner exam grading ยังไม่ implement; ไม่ใช้ detection evaluation endpoint คำนวณคะแนนผู้เรียน. Detection denominator มาจาก detections ไม่ใช่ manual tickets; soft-deleted ticket จึงไม่ทำให้ detection หายจากผล.
 
 Experiment source ต้อง completed และมีสิทธิ์กำกับ. A/B ใช้ frozen event/truth snapshot เดียวกันและเรียก detector implementation จริง; ไม่รับ scenario label เข้า detector. C ไม่ใช้ mock แทน provider จริง. รอบที่จบก่อน schedule ครบมี `truncated=true`.
 
@@ -402,12 +402,13 @@ Retry เดิมคง question, evidence และ retrieval snapshot (หา
 
 | Method | Endpoint | ผลสำเร็จ / เงื่อนไข |
 |---|---|---|
-| GET | `/learning-path` | public level/lesson metadata เท่านั้น ไม่ส่ง exam bank หรือ answer key |
+| GET | `/learning-path` | Guest/session: level/lesson metadata เท่านั้น ไม่ส่ง exam bank หรือ answer key; เนื้อหาบทเรียนต้อง login |
 | GET | `/me/learning-path` | 200 บทเรียนที่เรียนจบ, เคสที่ผ่าน, ระดับที่เปิด และ next action ของบัญชี |
-| GET | `/lessons/{lesson_id}` | 200 ตัวอย่างฝึก versioned 5 ขั้น และคำอธิบาย; ไม่มี fixture ข้อสอบ |
-| POST | `/lessons/{lesson_id}/steps/{step_id}/complete` | บันทึกการทำขั้นของเจ้าของ session; 200 progress/version; ตรวจ step ที่มีอยู่และลำดับ |
-| POST | `/lessons/{lesson_id}/complete` | 200 เมื่อครบทุกขั้น; idempotent; ไม่รับ `user_id`/`passed` จาก client |
+| GET | `/lessons/{lesson_id}` | SessionCookie จำเป็น; 200 ตัวอย่างฝึก versioned 5 ขั้น และคำอธิบาย; ไม่มี fixture ข้อสอบ; Guest ได้ 401 |
+| POST | `/lessons/{lesson_id}/steps/{step_id}/complete` | SessionCookie + Origin/CSRF/JSON; body `{expected_version}`; บันทึกการทำขั้นของเจ้าของ session; 200 progress/version; ตรวจ step ที่มีอยู่และลำดับ; conflict เป็น 409 |
+| POST | `/lessons/{lesson_id}/complete` | SessionCookie + Origin/CSRF/JSON; body `{expected_version}`; 200 เมื่อครบทุกขั้น; replay เดิม idempotent; ไม่รับ `user_id`/`passed` จาก client |
 | POST | `/levels/{level_id}/attempts` | 201 attempt + run_id ของ exam case ที่ server เลือก/อนุญาต; ตรวจ lesson, level, quota และหนึ่ง active exam ต่อบัญชี; ใช้ Idempotency-Key |
+| GET | `/exam/attempts/latest/result` | ผล finalized ล่าสุดของเจ้าของ session (`passed|failed|expired`) สำหรับกู้หน้าจอหลัง refresh; 404 เมื่อยังไม่มีผล; ไม่ส่งเฉลย |
 | GET | `/attempts/{attempt_id}` | 200 เฉพาะเจ้าของ; Instructor กำกับใช้ admin route หลัง submit; ไม่มี full answer key ทุกสถานะ |
 | POST | `/attempts/{attempt_id}/submit` | `expected_version`, evidence_event_ids, severity, disposition, reason; 202 grading pending หรือ 200 result ที่เสร็จแล้ว; freeze คำตอบทันทีและใช้ Idempotency-Key |
 | GET | `/attempts/{attempt_id}/result` | ก่อน submit คืน 409 RESULT_LOCKED; หลัง submit คืน pending/passed/failed/needs_review และ rubric รายข้อพร้อม evidence/knowledge citations ที่เปิดเผยได้ |

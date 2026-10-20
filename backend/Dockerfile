@@ -15,11 +15,12 @@ CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "
 FROM base AS runner
 COPY knowledge ./knowledge
 COPY fixtures/events/training ./fixtures/events/training
+COPY fixtures/events/exam ./fixtures/events/exam
 
 FROM base AS seed
 COPY knowledge ./knowledge
 COPY fixtures ./fixtures
-CMD ["python", "-m", "app.scenarios.seed"]
+CMD ["python", "-m", "app.db.seed_all"]
 
 FROM seed AS test
 USER root
@@ -28,6 +29,9 @@ RUN uv sync --frozen
 COPY tests ./tests
 USER soc
 CMD ["python", "-m", "pytest", "tests/test_database.py", "tests/test_auth.py", "tests/test_scenarios.py", "tests/test_runs.py", "tests/test_investigation_pipeline.py", "-q", "-p", "no:cacheprovider"]
+
+FROM seed AS exam-seed
+CMD ["python", "-m", "app.exams.seed"]
 
 # Default external build must be the API, never the test/fixture image.
 FROM base AS api

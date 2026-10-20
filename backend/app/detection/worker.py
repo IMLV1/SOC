@@ -20,7 +20,7 @@ async def detect_run(
         run = (
             (
                 await session.execute(
-                    text("""SELECT id,owner_user_id,created_at FROM app.runs
+                    text("""SELECT id,owner_user_id,created_at,mode FROM app.runs
             WHERE id=:run FOR UPDATE"""),
                     {"run": run_id},
                 )
@@ -28,7 +28,7 @@ async def detect_run(
             .mappings()
             .first()
         )
-        if run is None:
+        if run is None or run["mode"] != "training":
             return
         rows = (
             (

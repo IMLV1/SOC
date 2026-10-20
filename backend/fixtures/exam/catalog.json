@@ -1,0 +1,5 @@
+[
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50001","stable_key":"E01","version":1,"purpose":"exam","title":"Investigation case","difficulty":"beginner","duration_ms":75000,"learning_objectives":["Evaluate released evidence","Separate facts from inference"],"enabled":true},
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50002","stable_key":"E02","version":1,"purpose":"exam","title":"Investigation case","difficulty":"beginner","duration_ms":75000,"learning_objectives":["Evaluate released evidence","Separate facts from inference"],"enabled":true},
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50003","stable_key":"E03","version":1,"purpose":"exam","title":"Investigation case","difficulty":"beginner","duration_ms":75000,"learning_objectives":["Evaluate released evidence","Separate facts from inference"],"enabled":true}
+]

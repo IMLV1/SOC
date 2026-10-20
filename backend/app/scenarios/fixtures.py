@@ -71,8 +71,12 @@ class EventFixture(Strict):
         return self
 
 
-def load_training_fixture(path: Path) -> EventFixture:
+def load_fixture(path: Path, purpose: Literal["training", "exam"]) -> EventFixture:
     fixture = EventFixture.model_validate_json(path.read_text(encoding="utf-8"))
-    if fixture.purpose != "training":
-        raise ValueError("Training fixture required")
+    if fixture.purpose != purpose:
+        raise ValueError("Fixture purpose mismatch")
     return fixture
+
+
+def load_training_fixture(path: Path) -> EventFixture:
+    return load_fixture(path, "training")
