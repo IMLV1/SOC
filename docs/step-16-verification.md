@@ -24,9 +24,11 @@
 - Frontend typecheck/lint/build ผ่าน; browser asset leakage test และ production landing smoke ผ่านอย่างละ 1 test.
 - `git diff --check` ผ่าน.
 
-## ยังต้องยืนยัน
+## ตรวจ browser retake หลัง cooldown — 21 ต.ค. 2026
 
-ยังไม่มี browser E2E ที่เดินเวลาจน cooldown หมดแล้วเริ่ม attempt จริง; การเริ่ม retake หลัง cooldown และ race ตรวจใน PostgreSQL integration ส่วน browser ยืนยัน cooldown UX ผ่าน API จริงใน Compose. Compose integration และ browser flow ไม่ใช่ staging/deployment acceptance; เรียก Alembic ผ่าน migration wrapper ตาม harness.
+บน branch `codex/retake-browser-acceptance` จาก `origin/main` เพิ่ม browser journey หลัง Instructor ตรวจให้ attempt เป็น `failed`: test ยืนยัน latest result เป็น failed, เลื่อนเวลาเฉพาะแถวนี้ใน disposable `soc-ci-*` PostgreSQL ให้พ้น cooldown ผ่าน migration-owner one-shot command, กดปุ่มเริ่ม attempt ถัดไปใน UI แล้วตรวจหน้า exam และ API ว่ามี attempt ใหม่สถานะ `in_progress` และ ID ต่างจาก attempt เดิม. Helper ตรวจ UUID และปฏิเสธทำงานนอก Compose project ที่ขึ้นต้น `soc-ci-`; ไม่มีการเปลี่ยนเวลาบนฐานข้อมูลผู้ใช้หรือระบบจริง.
+
+ผล `scripts/ci-compose.sh` บน HEAD `80df15810ca6625462fd784dd12ab371d29db4c2`: migration/seed/health ผ่าน, PostgreSQL integration **77 passed / 82 deselected**, HTTP smoke **3 passed**, worker/evaluator readiness ผ่าน, browser E2E **26 passed / 1 skipped**. Browser journey ตรวจทั้ง rejection ระหว่าง cooldown และเริ่ม retake สำเร็จหลัง cooldown หมด. Frontend lint/typecheck ผ่าน และ `git diff --check` ผ่านก่อนแก้รายงานนี้. หลัง commit `5bfcdb2c78ede754e0d7faa3b4b291af52172ce0` ถูก push แล้ว GitHub CI run [39494965944](https://github.com/IMLV1/SOC/actions/runs/39494965944) ผ่านครบทุก job. ผลนี้ไม่ใช่ staging/deployment acceptance.
 
 ## เพิ่มเติม 20 ต.ค. 2026
 
@@ -34,4 +36,4 @@
 
 ## ตรวจซ้ำ 21 ต.ค. 2026
 
-บน checkout ปัจจุบัน (branch `codex/magic-ui-redesign`) `scripts/ci-compose.sh` ผ่าน migration/health, PostgreSQL integration **81 passed**, HTTP smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. เพิ่มการยืนยันว่า concurrent retry เกิดหลัง attempt ก่อนหน้าถูกปิดเป็น `failed` และ cooldown ถูกเลื่อนพ้นแล้วจริง; browser test ครอบคลุม response `EXAM_COOLDOWN_ACTIVE` และคงผลสอบตกไว้เมื่อ retry ถูกปฏิเสธ. Ruff check/format สำหรับ test backend, frontend lint/typecheck และ `git diff --check` ผ่าน. GitHub CI บน changes ล่าสุดยังรอยืนยัน; ไม่มี staging/deployment acceptance.
+บน checkout ก่อนหน้า (branch `codex/magic-ui-redesign`) `scripts/ci-compose.sh` ผ่าน migration/health, PostgreSQL integration **81 passed**, HTTP smoke **3 passed**, worker/evaluator readiness และ browser E2E **26 passed / 1 skipped**. ผล branch ปัจจุบันและ retake journey ใหม่อยู่ในหัวข้อ “ตรวจ browser retake หลัง cooldown” ด้านบน.

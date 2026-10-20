@@ -40,6 +40,44 @@ async function reviewWithAssignedInstructor(browser: Browser, learnerPage: impor
   return true;
 }
 
+function expireFailedAttemptCooldown(attemptId: string) {
+  if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(attemptId)) {
+    throw new Error("Expected a UUID for the failed exam attempt.");
+  }
+  if (!process.env.COMPOSE_PROJECT_NAME?.startsWith("soc-ci-")) {
+    throw new Error("Cooldown expiry is allowed only in a disposable soc-ci-* Compose project.");
+  }
+
+  const databaseScript = [
+    "import asyncio, sys",
+    "from uuid import UUID",
+    "from sqlalchemy import text",
+    "from app.db.config import database_url",
+    "from app.db.session import Database",
+    "async def main():",
+    "    database = Database(database_url('migration_owner'))",
+    "    try:",
+    "        async with database.sessions() as session, session.begin():",
+    "            expired = await session.scalar(text(\"\"\"UPDATE app.exam_attempts",
+    "                SET started_at=clock_timestamp()-interval '2 hours',",
+    "                    finalized_at=clock_timestamp()-interval '2 hours'",
+    "                WHERE id=:attempt AND status='failed'",
+    "                  AND started_at>clock_timestamp()-interval '24 hours'",
+    "                RETURNING id\"\"\"), {'attempt': UUID(sys.argv[1])})",
+    "            if expired is None:",
+    "                raise RuntimeError('Failed attempt was not found in the disposable database.')",
+    "    finally:",
+    "        await database.close()",
+    "asyncio.run(main())",
+  ].join("\n");
+
+  execFileSync(
+    process.env.SOC_DOCKER_BIN ?? "docker",
+    ["compose", "run", "--rm", "-T", "--no-deps", "seed", "python", "-c", databaseScript, attemptId],
+    { cwd: process.env.SOC_REPO_ROOT ?? process.cwd(), env: process.env, stdio: "pipe" },
+  );
+}
+
 test("lesson progress is saved on the server, resumes after refresh, and stays usable on mobile/tablet/desktop", async ({
   page,
   browser,
@@ -134,4 +172,21 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
   expect(path.data.lessons[0].completed_steps).toHaveLength(5);
   expect(path.data.lessons[0].completed_at).not.toBeNull();
   expect(path.data.next_action).toBe("review_lesson_exam_unavailable");
+
+  if (reviewedAgainstLiveApi && process.env.COMPOSE_PROJECT_NAME?.startsWith("soc-ci-")) {
+    const failedResponse = await page.request.get("/api/v1/exam/attempts/latest/result");
+    expect(failedResponse.ok()).toBe(true);
+    const failedAttempt = (await failedResponse.json()).data;
+    expect(failedAttempt.status).toBe("failed");
+    expireFailedAttemptCooldown(failedAttempt.attempt_id);
+
+    await page.getByRole("button", { name: "เริ่ม attempt ถัดไป" }).click();
+    await expect(page.getByRole("heading", { name: "Investigation case" })).toBeVisible();
+
+    const activeResponse = await page.request.get("/api/v1/exam/attempts/active");
+    expect(activeResponse.ok()).toBe(true);
+    const retake = (await activeResponse.json()).data;
+    expect(retake.status).toBe("in_progress");
+    expect(retake.id).not.toBe(failedAttempt.attempt_id);
+  }
 });
