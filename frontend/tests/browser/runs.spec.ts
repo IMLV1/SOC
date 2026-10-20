@@ -36,7 +36,9 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
     (response) => response.request().method() === "POST" && response.url().includes("/pause"),
     { timeout: 15000 },
   );
-  await page.getByRole("button", { name: "พักรอบ" }).click();
+  const pauseButton = page.getByRole("button", { name: "พักรอบ" });
+  await pauseButton.click();
+  await expect(pauseButton).toBeDisabled();
   const paused = await pauseResponse;
   expect(paused.status()).toBe(200);
   expect((await paused.json()).data.status).toBe("paused");
