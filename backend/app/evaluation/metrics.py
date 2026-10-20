@@ -21,6 +21,8 @@ class Candidate:
 def metrics(
     incidents: list[Incident], candidates: list[Candidate], released: frozenset[UUID]
 ) -> dict[str, object]:
+    # Validate the frozen input boundary first; metrics should explain bad data,
+    # not quietly change the denominator to make a result look better.
     if len({item.key for item in incidents}) != len(incidents):
         raise ValueError("Duplicate incident group")
     if any(not item.evidence for item in incidents):

@@ -22,6 +22,7 @@ def migration_config() -> Config:
 
 
 def revision_hashes() -> dict[str, str]:
+    # Hash migration source files so edits to already-applied revisions fail closed.
     scripts = ScriptDirectory.from_config(migration_config())
     return {
         revision.revision: hashlib.sha256(
@@ -39,6 +40,8 @@ def expected_head() -> str:
 
 
 def upgrade(connection: Connection, release: str) -> None:
+    # This connection is already inside the caller's transaction: lock, Alembic
+    # upgrade, and checksum-ledger writes either all commit or all roll back.
     if connection.scalar(text("SELECT current_user")) != "migration_owner":
         raise RuntimeError("Migrations require the dedicated migration_owner role.")
     connection.execute(text("SET LOCAL lock_timeout = '10s'"))
@@ -63,6 +66,7 @@ def upgrade(connection: Connection, release: str) -> None:
         raise RuntimeError("Applied migration checksum mismatch or unknown revision.")
     versions = list(hashes)
     if set(applied) != set(versions[: len(applied)]):
+        # A missing middle revision means the ledger cannot prove upgrade order.
         raise RuntimeError("Migration ledger is not a contiguous history.")
     has_version = connection.scalar(text("SELECT to_regclass('ops.alembic_version')"))
     current = (

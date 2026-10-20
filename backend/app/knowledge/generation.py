@@ -27,6 +27,8 @@ POLICY = (
 def validate_result(
     result: AnalysisResult | QuestionResult, evidence: set[UUID], knowledge: set[UUID]
 ) -> set[UUID]:
+    # Incident observations need event evidence; knowledge references can support
+    # guidance but cannot prove that an event succeeded.
     refs: set[UUID] = set()
     if isinstance(result, AnalysisResult):
         validate_citations(result, evidence)
@@ -51,6 +53,8 @@ def validate_result(
 
 
 def redact(value: Any) -> Any:
+    # Redact recursively before provider dispatch because sensitive values can
+    # appear inside nested request/log structures, not only top-level fields.
     if isinstance(value, dict):
         return {
             key: redact(item)
@@ -86,6 +90,8 @@ async def generate(
     operation: str | None = None,
     dispatch_guard: Callable[[], Awaitable[None]] | None = None,
 ) -> AnalysisResult | QuestionResult:
+    # No-match is an abstention path: don't spend a generation request without
+    # any approved source context to answer from.
     if question is not None and retrieval["status"] == "no_match":
         return QuestionResult(
             answer="Insufficient context / หลักฐานไม่เพียงพอ",

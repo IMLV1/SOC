@@ -20,6 +20,7 @@ from app.worker.fencing import lock_domain, require_lease
 
 
 def configured_provider(mode: str, model_id: str) -> AnalysisProvider:
+    # Mock jobs are deterministic; real jobs must still match the version pinned on the run.
     if mode == "mock":
         return MockProvider()
     config = load_config(os.environ)
@@ -34,6 +35,8 @@ async def analyze_job(
     provider: AnalysisProvider | None = None,
     timeout: float = 30,
 ) -> None:
+    # Domain preparation and finalization use short DB transactions; provider IO
+    # happens between them so network latency never holds row locks open.
     async with database.sessions() as session, session.begin():
         if not await session.scalar(
             text("SELECT app.is_training_run(:run)"), {"run": job["run_id"]}
@@ -110,6 +113,8 @@ async def analyze_job(
             }
         )
         if row["mode"] == "real":
+            # Reserve a conservative input/output bound before dispatch. If this
+            # admission fails, the worker records an unavailable result without calling the provider.
             # UTF-8 bytes conservatively bound input tokens, including schema,
             # with additional headroom for provider framing. Output is bounded.
             token_bound = (
@@ -175,6 +180,7 @@ async def analyze_job(
             )
         usage = output.usage.model_dump(mode="json")
         result = output.result
+        # Citations must point only to the frozen evidence set prepared above.
         validate_citations(result, {item.id for item in data.evidence})
         result_json = result.model_dump_json()
     except ProviderRateLimited:
@@ -190,6 +196,8 @@ async def analyze_job(
         status, error = "failed", "PROVIDER_ERROR"
     latency = int((time.monotonic() - started) * 1000)
     async with database.sessions() as session, session.begin():
+        # Recheck the lease before persistence; an expired worker must not overwrite
+        # the result after another worker has reclaimed the job.
         if not await lock_domain(session, job):
             return
         if row["mode"] == "real":

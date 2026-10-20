@@ -72,6 +72,8 @@ def start_hash(level_id: UUID, progress_version: int) -> str:
 
 
 async def write_guard(session: AsyncSession, request: Request) -> Mapping[str, Any]:
+    # Exam mutations share the same origin/CSRF and analyst-only boundary before
+    # touching attempt state; client-supplied roles are never consulted here.
     if request.headers.get("content-type", "").split(";")[0].strip() != "application/json":
         raise auth.AuthError(415, "UNSUPPORTED_MEDIA_TYPE")
     await auth.csrf_check(session, request)
@@ -210,6 +212,8 @@ async def start_attempt(
     async with auth.database(request).sessions() as session, session.begin():
         user = await write_guard(session, request)
         owner = user["id"]
+        # This account-level lock serializes admission, quota checks, and case
+        # selection so two simultaneous starts cannot both consume one slot.
         await session.execute(
             text("SELECT pg_advisory_xact_lock(hashtextextended(:owner,73102006))"),
             {"owner": str(owner)},
@@ -230,6 +234,8 @@ async def start_attempt(
             if previous["request_hash"] != digest or previous["resource_id"] is None:
                 raise auth.AuthError(409, "IDEMPOTENCY_CONFLICT")
             attempt = await _attempt_row(session, previous["resource_id"], owner)
+            # Replay is owner-scoped and returns the same attempt, not a new draw
+            # from the case bank or a second quota-consuming operation.
             events = await _event_rows(session, attempt["run_id"])
             answer = await _learner_answer(session, attempt["id"])
             return AttemptEnvelope(
@@ -317,6 +323,8 @@ async def start_attempt(
                 code,
             )
 
+        # Prefer eligible cases with fewer recent attempts for this learner so
+        # repeated exam starts do not keep drawing the same case unnecessarily.
         selected = (
             (
                 await session.execute(
@@ -497,6 +505,8 @@ async def submit_attempt(
     async with auth.database(request).sessions() as session, session.begin():
         user = await write_guard(session, request)
         owner = user["id"]
+        # Check ownership before idempotency replay so a key cannot become a
+        # side channel for reading another learner's submitted result.
         initial = await _attempt_row(session, attempt_id, owner)
         await session.execute(
             text("SELECT pg_advisory_xact_lock(hashtextextended(:owner,73102006))"),
@@ -534,6 +544,8 @@ async def submit_attempt(
         )
         if run is None:
             raise auth.AuthError(404, "NOT_FOUND")
+        # Lock the run before the attempt to share one order with run operations
+        # and prevent release/submit from choosing different evidence cutoffs.
         attempt = await _attempt_row(session, attempt_id, owner, lock=True)
         if attempt["status"] != "in_progress":
             raise auth.AuthError(409, "ALREADY_SUBMITTED")
@@ -568,6 +580,8 @@ async def submit_attempt(
             .mappings()
             .all()
         )
+        # Submission freezes evidence only through the run's committed release
+        # cursor; queued/future events cannot appear in the learner's answer.
         evidence = validate_submission_evidence(
             body.evidence_event_ids, (row["id"] for row in snapshot)
         )
@@ -680,6 +694,8 @@ async def instructor_attempt(attempt_id: UUID, request: Request) -> InstructorAt
             .one()
         )
         truth = await session.scalar(
+            # The database function enforces post-submit status, assignment
+            # scope, and an audit row in the same transaction as disclosure.
             text("SELECT private.instructor_exam_truth(:actor,:attempt)"),
             {"actor": user["id"], "attempt": attempt_id},
         )

@@ -34,6 +34,8 @@ async def server_time(session: AsyncSession) -> datetime:
 
 def effective_ms(row: Mapping[Any, Any], now: datetime) -> int:
     elapsed = int(row["elapsed_ms"])
+    # Only running rows accrue time; paused/finished durations remain frozen at
+    # the last server-side transition instead of depending on browser timers.
     if row["status"] == "running" and row["resumed_at"] is not None:
         elapsed += max(0, int((now - row["resumed_at"]).total_seconds() * 1000))
     return min(elapsed, int(row["duration_ms"]))
@@ -49,6 +51,8 @@ def run_view(row: Mapping[Any, Any], now: datetime) -> dict[str, Any]:
 async def get_owned_run(
     session: AsyncSession, run_id: UUID, owner_id: UUID, *, lock: bool = False
 ) -> Mapping[Any, Any]:
+    # Scope the lookup by both owner and training mode so UUID knowledge alone
+    # never grants access to another user's run or an exam run.
     suffix = " FOR UPDATE" if lock else ""
     row = (
         (
@@ -80,7 +84,8 @@ async def start_run(
     request_digest: str | None = None,
     selected_scenarios: list[ScenarioView] | None = None,
 ) -> tuple[dict[str, Any], bool]:
-    # Serializes starts for one account, including different idempotency keys.
+    # Serialize starts for one account, including different idempotency keys;
+    # otherwise two requests could both pass the active-run check concurrently.
     await session.execute(
         text("SELECT pg_advisory_xact_lock(hashtextextended(:owner,73102006))"),
         {"owner": str(owner_id)},

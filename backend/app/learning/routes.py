@@ -84,6 +84,8 @@ async def my_learning_path(request: Request) -> MePathEnvelope:
 )
 async def get_lesson(lesson_id: UUID, request: Request) -> LessonEnvelope:
     async with auth.database(request).sessions() as session, session.begin():
+        # Authentication is required before reading lesson content; progress is
+        # account-backed and must not be inferred from anonymous browser state.
         await auth.require_user(session, request)
         row = (
             (
@@ -135,6 +137,8 @@ async def _save_progress(
         )
         params = {"user": user["id"], "lesson": lesson_id}
         row = (await session.execute(query, params)).mappings().one()
+        # A lesson content version change invalidates an old step list rather
+        # than silently applying stale completion state to the new lesson.
         if row["lesson_version"] != LESSON_VERSION:
             raise auth.AuthError(409, "LESSON_VERSION_CHANGED")
         steps, changed = apply_progress(
@@ -149,6 +153,8 @@ async def _save_progress(
             step_id is None and len(steps) == len(step_ids)
         )
         if changed:
+            # Progress and its optimistic version advance together inside this
+            # transaction, so two tabs cannot overwrite each other's updates.
             await session.execute(
                 text(
                     """UPDATE app.user_lesson_progress

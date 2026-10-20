@@ -12,6 +12,7 @@ from app.auth.models import Strict
 
 
 def content_hash(value: object) -> str:
+    # Canonical JSON makes the fixture identity stable across dictionary key order.
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
     ).hexdigest()
@@ -58,6 +59,8 @@ class EventFixture(Strict):
 
     @model_validator(mode="after")
     def schedule(self) -> Self:
+        # Event keys identify fixture rows; release offsets must already be sorted
+        # so workers can advance a cursor without reordering source data.
         keys = [event.key for event in self.events]
         offsets = [event.release_offset_ms for event in self.events]
         if len(set(keys)) != len(keys) or offsets != sorted(offsets):
@@ -72,6 +75,7 @@ class EventFixture(Strict):
 
 
 def load_fixture(path: Path, purpose: Literal["training", "exam"]) -> EventFixture:
+    # Callers must name the intended purpose; training data is never an exam fallback.
     fixture = EventFixture.model_validate_json(path.read_text(encoding="utf-8"))
     if fixture.purpose != purpose:
         raise ValueError("Fixture purpose mismatch")

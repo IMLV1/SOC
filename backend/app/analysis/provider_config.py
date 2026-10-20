@@ -16,6 +16,8 @@ class ProviderConfig:
     key_file: Path | None
 
     def read_key(self) -> str:
+        # A key's presence does not prove a free-tier account; mode confirmation
+        # is checked separately before any credential is read.
         if self.mode != "gemini_free" or self.key_file is None:
             raise ValueError("Real provider is not enabled")
         try:
@@ -28,6 +30,8 @@ class ProviderConfig:
 
 
 def load_config(env: Mapping[str, str]) -> ProviderConfig:
+    # Defaults stay deterministic. Real calls require explicit policy switches,
+    # an approved model pair, and a path to a runtime-only secret file.
     mode = env.get("SOC_AI_PROVIDER", "mock")
     if mode == "mock":
         return ProviderConfig(mode, "mock-v1", "fake-hash-16-v1", None)

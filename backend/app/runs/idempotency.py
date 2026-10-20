@@ -12,6 +12,7 @@ from app.auth.service import AuthError
 
 
 def body_hash(body: object) -> str:
+    # Sort keys so equivalent JSON objects hash identically despite key order.
     return hashlib.sha256(json.dumps(body, sort_keys=True, default=str).encode()).hexdigest()
 
 
@@ -30,6 +31,8 @@ async def reserve(
     )
     if created is not None:
         return identity, None
+    # Lock the existing reservation before comparing/replaying it, so concurrent
+    # retries see one completed response and cannot race a second domain write.
     row = (
         (
             await session.execute(
@@ -43,6 +46,7 @@ async def reserve(
         .one()
     )
     if row["request_hash"] != digest:
+        # Reusing a key for a different request is a conflict, never a replay.
         raise AuthError(409, "IDEMPOTENCY_CONFLICT")
     if row["status"] != "completed" or row["response_json"] is None:
         raise AuthError(409, "REQUEST_IN_PROGRESS")
