@@ -41,6 +41,8 @@
 
 รายงานเหล่านี้เป็นบันทึกตามวันที่และ commit ที่ระบุในแต่ละไฟล์ ไม่ได้ยืนยันสภาพแวดล้อมอื่นหรือ commit ใหม่กว่า:
 
+- [คู่มือรวมข้อ 01–19 พร้อมคำอธิบายและรายงานต้นฉบับฉบับเต็ม](all-step.md)
+
 - [ข้อ 01–05](step-01-verification.md) · [ข้อ 06–10](step-06-10-verification.md)
 - [ข้อ 11](step-11-verification.md) · [ข้อ 12](step-12-verification.md) · [ข้อ 13](step-13-verification.md)
 - [ข้อ 14: RAG และข้อที่ยังต้องตรวจ](step-14-verification.md) · [คู่มือผู้ตรวจ](step-14-review-guide.md) · [agent self-review](step-14-agent-review.md)
