@@ -29,11 +29,23 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
   await expect(
     page.getByRole("heading", { name: "สำรวจเหตุการณ์" }),
   ).toBeVisible();
+  const runId = new URL(page.url()).pathname.split("/").at(-1);
+  expect(runId).toBeTruthy();
   // Pause while the run is certainly active; waiting for investigation output
   // can outlast the short simulated run and make this control disappear.
   await expect(page.getByRole("button", { name: "พักรอบ" })).toBeVisible();
+  const pauseResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      new URL(response.url()).pathname.endsWith(`/runs/${runId}/pause`),
+  );
   await page.getByRole("button", { name: "พักรอบ" }).click();
-  await expect(page.getByRole("button", { name: "ทำต่อ" })).toBeVisible();
+  const paused = await pauseResponse;
+  expect(paused.status()).toBe(200);
+  expect((await paused.json()).data.status).toBe("paused");
+  await expect(page.getByRole("button", { name: "ทำต่อ" })).toBeVisible({
+    timeout: 15000,
+  });
   await page.reload();
   await expect(page.getByRole("button", { name: "ทำต่อ" })).toBeVisible();
   await page.getByRole("button", { name: "ทำต่อ" }).click();
