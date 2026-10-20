@@ -186,14 +186,11 @@ def test_mock_provider_is_deterministic_structured_and_cautious_about_blocked_re
 
 
 @pytest.mark.integration
-def test_real_timeout_is_unknown_and_invalid_output_usage_is_consumed_with_retry_snapshot(
+def test_provider_timeout_is_unknown_and_invalid_output_usage_is_consumed_with_retry_snapshot(
     migrated, monkeypatch
 ):
-    monkeypatch.setenv("SOC_AI_PROVIDER", "gemini_free")
-    monkeypatch.setenv("GEMINI_PROJECT_TIER_CONFIRMED", "free_no_billing")
-    monkeypatch.setenv("GEMINI_SYNTHETIC_DATA_ONLY", "true")
-    monkeypatch.setenv("GEMINI_API_KEY_FILE", "/synthetic-test-only/not-read-by-injected-provider")
-    monkeypatch.setenv("GEMINI_CHAT_MODEL", "gemini-3.5-flash-lite")
+    monkeypatch.setenv("SOC_AI_PROVIDER", "dify")
+    monkeypatch.setenv("DIFY_API_BASE_URL", "https://dify.example.test/v1")
 
     class SlowProvider:
         async def analyze(self, data):
@@ -703,6 +700,46 @@ async def release_all(api, worker, run_id):
     for _ in range(50):
         if not await process_one(worker, "integration-worker"):
             break
+
+
+@pytest.mark.integration
+def test_dify_mode_fails_closed_before_provider_dispatch(migrated, monkeypatch):
+    monkeypatch.setenv("SOC_AI_PROVIDER", "dify")
+    monkeypatch.setenv("DIFY_API_BASE_URL", "https://dify.example.test/v1")
+
+    async def execute():
+        user_id, selection = await prepare(migrated)
+        api = Database(migrated("api_runtime"))
+        worker = Database(migrated("worker_runtime"))
+        try:
+            async with api.sessions() as session, session.begin():
+                run, _ = await start_run(session, user_id, selection, uuid4())
+            run_id = UUID(run["id"])
+            await release_all(api, worker, run_id)
+            async with api.sessions() as session:
+                analyses = (
+                    await session.execute(
+                        text("SELECT status,error_code FROM app.analyses WHERE run_id=:id"),
+                        {"id": run_id},
+                    )
+                ).all()
+                assert analyses
+                assert set(analyses) == {("failed", "DIFY_ANALYSIS_ADAPTER_UNAVAILABLE")}
+                assert (
+                    await session.scalar(
+                        text(
+                            "SELECT count(*) FROM app.provider_calls WHERE analysis_id IN "
+                            "(SELECT id FROM app.analyses WHERE run_id=:id)"
+                        ),
+                        {"id": run_id},
+                    )
+                    == 0
+                )
+        finally:
+            await api.close()
+            await worker.close()
+
+    asyncio.run(execute())
 
 
 @pytest.mark.integration

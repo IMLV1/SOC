@@ -1,5 +1,8 @@
 # ข้อ 07 — Run UI / Event explorer (14 ตุลาคม 2026)
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ทำบน codex/step-05-scenarios ที่ HEAD 2cc275f พร้อม working changes ข้อ 06 และ foundations 11–13
 ไม่ switch/reset/stash หรือทับงานเดิม ไม่พบ AGENTS.md จากการตรวจ repository
 ข้อ 01 มี SRS/OpenAPI/requirement mapping/scaffold/runtime pins/lockfiles อยู่แล้ว

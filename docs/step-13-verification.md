@@ -1,5 +1,8 @@
 # ข้อ 13 — Knowledge storage / offline ingestion
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ทำบน `codex/step-13-knowledge` ใน worktree แยกจาก `origin/main` (`8c2a978`).
 ผู้ใช้อนุมัติ corpus คู่มือทั่วไปสองเรื่องสำหรับ local/mock วันที่ 15 ต.ค. 2026:
 อ่าน login และแยก blocked request จาก successful compromise; metadata อยู่ใน

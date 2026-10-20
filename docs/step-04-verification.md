@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 04 — 14 ตุลาคม 2026
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 Branch `codex/step-04-auth` สร้างจาก origin/main `56b49a9` หลัง PR #5 merge
 ก่อนเริ่ม working tree สะอาด ไม่พบ AGENTS.md; คง prototype และงานข้อ 01–03
 ผู้ใช้ยืนยัน registration defaults 10 runs/20 AI requests ต่อวัน UTC แก้เฉพาะการตัดสินใจนี้

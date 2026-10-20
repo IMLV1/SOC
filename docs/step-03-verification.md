@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 03 — 13 ตุลาคม 2026
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 สถานะ: **ผ่าน local และ GitHub CI; branch protection ติดข้อจำกัดแพ็กเกจ**
 เริ่มงานบน f1 ที่ 3c952c9 พร้อมงานข้อ 02 ที่ยังไม่ commit; คงงานเดิมไว้ครบ ไม่ switch/reset/stash
 ตรวจไม่พบ AGENTS.md; remote HEAD เป็น main ต่อมาผู้ใช้อนุญาต commit/push/PR และตรวจ CI จริง ผลอยู่ด้านล่าง

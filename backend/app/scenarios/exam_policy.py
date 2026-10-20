@@ -43,6 +43,7 @@ class BlindTicket(BlindAlert):
 
 def project_exam(surface: str, source: Mapping[str, object]) -> Strict:
     # Construct only from explicit scalars/IDs; never pass nested training DTOs.
+    # Unknown fields and surfaces fail closed so new training fields cannot leak by default.
     try:
         if surface == "run":
             return BlindRun.model_validate(

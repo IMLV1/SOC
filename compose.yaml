@@ -79,15 +79,11 @@ services:
       AUTH_COOKIE_SECURE: "false"
       AUTH_ORIGINS: http://127.0.0.1:${SOC_WEB_PORT:-3000},http://localhost:${SOC_WEB_PORT:-3000}
       SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
+      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-}
       GOOGLE_OAUTH_ENABLED: ${GOOGLE_OAUTH_ENABLED:-false}
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
       GOOGLE_OAUTH_REDIRECT_URI: ${GOOGLE_OAUTH_REDIRECT_URI:-}
       GOOGLE_OAUTH_CLIENT_SECRET_FILE: ${GOOGLE_OAUTH_CLIENT_SECRET_FILE:-}
-      GEMINI_PROJECT_TIER_CONFIRMED: ${GEMINI_PROJECT_TIER_CONFIRMED:-}
-      GEMINI_SYNTHETIC_DATA_ONLY: ${GEMINI_SYNTHETIC_DATA_ONLY:-true}
-      GEMINI_API_KEY_FILE: /run/secrets/gemini_api_key
-      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-gemini-3.5-flash-lite}
-      SOC_RAG_REAL_CONFIRMED: ${SOC_RAG_REAL_CONFIRMED:-}
     secrets: [api_runtime]
     ports: ["127.0.0.1:${SOC_API_PORT:-8000}:8000"]
     depends_on:
@@ -109,12 +105,9 @@ services:
       <<: *db-env
       DB_PASSWORD_FILE: /run/secrets/worker_runtime
       SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
-      GEMINI_PROJECT_TIER_CONFIRMED: ${GEMINI_PROJECT_TIER_CONFIRMED:-}
-      GEMINI_SYNTHETIC_DATA_ONLY: ${GEMINI_SYNTHETIC_DATA_ONLY:-true}
-      GEMINI_API_KEY_FILE: /run/secrets/gemini_api_key
-      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-gemini-3.5-flash-lite}
-      SOC_RAG_REAL_CONFIRMED: ${SOC_RAG_REAL_CONFIRMED:-}
-    secrets: [worker_runtime, gemini_api_key]
+      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-}
+      DIFY_APP_KEY_FILE: /run/secrets/dify_app_key
+    secrets: [worker_runtime, dify_app_key]
     depends_on:
       seed: {condition: service_completed_successfully}
     healthcheck:
@@ -212,4 +205,4 @@ secrets:
   api_runtime: {file: ./.local/secrets/api_runtime.txt}
   worker_runtime: {file: ./.local/secrets/worker_runtime.txt}
   evaluator_runtime: {file: ./.local/secrets/evaluator_runtime.txt}
-  gemini_api_key: {file: ./.local/secrets/gemini_api_key.txt}
+  dify_app_key: {file: ./.local/secrets/dify_app_key.txt}

@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 01 ทบทวน / ข้อ 05 — 14 ตุลาคม 2026
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 เริ่มจาก working tree สะอาดบน codex/step-04-auth; fetch แล้ว main เป็น 6a51b51 หลัง PR #7 merge
 สร้าง branch codex/step-05-scenarios จาก main เพื่อแยกงานใหม่ ไม่แก้ prototype/หรือลดงานข้อ 02–04
 ไม่พบ AGENTS.md; อ่าน docs รวม learning-path/RAG และตรวจ contract inventory ก่อนแก้

@@ -15,6 +15,7 @@ from app.worker.fencing import require_lease
 
 async def admit(session: AsyncSession, documents: list[dict[str, Any]]) -> UUID:
     # No browser upload endpoint. Caller is the explicit publisher operator.
+    # Immutable version IDs bind a release to exact content, not a mutable filename.
     if await session.scalar(text("SELECT current_user")) not in (
         "migration_owner",
         "knowledge_publisher",
@@ -104,6 +105,7 @@ async def ingest(database: Database, job: dict[str, Any]) -> None:
     vid = UUID(job["payload"]["version_id"])
     async with database.sessions() as session, session.begin():
         # Version before job. Publish/revoke serialize with the same version lock.
+        # This prevents a revoked source from becoming ready while ingestion is running.
         version = (
             (
                 await session.execute(
@@ -161,6 +163,8 @@ async def publish(session: AsyncSession, rid: UUID, expected_version: int) -> No
     )
     if active["version"] != expected_version:
         raise ValueError("Active release version conflict")
+    # Publish only a complete, non-revoked release whose vectors and golden
+    # validation match its current membership; partial corpora stay drafts.
     members = (
         (
             await session.execute(
@@ -237,6 +241,7 @@ async def revoke(session: AsyncSession, vid: UUID) -> None:
         "knowledge_publisher",
     ):
         raise PermissionError("Publisher connection required")
+    # Serialize revocation with publish so active corpus membership cannot race a withdrawal.
     await session.execute(text("SELECT id FROM kb.active_release WHERE id=1 FOR UPDATE"))
     await session.execute(
         text("""UPDATE kb.versions SET revoked_at=COALESCE(revoked_at,clock_timestamp())
@@ -260,6 +265,8 @@ async def retrieve(
     draft: bool = False,
     vector: list[float] | None = None,
 ) -> list[dict[str, Any]]:
+    # Database joins restrict candidates to the pinned release and exclude
+    # revoked or unfinished documents before ranking results.
     if draft and await session.scalar(text("SELECT current_user")) not in (
         "migration_owner",
         "knowledge_publisher",

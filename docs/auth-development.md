@@ -63,9 +63,9 @@ expired counters ลบได้ด้วย retention_runtime; retention schedu
 ## สิทธิ์และขอบเขต
 
 ผู้ใช้ยืนยันวันที่ 14 ต.ค. 2026: ผู้สมัครใหม่ได้ 10 รอบฝึก/20 AI requests ต่อวัน UTC
-เป็นโควตาใน DB เท่านั้น ยังไม่เปิด runner/provider และไม่เลือก retake/exam policy
+โควตาถูกบังคับใน DB; ปัจจุบันมี runner และระบบข้อสอบเพิ่มเติมแล้ว ดู checklist สำหรับสถานะปัจจุบัน. ส่วนนี้เป็นคู่มือ auth ไม่ใช่รายการ feature ทั้งระบบ
 Instructor role ไม่ทำให้ใช้ owner policy อ่านข้อมูลคนอื่นได้; assignment policy ต้อง role Instructor และแถว assignment จริง
-ทดสอบ policy ผ่าน api_runtime แล้ว; admin/run routes จริงจะเพิ่มในข้อตาม checklist ไม่สร้าง dummy endpoints เพื่ออ้างว่าระบบ domain เสร็จ
+ทดสอบ policy ผ่าน api_runtime แล้ว; รายการ admin/run routes ในเอกสารเดิมเป็นสถานะ ณ ตอนเขียน ให้ดู checklist และรายงานตาม commit ก่อนสรุปสถานะปัจจุบัน
 Guest demo ข้อนี้เน้นอ่าน HTTP events; catalog เพิ่มแล้วใน [ข้อ 05](scenario-development.md)
 ticket/alert/evaluation demo ยัง draft และไม่เอาข้อสอบมาใช้เป็นตัวอย่าง
 

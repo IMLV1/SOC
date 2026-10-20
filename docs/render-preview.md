@@ -1,5 +1,9 @@
 # Render Free preview — deployment preparation
 
+> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
+
+> **บันทึกย้อนหลัง:** สถานะบริการ, วันหมดอายุ, region และการเปิดใช้งานด้านล่างเป็นข้อมูล ณ วันที่ตรวจเท่านั้น. ตรวจ deployment และ checklist ล่าสุดก่อนใช้ URL หรือกล่าวว่า preview ยัง live; เอกสารนี้ไม่ยืนยัน production readiness.
+
 Scope: Next.js standalone + FastAPI on two Free web services, mock AI.
 User approved signup/login + PostgreSQL; background work is disabled in auth-only mode.
 No paid workers/private services/disks or automatic deployment are included.

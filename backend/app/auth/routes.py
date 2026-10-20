@@ -50,6 +50,7 @@ def meta(request: Request) -> AuthMeta:
 
 @router.get("/auth/csrf", response_model=CsrfEnvelope, operation_id="auth_csrf")
 async def csrf_token(request: Request, response: Response) -> CsrfEnvelope:
+    # Reuse a valid session/challenge binding; issue a new short-lived challenge only when needed.
     await auth.rate_limit(request, "csrf")
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.identity(session, request)
@@ -86,6 +87,7 @@ async def csrf_token(request: Request, response: Response) -> CsrfEnvelope:
     "/auth/register", response_model=UserEnvelope, status_code=201, operation_id="auth_register"
 )
 async def register(body: RegisterInput, request: Request, response: Response) -> UserEnvelope:
+    # Registration creates Analyst accounts only and deliberately does not create a session.
     await auth.rate_limit(request, "register", body.email)
     async with auth.database(request).sessions() as session, session.begin():
         await auth.csrf_check(session, request)

@@ -12,6 +12,8 @@ from app.auth.service import AuthError
 
 
 def signature(filters: Mapping[str, object]) -> str:
+    # The cursor is only valid for the filter set that created it; canonical JSON
+    # makes that binding independent of mapping insertion order.
     data = json.dumps(filters, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(data.encode()).hexdigest()[:16]
 
@@ -27,6 +29,8 @@ def decode_cursor(
     if value is None:
         return None, None
     try:
+        # Treat cursor contents as untrusted input and collapse parse failures to
+        # the contract's single public error, without leaking decoder details.
         data = json.loads(base64.urlsafe_b64decode(value.encode()).decode())
         at = datetime.fromisoformat(data["at"])
         identity = UUID(data["id"])

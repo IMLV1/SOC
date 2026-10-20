@@ -1,8 +1,10 @@
 # ข้อ 05 — Training fixtures และ exam boundary
 
+> **เอกสารตามขั้นตอนเดิม:** ไฟล์นี้อธิบายการทำข้อ 05 ตามสถานะตอนนั้น ไม่ใช่คู่มือปัจจุบันครบทุก flow. ข้อความที่บอกว่ายังไม่มี runner/exam/API เป็น snapshot เก่า; ปัจจุบันมี run และ learning/exam implementation บางส่วนแล้ว ให้ดู [checklist](implementation-checklist.md) และรายงานข้อ 15–17 ก่อนใช้อ้างสถานะ
+
 อ่าน [ผลตรวจ](step-05-verification.md), [SRS](srs.md) และ [OpenAPI](openapi.yaml) ร่วมกัน
 ข้อ 01 มี scaffold/contracts/lockfiles อยู่แล้ว จึงคง implementation ข้อ 02–04 และ runtime pins เดิม
-เพิ่มเฉพาะ GET /api/v1/scenarios และหน้า /scenarios; ไม่เปิด POST /runs หรือ exam endpoints
+ขอบเขต implementation ข้อ 05 ตอนนั้นคือ GET /api/v1/scenarios และหน้า /scenarios; ข้อความนี้ไม่ใช่ข้อจำกัดของระบบปัจจุบัน
 
 ## Catalog และ fixtures
 

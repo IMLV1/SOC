@@ -1,5 +1,8 @@
 # ตรวจแนวทาง implementation เทียบ docs
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 วันที่ 16 ตุลาคม 2026 — source `bdc4fb0` บน `codex/password-reset-plan`; main ที่ตรวจ CI คือ `e8c77a1` หลัง merge PR #13
 
 ## ข้อสรุป

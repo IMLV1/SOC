@@ -1,5 +1,8 @@
 # Step 15 verification — learning path and server-side progress
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ## Implemented
 
 - One versioned, training-only beginner lesson with five ordered steps: Method/Path, Response, account/IP, timeline, and evidence limits.

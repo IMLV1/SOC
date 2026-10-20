@@ -1,7 +1,7 @@
 # SOC Platform — CI/CD Design
 
 วันที่: 12 ตุลาคม 2026 · อัปเดตข้อ 03: 13 ตุลาคม 2026 · CI local และ GitHub checks ผ่าน; branch protection ติดข้อจำกัดแพ็กเกจ
-ข้อ 02 มี local Docker images ที่ build/run ผ่านแล้ว ดู [ผลตรวจ](step-02-verification.md); production release ยังไม่ implement
+ในขั้น 02 มี local Docker images ที่ build/run ผ่านแล้ว ดู [รายงานย้อนหลัง](step-02-verification.md). ข้อความนี้บันทึกผลของขั้นนั้น ไม่ใช่สถานะ release ปัจจุบัน; ดู [checklist](implementation-checklist.md) และรายงานข้อ 18–19
 
 ข้อ 03 สร้างเฉพาะ [ci.yml](../.github/workflows/ci.yml) และ ci-gate ตาม implementation ปัจจุบัน
 ดู [คู่มือ CI/required checks](ci-local.md) และ [ผลตรวจ](step-03-verification.md)
@@ -198,7 +198,7 @@ Application rollback ไม่ใช่ database rollback ไม่รัน des
 
 ## 11. RAG checks และ knowledge deployment
 
-เมื่อเริ่ม [LangChain RAG](rag-langchain.md) ให้ integration DB มี pgvector extension major/version ที่เข้ากับ production และ pin digest ตรวจ hosting support ก่อนเลือกบริการ เพิ่ม fake embeddings/model tests สำหรับ retrieval filters, snapshot refs, revocation, quota, retries และ migration 007 โดย PR ไม่เรียก provider จริง
+ข้อเสนอเดิมสำหรับ RAG ภายในระบุ pgvector และ fake embeddings. ทิศทางล่าสุดให้ใช้บริการ RAG ภายนอกผ่าน API; ต้องทบทวนส่วนนี้ใหม่ก่อนนำไปทำ staging/deploy และไม่ถือว่าการมี tests ของ pipeline ภายในยืนยันการเชื่อมต่อบริการภายนอก
 
 Real retrieval/answer benchmark ใช้ trusted manual job จำกัดงบและ corpus ที่อนุมัติ เก็บ model/profile/release/config hashes และรายงาน no-RAG เทียบ RAG พร้อม quality targets ตาม RAG design ห้าม gold answers/ground truth อยู่ใน knowledge artifact
 

@@ -2,10 +2,13 @@ openapi: 3.1.0
 info:
   title: SOC API
   version: 0.1.0
-  description: 'Steps 01–14: implemented operations are approved from FastAPI. Gemini
-    analysis is Free Tier gated and synthetic-data only. Evaluation and Instructor
-    review are training-only. RAG supports pinned releases; learning and exam operations
-    remain draft.'
+  description: 'Contract status is per operation and does not mean the full product is
+    released. The source includes auth, training, investigation, learning, exam and
+    internal RAG operations; some operations remain draft. Product direction confirmed
+    by the user is to call an external RAG service (Dify) through its API,
+    but the current source still contains an internal retrieval pipeline. This contract
+    must be reconciled before claiming the external service is connected. Provider calls
+    are opt-in and synthetic-training-only; exam and evaluation data stay server-side.'
 paths:
   /health/live:
     get:

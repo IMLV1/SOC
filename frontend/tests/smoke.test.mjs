@@ -3,12 +3,13 @@ import test from "node:test";
 
 const origin = process.env.SOC_SMOKE_ORIGIN || "http://127.0.0.1:3000";
 
+// Check rendered HTML and downloaded scripts for fixture data or secret-like values.
 test("landing page loads without fixture assets or client secrets", async () => {
   const response = await fetch(origin);
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /SOC LEARNING LAB/);
-  assert.match(html, /ยังไม่เปิดให้สอบจริง/);
+  assert.match(html, /พื้นที่ฝึกจากข้อมูลจำลอง/);
   assert.doesNotMatch(
     html,
     /@demo\.test|localStorage|ground.truth|private_key/,
@@ -27,6 +28,7 @@ test("landing page loads without fixture assets or client secrets", async () => 
   }
 });
 
+// Liveness and readiness differ: the app may live while required dependencies are unavailable.
 test("same-origin health proxy preserves liveness and configured readiness", async () => {
   const live = await fetch(`${origin}/health/live`);
   assert.equal(live.status, 200);
@@ -41,6 +43,7 @@ test("same-origin health proxy preserves liveness and configured readiness", asy
   assert.equal(ready.headers.get("cache-control"), "no-store");
 });
 
+// Anonymous callers must reach the API boundary and be rejected by authentication.
 test("run routes reach backend and require a session", async () => {
   const response = await fetch(`${origin}/api/v1/runs`);
   assert.equal(response.status, 401);

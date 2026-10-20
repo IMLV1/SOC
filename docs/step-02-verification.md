@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 02 — 13 ตุลาคม 2026
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 สถานะ: **ผ่านขอบเขตข้อ 02** รวม Compose execution บน Linux engine จริง
 คง branch f1; ก่อนแก้ working tree สะอาด และ fast-forward จาก 65d5562 ไป remote f1 3c952c9
 เพื่อรับ README/.gitkeep changes เดิม ไม่แตะ main/prototype และไม่ commit/push/deploy ในงานนี้

@@ -2,13 +2,17 @@
 
 วันที่: 13 ตุลาคม 2026
 
+> **อ่านสถานะปัจจุบันก่อน:** เนื้อหา checklist นี้เริ่มเป็นแผนเมื่อ 13 ต.ค. 2026 และบางคำอธิบายด้านล่างเป็น snapshot เก่า ให้ใช้ช่องสถานะกับรายงานที่ระบุ commit เป็นหลักฐาน อย่าสรุปจาก prompt เก่าหรือข้อความ “ยังไม่มี” ที่อาจล้าสมัย
+>
+> **ทิศทาง RAG:** ผู้ใช้ยืนยันว่าต้องใช้บริการภายนอก (ระบุ Dify) และให้ repository เรียก API เท่านั้น แต่ source checkout ยังมี RAG pipeline ภายในที่ใช้ pgvector และ provider models อยู่ ข้อความข้อ 13–14 ด้านล่างเป็น acceptance/design เดิมของ pipeline นั้น ยังไม่ยืนยันว่า architecture ตรงกับทิศทางใหม่ ต้องแก้ความไม่ตรงกันก่อนอ้างว่าเชื่อมบริการภายนอกแล้ว
+
 ใช้กับ [Development plan](development-plan.md), [Architecture](architecture.md), [API](api.md), [Database](database.md), [CI/CD](ci-cd.md), [RAG](rag-langchain.md) และ [Learning path](learning-path.md)
 
 ## เริ่มตรงไหนก่อน
 
 เริ่ม **ข้อ 01: ตรวจ contract และวางโครงโปรเจกต์** แล้วทำข้อ 02–07 ให้ login → เริ่ม training run → เห็น event จาก PostgreSQL ผ่าน UI ได้ก่อน จากนั้นเพิ่ม detection/ticket, AI, evaluation, RAG, learning/exam และ deployment ตามลำดับ
 
-ประวัติตอนเริ่ม checklist: branch `f1` มี frontend/backend เพียง .gitkeep; ปัจจุบันข้อ 01–04 ผ่านแล้วตามหลักฐานแต่ละข้อด้านล่าง prototype ยังคงเป็น reference ไม่ใช่ production backend
+ประวัติตอนเริ่ม checklist: branch `f1` มี frontend/backend เพียง .gitkeep; ปัจจุบันระบบมี implementation มากกว่าช่วงเริ่มโครงการ ให้ตรวจสถานะรายข้อตามหลักฐานด้านล่าง `prototype/` ยังคงเป็น reference แยกจากเว็บแอป
 
 ข้อสอบต้องออกแบบ boundary ตั้งแต่ข้อ 01 และทดสอบ gate ตั้งแต่ข้อ 05 แม้จะทำหน้าข้อสอบในช่วงท้าย เพื่อไม่ต้องย้อนแก้ API ที่เผย AI hints/เฉลยในโหมดสอบ
 
@@ -106,14 +110,14 @@ HTTP smoke 3 และ Chromium E2E 2 ผ่าน; [GitHub CI](https://github.c
 
 ดู [ผลตรวจ](step-05-verification.md) และ [คู่มือ](scenario-development.md): backend 50 tests ไม่ซ้ำ,
 HTTP smoke 3, browser 4 และ bundle leakage 1 ผ่าน; เพิ่ม tests ใน CI แล้ว **รอยืนยันบน GitHub**
-run/exam endpoints ยังไม่เปิด; gate จริงอยู่ข้อ 06/15/16 ไม่อ้างว่าทดสอบระบบสอบแล้ว
+ข้อความนี้อธิบายขอบเขตข้อ 05 ตอนนั้นเท่านั้น; run และ exam implementation ถูกเพิ่มในขั้นถัดมา
 
 ```text
 ทำข้อ 05: เพิ่ม versioned scenario catalog, server-only event fixtures และ private ground truth
 เริ่ม S02 สำหรับ training พร้อม normal traffic ก่อน แล้วเตรียม S01–S05 ให้ schema เดียวกัน
 แยก demo/training fixtures ออกจาก exam bank ไม่ให้ public catalog สร้าง exam run ได้
 วาง exam serializer policy แบบ default-deny สำหรับ AI hints, rubric, label และ initial severity
-ยังไม่เปิดให้เริ่ม exam จน lesson/level gate พร้อม เพิ่ม tests ว่า assets/API/error ไม่เผยเฉลย
+ข้อกำหนดเดิม: ห้ามเปิด exam ก่อน lesson/level gate พร้อม. ปัจจุบันมี exam implementation เพิ่มแล้ว ให้ดูข้อ 15–17 เพื่อเช็กสถานะและ acceptance ล่าสุด
 ```
 
 **ผ่านเมื่อ:** seed ซ้ำไม่ duplicate, detector role อ่าน truth ไม่ได้, catalog/bundle ไม่มี fixture อนาคต และ training endpoint ไม่ bypass future exam gate
@@ -185,7 +189,7 @@ Local CI: PostgreSQL 45, HTTP smoke 3, Chromium 9; lint/typecheck/build/contract
 
 ### 10 — AI pipeline ด้วย mock ที่ทดสอบได้
 
-- [x] ผ่าน local acceptance — หลัง 09; SOC-011; mock และ real Gemini Free Tier S02 E2E, PostgreSQL timeout/usage/quota, migration 0008 immutable evidence และ 0009 real mode ผ่าน 15 ต.ค. 2026; GitHub CI ของ working changes รอยืนยัน ดู [ผลตรวจ](step-06-10-verification.md)
+- [x] mock acceptance ผ่านตามรายงานเดิม; รายงาน real Gemini S02 เป็นหลักฐานย้อนหลังเท่านั้นและไม่ใช่ provider ปัจจุบัน ดู [ผลตรวจ](step-06-10-verification.md)
 
 ```text
 ทำข้อ 10: สร้าง AnalysisProvider, frozen evidence snapshots, analyses/attempts และ async jobs
@@ -216,16 +220,16 @@ GitHub CI ของ branch นี้ยังรอยืนยัน; C ยั�
 
 ### 12 — เชื่อม AI provider จริง
 
-- [x] ผ่าน local Free Tier acceptance — หลัง 11; SOC-012/014; 15 ต.ค. 2026; GitHub CI ของ branch นี้รอยืนยัน
+- [ ] Dify integration ยังไม่ผ่าน acceptance; ผล Gemini Free Tier ในรายงานข้อ 12 เป็นหลักฐานย้อนหลัง ไม่ใช่ provider ปัจจุบัน
 
-ข้อ 10 เชื่อม Gemini 3.5 Flash-Lite Free Tier แบบ local synthetic-only แล้ว; bounded S02 browser/API/worker flow ผ่าน
-ข้อ 12 เพิ่ม rate card/global caps, 429 cooldown, unknown reconciliation และ bounded C จริงแล้ว
+การเชื่อม Gemini ที่ระบุในรายงานข้อ 10–12 เป็น implementation/ผลทดสอบเดิม; ผู้ใช้เลือก Dify แทนแล้ว และ runtime ปัจจุบันไม่เรียก Gemini. Dify integration ยังไม่ผ่าน acceptance
+การทดสอบ rate/usage ของ Gemini เป็นผลย้อนหลัง; ต้องทำ quota/unknown-usage policy ให้ตรงกับ Dify ก่อนเปิดใช้งาน
 ดู [ผลตรวจข้อ 12](step-12-verification.md); PostgreSQL 55, backend unit/contract 49,
 HTTP smoke 3, Chromium E2E 11 ผ่าน. C จริงเป็น operator CLI; ยังไม่อ้าง production readiness.
 
 ```text
-ทำข้อ 12: เชื่อม provider/model ที่ฉันเลือกผ่าน adapter เดิม พร้อม runtime secrets และ usage mapping
-ถ้ายังไม่ได้เลือก provider/model/งบ ให้เตรียม interface/config/tests ก่อน และถามข้อมูลที่จำเป็นก่อน real calls
+ทำข้อ 12: เชื่อม Dify API เป็น external provider รายเดียว โดยเก็บ app key ฝั่ง server
+ตอนนี้ยังไม่มี Base URL/app key; คง mock และ fail closed จน contract, budget, citation/revocation และ runtime tests พร้อม
 เพิ่ม rate limit, timeout, cost caps, retry/idempotency limitations และ unknown-usage reconciliation
 เมื่อมีข้อมูลและสิทธิ์พร้อม ทำ bounded smoke test และ experiment C จริง เก็บผลแยกจาก mock
 ```
@@ -234,12 +238,12 @@ HTTP smoke 3, Chromium E2E 11 ผ่าน. C จริงเป็น operator 
 
 ### 13 — Knowledge corpus, pgvector และ ingestion
 
-ผ่าน local/mock acceptance วันที่ 15 ต.ค. 2026: offline storage/ingestion/publish/revoke, scoped roles, golden/held-out และ run pin; ดู [ผลตรวจข้อ 13](step-13-verification.md). GitHub CI ของ branch นี้รอยืนยัน; real embeddings และ Ask AI ยังไม่เปิด.
+รายงานวันที่ 15 ต.ค. 2026 ระบุว่า local/mock acceptance ของ storage/ingestion/publish/revoke, roles, retrieval tests และ run pin ผ่านใน implementation ภายในชุดนั้น ดู [ผลตรวจข้อ 13](step-13-verification.md). ข้อความนี้เป็นหลักฐานของโค้ด/commit ตอนนั้น ไม่ใช่การรับรอง architecture ภายนอกตามทิศทางที่ผู้ใช้ยืนยันภายหลัง
 
 - [x] ผ่าน local/mock acceptance — หลัง 10; ต่อจาก 12 ตามลำดับแนะนำ; RAG-001/002
 
 ```text
-ทำข้อ 13 ตาม rag-langchain.md: เพิ่ม kb schema/pgvector, approved Markdown manifest,
+ขั้นตอนเดิมของข้อ 13 ตาม rag-langchain.md: เพิ่ม kb schema/pgvector, approved Markdown manifest,
 chunking, embedding profile, ingestion jobs และ publish/revoke knowledge release
 ไม่ index docs ทั้งโฟลเดอร์หรือ private answer key ใช้ fake embeddings ใน CI
 สร้าง golden/held-out retrieval tests และ pin release ต่อ run พร้อม dimension/model migration strategy
@@ -248,7 +252,9 @@ provider embeddings จริงต้องผ่านการเลือก
 
 **ผ่านเมื่อ:** ingest ซ้ำไม่ duplicate, partial corpus ไม่ถูก publish, retriever role อ่านเฉลยไม่ได้ และ revoke ตัดการใช้งานได้
 
-### 14 — LangChain RAG และ Ask AI
+### 14 — RAG และ Ask AI (แบบเดิมใน repository)
+
+> Acceptance ด้านล่างเขียนสำหรับ pipeline RAG ภายในเดิม ไม่ใช่ข้อกำหนดการเชื่อม Dify API; ต้องปรับ contract, checklist และหลักฐานให้ตรงบริการภายนอกก่อนปิดข้อ 14
 
 - [ ] ตรวจรับ Step 14 ทั้งข้อ — implementation และ GitHub CI ล่าสุดผ่านแล้ว แต่ independent review, paired answer benchmark ของ release v2 และ provider usage reconciliation ยังไม่ผ่าน ดู [ผลตรวจข้อ 14](step-14-verification.md)
 - [x] Local API/UI, frozen citations/retry, revocation และ race/security regressions ผ่าน; CI ใช้ fake embeddings
@@ -339,7 +345,7 @@ worker heartbeat, queue failures, migrations, pgvector และ critical flows 
 
 - [ ] เสร็จและตรวจรับแล้ว — หลัง 18; SOC-017
 
-สถานะ: lesson local acceptance และ regression suites ผ่าน; ยังขาด E2E สอบ/feedback/review/retake, submit/retake race coverage, GitHub CI บน changes ล่าสุด และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
+สถานะ ณ 21 ต.ค. 2026: local Compose ยืนยัน lesson → exam/submit → Instructor review/feedback และ cooldown UX; PostgreSQL test ครอบคลุม concurrent retake start หลัง attempt ก่อนหน้าตกและ cooldown หมด. ยังขาด browser journey ที่เริ่ม retake หลัง cooldown หมด, GitHub CI บน changes ล่าสุด, export/accessibility/load audit และ staging/production evidence; ดู [ผลตรวจข้อ 19](step-19-verification.md)
 
 ```text
 ทำข้อ 19: ตรวจ requirement coverage ของ docs ทั้งหมดกับ implementation และเติมช่องว่างที่อยู่ใน scope
@@ -373,7 +379,9 @@ deploy production เฉพาะเมื่อ environment พร้อมแ�
 | 01 | ผ่าน — contract draft + scaffold | [SRS](srs.md), [OpenAPI](openapi.yaml), [คู่มือ](getting-started.md), [ผลตรวจ](step-01-verification.md); backend 13 tests, frontend 3 smoke tests, lint/typecheck/build/OpenAPI และ local startup ผ่าน | Domain schemas ยัง draft; rubric/retake/override-unlock/provider pending; DB/CI/features อยู่ข้อถัดไป ยังไม่ deploy |
 | 02 | ผ่าน — local DB foundation | [คู่มือ](local-development.md), [ผลตรวจ](step-02-verification.md); native backend 29 tests, container integration 16, Compose build/up, frontend smoke 3, provisioning ซ้ำ, outage recovery และ named-volume down/up persistence ผ่าน | ยังไม่เริ่ม auth/CI/jobs หรือ production deployment |
 | 03 | ผ่าน local และ GitHub CI | [workflow](../.github/workflows/ci.yml), [คู่มือ](ci-local.md), [ผลตรวจ](step-03-verification.md); ทุก job ผ่านบน GitHub และ failure/cancelled ไม่เป็น success | Branch protection/rulesets API 403 เพราะ private repository plan; ยังไม่ยืนยัน enforced merge blocking; ไม่ deploy |
-| 04 | ผ่าน local และ GitHub auth/Guest acceptance | [คู่มือ](auth-development.md), [ผลตรวจ](step-04-verification.md); integration 26, foundation/contract 13, HTTP smoke 3, Chromium E2E 2 และทั้ง 5 GitHub jobs ผ่าน | Branch protection ยังติดข้อจำกัดแพ็กเกจ; ไม่มี runner/exam/admin CRUD/provider |
-| 05 | ผ่าน local fixtures/catalog/boundary | [คู่มือ](scenario-development.md), [ผลตรวจ](step-05-verification.md); migration/seed/grants/selector, backend 50 ไม่ซ้ำ, HTTP 3, browser 4, bundle 1 และ static/build ผ่าน | รอยืนยันบน GitHub; เปิดเฉพาะ S02 catalog, ยังไม่มี runner/exam gate/grading/provider |
+| 04 | ผ่าน local และ GitHub auth/Guest acceptance ตามรายงาน | [คู่มือ](auth-development.md), [ผลตรวจ](step-04-verification.md); integration 26, foundation/contract 13, HTTP smoke 3, Chromium E2E 2 และทั้ง 5 GitHub jobs ผ่าน | รายงานนี้บันทึกช่วงก่อนมี runner/ข้อสอบ; ดู checklist และรายงานใหม่ก่อนอ้างสถานะปัจจุบัน |
+| 05 | ผ่าน local fixtures/catalog/boundary ตามรายงาน | [คู่มือ](scenario-development.md), [ผลตรวจ](step-05-verification.md); migration/seed/grants/selector, backend 50 ไม่ซ้ำ, HTTP 3, browser 4, bundle 1 และ static/build ผ่าน | รายงานนี้เป็น snapshot ก่อนพัฒนาขั้นถัดไป ไม่ใช่สถานะล่าสุดของ runner/exam |
+| 16 | ผ่าน local acceptance และ GitHub CI บน SHA ที่บันทึก | [ผลตรวจ](step-16-verification.md); 21 ต.ค. disposable Compose: PostgreSQL integration 81, smoke 3, browser 26 passed/1 skipped; real failed-attempt retake race หลัง cooldown หมด และ browser cooldown rejection ผ่าน | ยังไม่มี browser journey ที่เริ่ม attempt หลัง cooldown หมด, GitHub CI บน changes ล่าสุด หรือ staging acceptance |
+| 19 | กำลังตรวจรับ | [ผลตรวจ](step-19-verification.md); local Compose 21 ต.ค. ตรวจ feedback/review, cooldown UX, retake start race; frontend lint/typecheck, Ruff check/format และ diff check ผ่าน | ยังขาด browser retake หลัง cooldown, GitHub CI SHA ล่าสุด, export/accessibility/load coverage และ staging/rollback/restore |
 
 ถ้าข้อหนึ่งยังไม่ผ่าน ให้ใช้ prompt ต่อว่า: “แก้ข้อ NN ต่อจากผลทดสอบล่าสุดให้ผ่าน acceptance ที่ยังค้าง โดยไม่เริ่มข้อถัดไปและไม่เปลี่ยน test ให้ยอมรับพฤติกรรมผิด”

@@ -1,59 +1,79 @@
-# SOC documentation
+# คู่มือของโครงการ SOC
 
-เอกสารสำหรับพัฒนาจาก prototype ไปเป็นระบบจริง อัปเดตแผนวันที่ 12 ตุลาคม 2026
+> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
 
-Stack ที่เลือก: **Next.js + TypeScript · FastAPI + Python · PostgreSQL** พร้อม Python worker, SQLAlchemy/asyncpg และ Alembic; CI/CD ใช้ GitHub Actions ตามแบบออกแบบ
+หน้านี้ช่วยเลือกเอกสารตามสิ่งที่ต้องการอ่าน เอกสารอธิบายทั้งเป้าหมาย วิธีพัฒนา และผลตรวจจริง จึงควรดูวันที่กับสถานะในแต่ละไฟล์เสมอ เพราะแผนที่เขียนไว้ไม่ได้แปลว่าระบบทำเสร็จแล้ว
 
-| เอกสาร | ใช้อ่านเรื่อง |
+## ถ้าเพิ่งเข้ามาอ่าน
+
+1. [ภาพรวมโครงการและข้อจำกัด](soc-simulation.md)
+2. [เส้นทางเรียนและข้อสอบ](learning-path.md)
+3. [สถาปัตยกรรมระบบ](architecture.md)
+4. [รายการงานและสถานะปัจจุบัน](implementation-checklist.md)
+
+## วิธีเปิดและพัฒนา
+
+| เอกสาร | ใช้เมื่อ |
 |---|---|
-| [soc-simulation.md](soc-simulation.md) | แนวคิด ขอบเขต สถานการณ์และเกณฑ์งานรายวิชา |
-| [learning-path.md](learning-path.md) | บทเรียนสำหรับผู้เริ่มต้น ข้อสอบเลื่อนระดับ การตรวจคำตอบ AI+RAG และเกณฑ์รับงาน |
-| [architecture.md](architecture.md) | Stack ที่เสนอ โครงสร้างระบบ ข้อมูล queue/worker AI และ deployment |
-| [api.md](api.md) | Endpoint, authentication, request/response, validation และสิทธิ์ |
-| [database.md](database.md) | ER diagram, ตาราง/ความสัมพันธ์, constraints, transactions, DB roles, migrations และ backup |
-| [ci-cd.md](ci-cd.md) | GitHub Actions, checks/tests/build, Docker artifacts, staging/production deploy และ rollback |
-| [rag-langchain.md](rag-langchain.md) | LangChain RAG, pgvector, knowledge ingestion, Ask AI, citations, สิทธิ์และการวัดคุณภาพ |
-| [development-plan.md](development-plan.md) | Roadmap, backlog, dependencies และ acceptance tests |
-| [implementation-checklist.md](implementation-checklist.md) | ลำดับเขียนโค้ด 19 ช่วง พร้อม prompt และเกณฑ์ตรวจรับแต่ละช่วง |
-| [srs.md](srs.md) | SRS เริ่มต้น, contract gaps, exam boundary/lifecycle/locks และ requirement mapping |
-| [openapi.yaml](openapi.yaml) | Machine-readable contract; approved routes ที่ implement แล้ว และ draft domain operations |
-| [getting-started.md](getting-started.md) | Runtime pins, lockfiles และวิธีเปิด scaffold ในเครื่อง |
-| [step-01-verification.md](step-01-verification.md) | ผลตรวจข้อ 01 และข้อจำกัดที่ยังไม่พร้อม |
-| [local-development.md](local-development.md) | Compose, PostgreSQL, migration/roles, provisioning และฐานทดสอบแยก |
-| [step-02-verification.md](step-02-verification.md) | ผลตรวจฐานข้อมูลจริงและ Compose บน Docker engine |
-| [Prototype guide](../prototype/README.md) | วิธีเปิดต้นแบบและขอบเขตที่ยังเป็น mock |
-| [Prototype alignment](prototype-alignment.md) | เทียบพฤติกรรมต้นแบบกับ architecture/API และแยกงานที่ยังรอ backend |
+| [เริ่มระบบในเครื่อง](local-development.md) | เปิดเว็บ API และ PostgreSQL ด้วย Docker หรือเตรียมฐานข้อมูล local |
+| [เริ่มต้นโค้ดและเวอร์ชันเครื่องมือ](getting-started.md) | ตรวจ runtime และคำสั่งทดสอบพื้นฐาน |
+| [ตั้งค่าบัญชีผู้ใช้](auth-development.md) | ทำความเข้าใจสมัครสมาชิก เข้าสู่ระบบ และ Guest demo |
+| [พัฒนาสถานการณ์ฝึก](scenario-development.md) | เพิ่มหรือแก้ fixture ของสถานการณ์จำลอง |
+| [ตรวจ CI ในเครื่อง](ci-local.md) | รัน checks ก่อนส่งขึ้น GitHub |
+| [แผน CI/CD](ci-cd.md) | อ่านแผน build, staging, release และ rollback; ส่วนที่ยังไม่มีระบบรองรับจะระบุว่าเป็นแผน |
+| [วิธีดูหน้า preview](render-preview.md) | ตรวจขอบเขตของ preview ที่เปิดอยู่ |
 
-แนะนำให้อ่าน scope → learning path → architecture → API/database → CI/CD → development plan ก่อนเริ่ม implementation
+## แบบระบบและข้อกำหนด
 
-มี scaffold frontend/API health และ worker entrypoint จากข้อ 01 แล้ว พร้อม SRS/OpenAPI เริ่มต้น
-ข้อ 02 มี database foundation/migration/roles แล้ว; auth เสร็จในข้อ 04; ข้อ 06–10 มี runner/investigation/analysis
-Compose build/up, integration tests และ named-volume persistence ผ่านแล้ว
-ข้อ 03 เพิ่ม CI/local checks แล้ว ดู [คู่มือ](ci-local.md) และ [ผลตรวจ](step-03-verification.md)
-GitHub CI ข้อ 03 ผ่านแล้ว แต่ required check/branch protection ติดข้อจำกัดแพ็กเกจ private repository
-ข้อ 04 เพิ่ม auth/me และ Guest snapshot ดู [คู่มือ](auth-development.md) และ [ผลตรวจ](step-04-verification.md)
-ข้อ 05 เพิ่ม training catalog/server fixtures/private truth และ exam projection policy
-ข้อ 07 run list/controls/Event explorer รวม filters/cursor/URL state ผ่าน local แล้ว
-ดู [ผลตรวจและวิธีเปิด](step-07-verification.md); GitHub CI ของ changes ล่าสุดรอยืนยัน
-ข้อ 08 เพิ่ม versioned rules/anomaly/correlation, evidence, idempotent alerts/tickets และ alert UI; ดู [ผลตรวจ](step-06-10-verification.md); GitHub CI ของ changes ล่าสุดรอยืนยัน
-ข้อ 10 ใช้ Gemini Free Tier กับ synthetic training แบบ opt-in local; ดู [คู่มือ provider](local-development.md#gemini-free-tier-สำหรับ-training-จำลองในเครื่อง) และ [ผลตรวจ](step-06-10-verification.md)
-ข้อ 11 เพิ่ม immutable evaluation, isolated evaluator, Instructor review และ A/B detector experiments; ดู [ผลตรวจข้อ 11](step-11-verification.md). GitHub CI ของ changeset นี้ยังรอยืนยัน
-ดู [คู่มือ](scenario-development.md) และ [ผลตรวจ](step-05-verification.md); runner อยู่ข้อ 06–07 และ exam ยังปิด
+| เอกสาร | ใช้เมื่อ |
+|---|---|
+| [Architecture](architecture.md) | ดูว่าส่วนเว็บ API worker และ evaluator ติดต่อกันอย่างไร |
+| [API contract](api.md) | ดู endpoint, request/response, สิทธิ์ และสถานะ approved/draft |
+| [Database](database.md) | ดูตาราง ความสัมพันธ์ transaction และ migrations |
+| [RAG design เดิม](rag-langchain.md) | แบบออกแบบ/หลักฐานของ pipeline ภายในที่ยังอยู่ใน source; ทิศทางผลิตภัณฑ์ปัจจุบันคือเรียกบริการภายนอกผ่าน API |
+| [RAG local guide เดิม](rag-development.md) | คู่มือของ pipeline ภายในและการทดสอบในเครื่อง; ยังไม่ใช่คู่มือเชื่อม Dify |
+| [SRS](srs.md) | อ่านข้อกำหนดและนโยบายที่ยังรอการตัดสินใจ |
+| [Prototype alignment](prototype-alignment.md) | เทียบ prototype กับระบบจริงและดูความต่าง |
+| [Password reset plan](password-reset-plan.md) | อ่านแผนร่างสำหรับระบบลืมรหัสผ่าน |
+| [Google login setup](google-login-setup.md) | ดูสถานะและข้อจำกัดการเชื่อม Google login |
 
-ข้อ 14 เพิ่ม authorized retrieval, frozen citations และ Ask AI พร้อม source drawer;
-ดู [คู่มือ RAG](rag-development.md) และ [ผลตรวจ/ข้อจำกัด benchmark](step-14-verification.md).
-ค่าเริ่มต้นยังเป็น mock/RAG disabled; Render preview ไม่ถูกเปลี่ยนในงานนี้.
+## รายงานผลตรวจ
 
-ข้อ 15 เพิ่มเส้นทางเรียนรู้และ server-side progress เบื้องต้น; ดู [ผลตรวจข้อ 15](step-15-verification.md). ข้อสอบ/การปลดล็อกระดับยังไม่เปิด.
-ข้อ 16 ยังไม่เปิด exam endpoints ระหว่างรอ policy retake/quota/lifecycle; ดู [preflight ข้อ 16](step-16-verification.md).
+รายงานเหล่านี้เป็นบันทึกตามวันที่และ commit ที่ระบุในแต่ละไฟล์ ไม่ได้ยืนยันสภาพแวดล้อมอื่นหรือ commit ใหม่กว่า:
 
-- [คู่มือผู้ตรวจ relevance และ grounded claims ข้อ 14](step-14-review-guide.md)
+- [คู่มือรวมข้อ 01–19 พร้อมคำอธิบายและรายงานต้นฉบับฉบับเต็ม](all-step.md)
 
-- [Agent self-review ข้อ 14 และข้อพบเรื่อง grounding/ภาษา](step-14-agent-review.md)
+- [ข้อ 01–05](step-01-verification.md) · [ข้อ 06–10](step-06-10-verification.md)
+- [ข้อ 11](step-11-verification.md) · [ข้อ 12](step-12-verification.md) · [ข้อ 13](step-13-verification.md)
+- [ข้อ 14: RAG และข้อที่ยังต้องตรวจ](step-14-verification.md) · [คู่มือผู้ตรวจ](step-14-review-guide.md) · [agent self-review](step-14-agent-review.md)
+- [ข้อ 15: บทเรียน](step-15-verification.md) · [ข้อ 16: ข้อสอบ](step-16-verification.md) · [ข้อ 17: การตรวจคำตอบ](step-17-verification.md)
+- [ข้อ 18: staging](step-18-verification.md) · [ข้อ 19: acceptance](step-19-verification.md)
+- [ตรวจหน้า responsive](frontend-responsive-verification.md) · [ตรวจความสอดคล้องระหว่างโค้ดกับเอกสาร](implementation-alignment-review.md)
 
-- [เตรียม Google login/OAuth Client และสิ่งที่ยังไม่เปิดใช้งาน](google-login-setup.md)
+## เรื่องที่ควรจำ
 
-- [แผนระบบลืมรหัสผ่านทางอีเมล (Draft)](password-reset-plan.md)
-- [ผลตรวจข้อ 17](step-17-verification.md)
-- [ผลตรวจข้อ 18](step-18-verification.md)
-- [ผลตรวจข้อ 19](step-19-verification.md)
+- ระบบใช้ข้อมูลฝึกจำลอง ไม่เชื่อม SIEM/EDR ขององค์กร
+- บทเรียนและข้อสอบจริงต้อง login; การทำบทเรียนจบไม่เท่ากับสอบผ่าน
+- AI ไม่ให้คะแนนผ่านหรือปลดล็อกระดับเอง
+- ทิศทาง RAG ที่ผู้ใช้ยืนยันคือเรียก Dify ผ่าน API; มี backend client เบื้องต้นแล้ว แต่ยังไม่ต่อเข้ากับ worker หรือทดสอบกับบริการจริง และใน source ยังมี implementation ภายในเดิม
+- Gemini adapter เก่ายังเก็บใน source/รายงานเพื่ออ้างอิง แต่ provider config ปัจจุบันปฏิเสธ `gemini_free`; runtime ใช้ mock หรือ Dify ที่ยังปิดไว้
+- RAG quality acceptance, staging และ production ยังมีงานค้าง ดู checklist ก่อนอ้างว่าพร้อมใช้
+- [Prototype](../prototype/README.md) เป็นงานอ้างอิงแยกจากเว็บแอป และเก็บข้อมูลไว้ใน browser
+
+## คำศัพท์ที่เจอบ่อย
+
+| คำ | ความหมายแบบสั้น |
+|---|---|
+| API | ช่องทางที่หน้าเว็บใช้คุยกับ backend |
+| Backend | ระบบหลังบ้านที่ตรวจสิทธิ์และจัดการข้อมูล |
+| Fixture | ชุดเหตุการณ์จำลองสำหรับฝึกและทดสอบ |
+| Migration | ไฟล์ที่ค่อย ๆ เพิ่มหรือปรับโครงสร้างฐานข้อมูล |
+| Mock | ตัวแทนจำลองที่ใช้ทดสอบแทนการเรียก provider จริง |
+| Embedding / vector | ตัวเลขที่แทนความหมายของข้อความ เพื่อค้นข้อความใกล้เคียง |
+| Retrieval | การค้นเอกสารที่เกี่ยวข้องก่อนส่งบริบทให้ AI |
+| Citation | ที่มาของข้อความหรือข้อมูลที่ AI อ้าง |
+| RAG | วิธีให้ AI ใช้เอกสารที่ค้นพบเป็นบริบทก่อนตอบ |
+| Staging | ระบบทดสอบที่ใกล้เคียง production ก่อนเปิดใช้งานจริง |
+| Acceptance | การตรวจว่า feature ทำงานตามเกณฑ์ที่ตกลงไว้ |
+
+ชื่อ API, status และ identifier ใน code block คงเป็นภาษาอังกฤษเพื่อให้ค้นในโค้ดได้ตรงกัน

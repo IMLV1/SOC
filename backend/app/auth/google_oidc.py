@@ -55,6 +55,8 @@ class GoogleIdentity:
 
 
 def config_from_env(env: Mapping[str, str]) -> GoogleConfig | None:
+    # Treat partial/mismatched OAuth configuration as unavailable rather than
+    # constructing a redirect that could escape the registered origin.
     if env.get("GOOGLE_OAUTH_ENABLED", "false") == "false":
         return None
     client = env.get("GOOGLE_OAUTH_CLIENT_ID", "")
@@ -83,6 +85,8 @@ def config_from_env(env: Mapping[str, str]) -> GoogleConfig | None:
 
 
 def authorization_url(config: GoogleConfig, state: str, nonce: str, verifier: str) -> str:
+    # PKCE binds the later code exchange to this browser flow; state and nonce
+    # are separately checked when Google redirects back.
     if not all(re.fullmatch(r"[A-Za-z0-9_-]{43,128}", value) for value in (state, nonce, verifier)):
         raise GoogleOIDCError("GOOGLE_FLOW_INVALID")
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=")
@@ -109,6 +113,7 @@ def _identity_from_verified_claims(
     claims: Mapping[str, Any], config: GoogleConfig, nonce_hash: str
 ) -> GoogleIdentity:
     # Signature/audience/expiry MUST already be verified by google-auth below.
+    # These checks bind the signed identity to this client, redirect, and stored nonce.
     nonce = claims.get("nonce")
     audience = claims.get("aud")
     aud = audience if isinstance(audience, list) else [audience]
@@ -142,6 +147,7 @@ def _identity_from_verified_claims(
 
 
 def _exchange(config: GoogleConfig, code: str, verifier: str, nonce_hash: str) -> GoogleIdentity:
+    # This synchronous adapter runs in a thread from the async wrapper below.
     body = urllib.parse.urlencode(
         {
             "client_id": config.client_id,

@@ -15,6 +15,7 @@ from app.knowledge.service import retrieve
 
 
 async def ensure_training(session: AsyncSession, run: UUID) -> None:
+    # Exam attempts are blind: retrieval and generation are training-only paths.
     if not await session.scalar(text("SELECT app.is_training_run(:run)"), {"run": run}):
         raise AuthError(403, "AI_UNAVAILABLE_IN_EXAM")
 
@@ -29,6 +30,8 @@ async def revoked(session: AsyncSession, release: UUID | None) -> bool:
 async def retrieval_view(
     session: AsyncSession, row: Mapping[Any, Any]
 ) -> tuple[dict[str, Any] | None, bool]:
+    # Centralize revocation projection so list/detail/source responses hide the
+    # same withdrawn citations instead of implementing separate checks per route.
     release = row["knowledge_release_id"]
     if release is None:
         return None, False
@@ -84,6 +87,8 @@ async def source(session: AsyncSession, run: UUID, analysis: UUID, item: UUID) -
 async def freeze(
     session: AsyncSession, row: Mapping[Any, Any], query: str, vector: list[float] | None = None
 ) -> dict[str, Any]:
+    # Store the ranked excerpts and config version once; downstream retries read
+    # this immutable snapshot instead of changing the evidence basis.
     if await revoked(session, row["knowledge_release_id"]):
         raise AuthError(409, "KNOWLEDGE_REVOKED")
     existing = await session.scalar(

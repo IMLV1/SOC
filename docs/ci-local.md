@@ -32,7 +32,7 @@ JUnit backend/integration upload 14 วัน เฉพาะ test-results/*.xml
 CI อัปเดตข้อ 04 เพิ่ม auth integration, generated TypeScript DTO drift และ Chromium auth/Guest E2E แล้ว
 approved FastAPI contract เปรียบเทียบกับ OpenAPI แล้ว ส่วน domain schemas ยัง draft
 PostgreSQL 17.11 เป็น local baseline เดิม; production/pgvector compatibility รอยืนยันในงานภายหลัง
-เพิ่ม regression tests สำหรับ feature ใหม่ใน jobs เดิมต่อไป; exam/runner ยังไม่ implement หรืออ้างว่าทดสอบผ่าน
+เพิ่ม regression tests สำหรับ feature ใหม่ใน jobs เดิมต่อไป. ข้อความสถานะด้านล่างที่ผูกกับ branch/วันที่เป็น snapshot; ใช้ checklist และรายงานล่าสุดประกอบก่อนสรุปว่า runner หรือ exam ผ่านแล้ว
 ข้อ 05 เพิ่ม fixture/seed/private grants/cursor/exam default-deny tests, container asset isolation,
 browser catalog/error states และตรวจ browser bundle หลัง build; [ผล local](step-05-verification.md)
 ไม่ใช้ผล GitHub ข้อ 04 อ้างแทน CI ของ branch ข้อ 05

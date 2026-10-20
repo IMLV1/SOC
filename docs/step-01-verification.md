@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 01 — 13 ตุลาคม 2026
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 Branch `f1` คงเดิม; HEAD ก่อนเริ่ม `1170066`. ไม่ commit/เปลี่ยน branch/deploy
 งานเดิมที่พบ: `docs/README.md` modified และ `docs/implementation-checklist.md` untracked
 เก็บเนื้อหาเดิมไว้และเพิ่มผลข้อ 01; ไม่แก้ `prototype/`. ไม่พบ AGENTS.md ใน repository/parent ที่ตรวจ

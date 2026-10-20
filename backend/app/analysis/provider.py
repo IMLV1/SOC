@@ -26,6 +26,7 @@ class AnalysisInput(Strict):
 
 
 class AnalysisProvider(Protocol):
+    # Domain code depends on this small async interface, not an SDK client.
     mode: str
 
     async def analyze(self, data: AnalysisInput) -> ProviderOutput | dict[str, Any]: ...
@@ -37,7 +38,12 @@ class StructuredAnalysisProvider(AnalysisProvider, Protocol):
     async def structured(self, body: dict[str, Any]) -> dict[str, Any]: ...
 
 
+class ProviderRateLimited(RuntimeError):
+    """Provider explicitly rejected a dispatch; retry requires a new reservation."""
+
+
 class MockProvider:
+    # Deterministic synthetic output keeps CI/local behavior independent of network state.
     mode = "mock"
 
     async def analyze(self, data: AnalysisInput) -> ProviderOutput:
@@ -97,6 +103,7 @@ class MockProvider:
 
 
 def validate_citations(result: AnalysisResult, allowed: set[UUID]) -> None:
+    # Validate all top-level and per-hypothesis references against this request's snapshot.
     refs = set(result.evidence_refs)
     for hypothesis in result.hypotheses:
         refs.update(hypothesis.evidence_refs)

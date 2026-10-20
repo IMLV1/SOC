@@ -28,6 +28,7 @@ def cleaned(value: str) -> str:
 
 
 async def mutable_run(session: AsyncSession, run_id: UUID, owner: UUID) -> None:
+    # Lock the run before editing child records so finish/pause cannot race a mutation.
     run = await get_owned_run(session, run_id, owner, lock=True)
     if run["status"] not in {"running", "paused", "reviewing"}:
         raise AuthError(409, "RUN_READ_ONLY")
@@ -99,6 +100,8 @@ async def ticket_view(session: AsyncSession, row: Mapping[Any, Any]) -> dict[str
 async def check_events(
     session: AsyncSession, run_id: UUID, ids: list[UUID], ticket_id: UUID | None = None
 ) -> None:
+    # Evidence IDs are accepted only if every ID belongs to this run (and, when
+    # supplied, to this ticket); partial matches are rejected as a whole.
     if not ids:
         return
     if ticket_id is None:
@@ -163,6 +166,8 @@ async def audit(
 async def create_ticket(
     session: AsyncSession, run_id: UUID, owner: UUID, body: TicketCreate, key: UUID
 ) -> dict[str, Any]:
+    # Idempotency reservation, ticket, evidence links, audit, and cached response
+    # share the caller's transaction so retries cannot create duplicate tickets.
     request_id, cached = await reserve(
         session, owner, f"/runs/{run_id}/tickets", key, body.model_dump(mode="json")
     )
@@ -210,6 +215,7 @@ async def create_ticket(
 
 
 VALID_TRANSITIONS = {
+    # Keep status changes explicit; callers cannot jump from open straight to closed.
     "open": {"open", "investigating"},
     "investigating": {"investigating", "resolved"},
     "resolved": {"resolved", "investigating", "closed"},
@@ -226,6 +232,7 @@ async def patch_ticket(
         raise AuthError(409, "TICKET_DELETED")
     if row["version"] != body.expected_version:
         raise AuthError(409, "VERSION_CONFLICT")
+    # Validate the state machine before writing either the ticket or its assessment.
     next_status = body.status or row["status"]
     if next_status not in VALID_TRANSITIONS[row["status"]]:
         raise AuthError(409, "INVALID_TICKET_STATE")
@@ -395,6 +402,7 @@ async def snapshot_note(
     reason: str | None,
     evidence: list[UUID],
 ) -> None:
+    # Preserve the prior note body and evidence as an immutable revision before later edits.
     version_id = uuid4()
     await session.execute(
         text("""INSERT INTO app.note_versions
@@ -478,6 +486,7 @@ async def mutate_note(
     action: str,
     body: NotePatch | DeleteInput,
 ) -> dict[str, Any]:
+    # Lock parent then note, matching ticket operations and preventing edits to a deleted case.
     await mutable_run(session, run_id, owner)
     ticket = await ticket_row(session, run_id, ticket_id, lock=True)
     if ticket["deleted_at"] is not None:

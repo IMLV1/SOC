@@ -1,5 +1,8 @@
 # Frontend responsive verification — 2026-10-16
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ตรวจใน worktree `codex/step-14-rag` บน local http://127.0.0.1:13014 ไม่ deploy ภายนอกและยังไม่รัน GitHub CI ของงานนี้
 
 ## ปัญหาและการแก้

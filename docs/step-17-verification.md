@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 17 — grading, feedback, review และ unlock
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ตรวจ working tree บน branch `implementation-checklist` วันที่ 18 ตุลาคม 2026. ข้อนี้ยัง **ไม่ผ่านตรวจรับ**; checklist จึงยังไม่ติ๊ก
 
 อัปเดต local evidence 18 ต.ค. 2026: Compose migration/health checks ผ่าน; integration **80 passed / 81 deselected**, smoke **3 passed**, browser E2E **22 passed / 1 skipped**; worker/evaluator readiness ผ่าน. Integration ยืนยัน concurrent review ให้ผู้ชนะหนึ่งคำขอ, ปลดล็อกหลังผ่านครบสาม case, append override revision/audit และไม่ถอน unlock เดิม. Browser E2E ยังไม่มี flow feedback/Instructor review.

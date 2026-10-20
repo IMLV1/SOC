@@ -31,7 +31,7 @@ for role in (
         file.write(secrets.token_urlsafe(48))
     if os.name == "posix":
         path.chmod(0o444)
-key_file = directory / "gemini_api_key.txt"
+key_file = directory / "dify_app_key.txt"
 try:
     fd = os.open(key_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
 except FileExistsError:
@@ -42,6 +42,6 @@ else:
     if os.name == "posix":
         key_file.chmod(0o444)
 print(
-    "Local password files and empty optional Gemini key file ready in .local/secrets "
+    "Local password files and empty optional Dify app key file ready in .local/secrets "
     "(no passwords printed, no existing files replaced)."
 )

@@ -1,6 +1,8 @@
 # Google login สำหรับ SOC local
 
-สถานะ: implement migration/API/UI แล้ว; ผลตรวจและ real acceptance แยกท้ายเอกสาร Default ปิด ไม่ deploy Render และไม่เปิด billing
+> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
+
+คู่มือนี้อธิบายการเชื่อม Google login สำหรับ local. โค้ด migration/API/UI มีแล้ว แต่การทดสอบในเครื่องไม่เท่ากับเปิดใช้กับผู้ใช้จริง. ค่าเริ่มต้นปิด และไม่ deploy หรือเปิด billing จากเอกสารนี้
 
 ## นโยบายที่ผู้ใช้ยืนยัน 16 ต.ค. 2026
 
@@ -18,7 +20,7 @@ SOC password registration ยังไม่ verify email การเอา ema
 
 Authorized redirect URI: `http://127.0.0.1:13014/api/v1/auth/google/callback`
 
-OAuth Client แยกจาก Gemini API key; ใช้เฉพาะ OpenID/email/profile ไม่ขอ offline access/refresh token Client secret เก็บเฉพาะ `C:\Users\GOODK\SOC\.local\secrets\google_oauth_client_secret.txt` (ตัว secret ไม่ใช่ JSON) และ runtime metadata ที่ `.local/secrets/google_oauth_config.json` ทั้งสองไฟล์ถูก Git exclude แล้ว ห้ามส่ง secret ลงแชต/commit/frontend/log Downloaded JSON ใน Downloads เป็น credential ส่วนตัวเช่นกัน ไม่ใช้ใน build context
+OAuth Client ใช้เฉพาะ OpenID/email/profile และแยกจาก Dify app key ไม่ขอ offline access/refresh token Client secret เก็บเฉพาะ `C:\Users\GOODK\SOC\.local\secrets\google_oauth_client_secret.txt` (ตัว secret ไม่ใช่ JSON) และ runtime metadata ที่ `.local/secrets/google_oauth_config.json` ทั้งสองไฟล์ถูก Git exclude แล้ว ห้ามส่ง secret ลงแชต/commit/frontend/log Downloaded JSON ใน Downloads เป็น credential ส่วนตัวเช่นกัน ไม่ใช้ใน build context
 
 [คู่มือ Web Server OAuth ของ Google](https://developers.google.com/identity/protocols/oauth2/web-server) URI ต้องตรง scheme/host/port/path; localhost กับ 127.0.0.1 เป็นคนละ URI Local นี้ให้ใช้ 127.0.0.1 เท่านั้น
 

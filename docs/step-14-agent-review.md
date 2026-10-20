@@ -1,5 +1,10 @@
 # ผล agent self-review ข้อ 14
 
+> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
+
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ผู้ตรวจ: Codex ซึ่งเป็นผู้เขียน implementation และชุด labels เริ่มต้นด้วย ผู้ใช้อนุญาตให้ตรวจเบื้องต้น ผลนี้เป็น **agent self-review เท่านั้น ไม่ใช่ independent human review** และไม่มีการเปลี่ยนช่อง human approval หรือผล provider เดิม
 
 ตรวจแบบ offline จาก frozen artifacts ไม่เรียก Gemini เพิ่ม ไม่ปรับ threshold ไม่แก้คำตอบย้อนหลัง ไม่ commit/push/deploy

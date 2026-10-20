@@ -34,6 +34,7 @@ async def heartbeat(database: Database, worker_id: str, release_sha: str = "loca
 
 
 async def claim(database: Database, worker_id: str) -> dict[str, Any] | None:
+    # Recover old wake-ups first, then claim one eligible job in a short transaction.
     await recover_runs(database)
     async with database.sessions() as session, session.begin():
         await session.execute(
@@ -58,6 +59,7 @@ async def claim(database: Database, worker_id: str) -> dict[str, Any] | None:
         )
         if row is None:
             return None
+        # SKIP LOCKED lets other worker processes claim different rows without waiting.
         token = uuid4()
         claimed = (
             (
@@ -98,6 +100,7 @@ async def recover_runs(database: Database) -> None:
 
 
 async def extend_lease(database: Database, job_id: UUID, token: UUID) -> bool:
+    # A lease cannot be revived after expiry, even if the old worker wakes late.
     async with database.sessions() as session, session.begin():
         changed = await session.scalar(
             text("""UPDATE app.jobs
@@ -110,6 +113,8 @@ async def extend_lease(database: Database, job_id: UUID, token: UUID) -> bool:
 
 
 async def settle(database: Database, job: dict[str, Any], error: str | None = None) -> bool:
+    # Fencing token + unexpired lease make settlement safe against stale workers;
+    # failures retry with bounded exponential delay until MAX_ATTEMPTS.
     async with database.sessions() as session, session.begin():
         terminal = error is None or job["attempts"] >= MAX_ATTEMPTS
         status = "succeeded" if error is None else ("failed" if terminal else "queued")
@@ -183,6 +188,7 @@ async def release_events(database: Database, job: dict[str, Any]) -> None:
                 for event in fixture.events
             )
         schedule.sort(key=lambda item: (item[0], item[1], item[2]))
+        # Stable sorting gives the same release sequence when fixture events share an offset.
         cursor = int(row["release_cursor"])
         for index, (offset, _, key, instance_id, event) in enumerate(schedule[cursor:], cursor + 1):
             if offset > elapsed:
@@ -248,6 +254,7 @@ async def release_events(database: Database, job: dict[str, Any]) -> None:
 
 
 async def process_one(database: Database, worker_id: str) -> bool:
+    # Dispatch by durable job type; settle only after the handler returns or raises.
     job = await claim(database, worker_id)
     if job is None:
         return False

@@ -15,6 +15,7 @@ async def reserve_call(
     component: str = "generation",
     operation_key: str | None = None,
 ) -> bool:
+    # One policy-row lock serializes global budget checks and the reservation insert.
     column = (
         "operation_key"
         if operation_key is not None
@@ -62,6 +63,7 @@ async def reserve_call(
         or totals["tokens"] + token_bound > policy["daily_tokens"]
         or totals["minute"] >= policy["rpm"]
     ):
+        # Denial is decided before creating a provider-call row or dispatching externally.
         return False
     await session.execute(
         text(f"""INSERT INTO app.provider_calls
@@ -88,6 +90,8 @@ async def settle_call(
     component: str = "generation",
     operation_key: str | None = None,
 ) -> None:
+    # Reconcile the reserved row only after provider outcome is known; unknown
+    # dispatches retain their hold until an operator supplies usage evidence.
     column = (
         "operation_key"
         if operation_key is not None

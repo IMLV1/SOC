@@ -44,6 +44,8 @@ def _context(row: dict[str, Any]) -> tuple[str, str, str, str]:
 
 
 def _rules(events: list[dict[str, Any]]) -> list[Finding]:
+    # Detection intentionally groups evidence by a stable scenario/account/IP/asset
+    # tuple. A matching event elsewhere in the run cannot complete this chain.
     findings: list[Finding] = []
     auth: dict[tuple[str, str, str, str], list[dict[str, Any]]] = defaultdict(list)
     scans: dict[tuple[str, str, str, str], list[dict[str, Any]]] = defaultdict(list)
@@ -90,6 +92,8 @@ def _rules(events: list[dict[str, Any]]) -> list[Finding]:
             and row["log_json"].get("session_id")
             and last <= row["offset_ms"] <= start + WINDOW_MS
         ]
+        # A successful login alone is not evidence of impact; require reads tied
+        # to that exact session and the same account, source address, and scenario.
         impacts: dict[tuple[str, str, str, str], tuple[dict[str, Any], list[dict[str, Any]]]] = {}
         for success in successes:
             session_id = success["log_json"]["session_id"]
@@ -145,6 +149,8 @@ def _rules(events: list[dict[str, Any]]) -> list[Finding]:
             continue
         change_ref = window[0]["log_json"].get("change_ref")
         approved: list[dict[str, Any]] = []
+        # Approval lowers the finding severity only when the whole scan window
+        # fits the approved asset and time range; a shared change ID is insufficient.
         if change_ref and all(row["log_json"].get("change_ref") == change_ref for row in window):
             for change in ordered:
                 log = change["log_json"]
@@ -212,6 +218,8 @@ def _anomalies(events: list[dict[str, Any]]) -> list[Finding]:
             for session_id, group in by_session.items():
                 if len(group) < MIN_READ_EVENTS:
                     continue
+                # Compare the observed volume against the run's own historical
+                # rate, and require several events to avoid a one-record spike.
                 volume = sum(int(row["log_json"].get("records_read") or 0) for row in group)
                 expected = rate * RECORDS_PER_BASELINE_READ
                 if volume < expected * ANOMALY_RATIO:
@@ -240,6 +248,8 @@ def evaluate(events: list[dict[str, Any]]) -> list[Finding]:
 def evaluate_pinned(
     events: list[dict[str, Any]], rule: str, baseline: str, correlation: str
 ) -> list[Finding]:
+    # Runs retain their detector versions so a later deployment cannot silently
+    # reinterpret findings that were produced under an older policy.
     if (rule, baseline, correlation) == ("rules-v1", "baseline-v1", "correlation-v1"):
         return evaluate_v1(events)
     if (rule, baseline, correlation) != (

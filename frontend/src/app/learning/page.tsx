@@ -124,10 +124,10 @@ export default function LearningPage() {
 
   async function startExam() {
     if (!progress || saving) return;
-    setSaving(true); setError(""); setExamResult(null);
+    setSaving(true); setError("");
     try {
       const result = await write<Attempt>(`/learning/levels/${lesson?.level_id}/attempts`, { expected_progress_version: progress.version }, { idempotencyKey: crypto.randomUUID() });
-      setAttempt(result); setEvidence([]); setReason("");
+      setExamResult(null); setAttempt(result); setEvidence([]); setReason("");
     } catch (cause) {
       const code = cause instanceof ApiError ? cause.code : "";
       setError(code === "EXAM_COOLDOWN_ACTIVE"

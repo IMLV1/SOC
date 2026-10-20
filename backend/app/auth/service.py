@@ -24,6 +24,7 @@ class AuthError(Exception):
 
 
 def digest(value: str) -> str:
+    # Database rows store only a digest of opaque tokens; plaintext stays in cookies.
     return hashlib.sha256(value.encode()).hexdigest()
 
 
@@ -40,12 +41,14 @@ def database(request: Request) -> Database:
 
 
 def origin(request: Request) -> None:
+    # Origin validation applies even to login/register, where no session exists yet.
     allowed = os.getenv("AUTH_ORIGINS", "https://localhost").split(",")
     if request.headers.get("origin") not in allowed:
         raise AuthError(403, "CSRF_INVALID")
 
 
 def set_cookie(response: Response, name: str, token: str, age: int) -> None:
+    # HttpOnly prevents script reads; Secure is enabled by default outside explicit local setup.
     response.set_cookie(
         name,
         token,
@@ -116,6 +119,7 @@ async def require_user(session: AsyncSession, request: Request) -> Mapping[str, 
 
 
 async def csrf_check(session: AsyncSession, request: Request) -> None:
+    # Logged-in mutations use the session token; anonymous auth forms use a short-lived challenge.
     origin(request)
     supplied = request.headers.get("x-csrf-token", "")
     user = await identity(session, request)
@@ -150,6 +154,7 @@ async def authorize_owner(user: Mapping[str, Any], owner: UUID) -> None:
 
 
 async def authorize_assignment(session: AsyncSession, user: Mapping[str, Any], owner: UUID) -> None:
+    # Instructor role alone is insufficient: each analyst must be assigned explicitly.
     if user["role"] != "instructor":
         raise AuthError(403, "FORBIDDEN")
     assigned = await session.scalar(
@@ -172,6 +177,7 @@ async def audit(session: AsyncSession, action: str, user: UUID, request: Request
 
 async def rate_limit(request: Request, operation: str, email: str = "") -> None:
     # Independent commit: failed passwords also consume the rate limit across API processes.
+    # Sort keys to acquire per-operation counters in a stable order when both IP and email apply.
     keys = [f"{operation}:ip:{request.client.host if request.client else 'unknown'}"]
     if email:
         keys.append(f"{operation}:email:{email}")

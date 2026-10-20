@@ -1,6 +1,8 @@
-# SOC Platform — LangChain RAG Design
+# SOC Platform — RAG Design (ฉบับเดิม)
 
-วันที่แบบออกแบบ: 12 ตุลาคม 2026 · implementation ข้อ 13–14 เพิ่ม pgvector/LangChain และ local Gemini opt-in แล้ว; quality acceptance ยังไม่ครบ ดู [ผลตรวจ](step-14-verification.md)
+> **สถานะ:** เอกสารนี้อธิบายแบบเดิมที่ให้ repository สร้าง RAG pipeline ภายในด้วย LangChain/pgvector. ผู้ใช้ยืนยันภายหลังว่าทิศทางที่ต้องการคือมีบริการภายนอก (ระบุ Dify) และ repository เรียก API เท่านั้น. Source ปัจจุบันยังมี pipeline ภายใน จึงยังไม่ตรงกับทิศทางเป้าหมาย. อย่าใช้ส่วน design ด้านล่างเป็นข้อกำหนดใหม่หรือทำตามคำสั่ง real provider โดยไม่ตรวจ [checklist](implementation-checklist.md) และ SRS ก่อน.
+
+วันที่แบบออกแบบเดิม: 12 ตุลาคม 2026 · มี implementation ภายในข้อ 13–14 ใน source; quality acceptance ยังไม่ครบ ดู [ผลตรวจย้อนหลัง](step-14-verification.md)
 
 อ่านร่วมกับ [Architecture](architecture.md), [API](api.md), [Database](database.md), [CI/CD](ci-cd.md) และ [Development plan](development-plan.md)
 

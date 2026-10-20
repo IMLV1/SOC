@@ -1,4 +1,6 @@
-# Versioned training inputs
+# Training fixture files
+
+ไฟล์ในโฟลเดอร์นี้เป็นข้อมูลฝึกสำหรับ backend ไม่ใช่ไฟล์สาธารณะหรือข้อมูลใน browser. Catalog บอก scenario ที่เปิดให้เลือก, event files เป็นข้อมูลที่ runner ปล่อยตามเวลา และ ground truth ใช้เฉพาะ evaluator. อ่านข้อจำกัดด้านล่างก่อนเพิ่มหรือแก้ fixture.
 
 `catalog.json` is seed input, not a public asset. Only S02 v1 is enabled initially.
 S01–S05 share schema v1 and include routine traffic; complete detector acceptance
@@ -9,10 +11,9 @@ within each fixture; log records contain observations, not outcome labels.
 `ground-truth/training.json` contains incident groups and evidence references for
 the evaluator. It is not an exam rubric, score or learner feedback policy.
 
-Public demo uses the separate benign snapshot in app/demo.py. No exam cases are
-seeded. Future exam inputs must use `purpose=exam` in a separate restricted bank;
-the training loader/seed/table reject that purpose. Exam admission remains closed
-until lesson/level gates and pending policy decisions are implemented.
+Public demo uses the separate benign snapshot in app/demo.py. Exam cases, if
+added, must stay in a separate restricted bank and must never enter the training
+catalog or API. Check the current exam policy and checklist before changing fixtures.
 
 Container base/API: no fixture files. Runner: training events only. Seed/test
 targets: restricted catalog/truth inputs. Do not deploy the seed/test image as an

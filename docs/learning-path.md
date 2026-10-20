@@ -1,6 +1,6 @@
 # Learning path และการทดสอบเลื่อนระดับ (ข้อกำหนด)
 
-เอกสารนี้เพิ่มเป้าหมาย **สอนคนที่ยังไม่เก่ง Cybersecurity ให้ตรวจหลักฐาน SOC ได้ทีละขั้น** ลงในขอบเขตของ [SOC simulation](soc-simulation.md) ไม่แทนที่ detection, ticket หรือการทดลอง A/B/C เดิม สถานะปัจจุบัน: [HTML prototype](../prototype/README.md) สาธิต flow ได้ backend/ฐานข้อมูล/auth มี foundation แล้ว; AI+RAG และข้อสอบจริงยังไม่เปิด
+เอกสารนี้อธิบายการสอนผู้เริ่มต้นให้ตรวจหลักฐาน SOC ทีละขั้น โดยไม่เปลี่ยนขอบเขต detection, ticket หรือ A/B/C เดิม ปัจจุบันมีบทเรียน ความคืบหน้าฝั่ง server ข้อสอบ และ Instructor review แล้ว; สถานะการตรวจดูที่ [รายงานข้อ 15–17](step-15-verification.md) และ [checklist](implementation-checklist.md)
 
 ## ลำดับผู้เรียน
 
@@ -62,8 +62,8 @@ evidence_snapshot_hash และผู้เรียน Retake สร้าง 
 
 Policy ที่ผู้ใช้ยืนยัน 13 ต.ค. 2026: Instructor ดูเฉลยสอบได้หลัง submit เท่านั้น;
 ผู้เรียนได้รับเฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็มแม้สอบจบแล้ว
-ค่าเริ่มต้น rubric/retake/override กำหนดไว้ใน SRS §8 ตามที่ผู้ใช้มอบหมาย 17 ต.ค. 2026; backend grading primitives เริ่มต้นใน `backend/app/grading/rubric.py`. Exam/review/unlock API ยังไม่ implement.
+นโยบาย rubric/retake/override ที่ใช้ปัจจุบันบันทึกใน [SRS §8](srs.md) backend มี exam, grading และ Instructor review routes แต่ยังไม่ถือว่าข้อ 17 ผ่านการตรวจรับทั้งหมด; โดยเฉพาะ quality acceptance ข้อ 14 ยังเป็น dependency
 
 ## ขอบเขตของ prototype ปัจจุบัน
 
-`prototype/` ใช้ localStorage เก็บบทเรียนที่เรียนจบและผลเคสต่อบัญชีเดโม แสดงตัวอย่าง request แบบกด 5 จุด ซ่อน AI brief/ชื่อที่ใบ้ผล/initial severity ในรอบสอบ และให้ rubric จำลอง 4 ข้อหลังส่ง ผลลัพธ์นี้ **ไม่ใช่ AI+RAG จริง** และไม่ได้พิสูจน์ว่าผู้เรียนเข้าใจข้อความอิสระ เพราะตรวจเหตุผลด้วยความยาวขั้นต่ำเท่านั้น Fixture/เฉลยและ demo ยังอยู่ใน browser/ชุดเดียวกัน จึงใช้สอบแบบป้องกันการดูเฉลยไม่ได้ ต้องทำ LEARN-03–07 ฝั่ง backend ก่อน deploy เป็นข้อสอบจริง
+`prototype/` เป็นตัวอย่างหน้าจอเท่านั้น ใช้ localStorage และ rubric จำลอง ไม่ใช่ระบบบัญชี/ข้อสอบจริง และไม่ได้เรียก AI/RAG ส่วนเว็บแอปหลักใช้ API กับ PostgreSQL เก็บ progress และข้อสอบฝั่ง server รายละเอียดข้อจำกัดและผลตรวจดูที่ [prototype guide](../prototype/README.md) และรายงานข้อ 15–17

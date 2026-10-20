@@ -12,6 +12,8 @@ from app.auth.service import AuthError
 
 
 async def analysis_view(session: AsyncSession, row: Mapping[Any, Any]) -> dict[str, Any]:
+    # Project an explicit response shape and ask the shared RAG layer whether
+    # stored citations/results must be hidden after a release is withdrawn.
     ids = (
         (
             await session.execute(
@@ -59,6 +61,8 @@ async def reserve_quota(
     analysis_id: UUID,
     experiment: bool = False,
 ) -> bool:
+    # User and system ledgers are locked in a fixed order so concurrent admissions
+    # cannot overspend either quota scope.
     column = "experiment_arm_id" if experiment else "analysis_id"
     limit = await session.scalar(
         text("""SELECT daily_ai_requests FROM app.user_quotas
@@ -136,6 +140,8 @@ async def enqueue_analysis(
     retry_of: UUID | None = None,
     question: str | None = None,
 ) -> UUID:
+    # Pin provider/prompt/retrieval versions at admission so a queued job cannot
+    # silently switch configuration while waiting for a worker.
     analysis_id = uuid4()
     pinned = (
         (
@@ -191,6 +197,8 @@ async def enqueue_analysis(
             {"run": run_id, "ticket": ticket_id, "analysis": analysis_id},
         )
     if retry_of is not None:
+        # A retry reuses the original retrieval snapshot rather than querying a
+        # newer corpus and comparing answers against different source material.
         from app.knowledge.rag import copy_retrieval
 
         await copy_retrieval(session, retry_of, analysis_id)
@@ -240,7 +248,7 @@ async def enqueue_analysis(
         for component, model, tokens in (
             (
                 "query_embedding",
-                "gemini-embedding-2" if pinned["analysis_mode"] == "real" else "fake-hash-16-v1",
+                "dify-app" if pinned["analysis_mode"] == "real" else "fake-hash-16-v1",
                 16000,
             ),
             ("generation", pinned["model_id"], 32000),

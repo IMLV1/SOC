@@ -1,5 +1,8 @@
 # ผลตรวจข้อ 18 — staging deployment และ operations
 
+> **หมายเหตุ:** ไฟล์นี้เป็นรายงานย้อนหลัง ผลตรวจใช้ได้กับวันที่, commit และ environment ที่ระบุในเนื้อหาเท่านั้น ไม่ใช่สถานะล่าสุดของ repository และไม่ยืนยัน deployment ปัจจุบัน ให้ดู [checklist ล่าสุด](implementation-checklist.md) ประกอบ
+
+
 ตรวจ source tree บน branch `implementation-checklist` ณ 17 ตุลาคม 2026
 
 อัปเดต 18 ต.ค. 2026: Docker Desktop 4.95.0 / Engine 29.8.2 ติดตั้งและทำงานได้; local Compose build, migration, integration **79 passed / 80 deselected**, smoke **3 passed**, E2E **22 passed / 1 skipped**, worker/evaluator readiness checks ผ่าน. นี่เป็น local validation เท่านั้น.
