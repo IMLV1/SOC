@@ -16,6 +16,9 @@ export GOOGLE_OAUTH_ENABLED=false
 export SOC_KB_ENABLED=false
 cleanup() {
   docker compose --profile test down --volumes --remove-orphans
+  if [[ -n "${soc_ci_instructor_password_file:-}" ]]; then
+    rm -f "$soc_ci_instructor_password_file"
+  fi
 }
 trap cleanup EXIT
 docker compose config --quiet
@@ -39,4 +42,22 @@ SOC_SMOKE_ORIGIN="http://127.0.0.1:$SOC_WEB_PORT" SOC_EXPECT_READY_STATUS=200 \
   node --test frontend/tests/smoke.test.mjs
 docker compose exec -T worker python -m app.worker --check
 docker compose exec -T evaluator python -m app.evaluation --check
+# Provision a short-lived Instructor only in the disposable CI database. The
+# browser E2E assigns each newly registered learner through the operator CLI.
+export SOC_TEST_INSTRUCTOR_EMAIL="soc-ci-instructor@example.test"
+export SOC_TEST_INSTRUCTOR_PASSWORD="$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')"
+soc_ci_instructor_password_file="$(mktemp)"
+printf '%s' "$SOC_TEST_INSTRUCTOR_PASSWORD" > "$soc_ci_instructor_password_file"
+instructor_result="$(docker compose run --rm -T --no-deps \
+  --user "$(id -u):$(id -g)" \
+  -v "$soc_ci_instructor_password_file:/tmp/soc-ci-instructor-password:ro" seed \
+  python -m app.db.provision user \
+  --email "$SOC_TEST_INSTRUCTOR_EMAIL" \
+  --display-name 'CI Exam Instructor' \
+  --role instructor \
+  --daily-runs 0 \
+  --daily-ai-requests 0 \
+  --password-file /tmp/soc-ci-instructor-password)"
+export SOC_TEST_INSTRUCTOR_ID="${instructor_result#Account ready: }"
+export SOC_REPO_ROOT="$PWD"
 SOC_SMOKE_ORIGIN="http://127.0.0.1:$SOC_WEB_PORT" npm --prefix frontend run test:e2e
