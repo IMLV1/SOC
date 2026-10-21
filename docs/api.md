@@ -84,7 +84,7 @@ Instructor ใช้ endpoint ปกติเพื่อฝึกในรอ�
 | Method | Endpoint | Input | ผลสำเร็จ |
 |---|---|---|---|
 | GET | `/auth/csrf` | — | 200 token ผูก pre-auth/session cookie; `Cache-Control: no-store` |
-| POST | `/auth/register` | email, display_name, password | 201 user role=analyst; ยังไม่ login อัตโนมัติ |
+| POST | `/auth/register` | email, display_name, password | 201 user role=analyst; Set-Cookie session ใหม่และเข้าสู่ระบบทันที |
 | POST | `/auth/login` | email, password | 200 user + csrf_token ใหม่; Set-Cookie session ใหม่ |
 | GET | `/auth/session` | cookie | 200 user, expires_at, csrf_token หรือ 401 |
 | POST | `/auth/logout` | `{}` | 204 revoke session และล้าง cookie; session ที่หมดแล้ว logout ซ้ำได้ |

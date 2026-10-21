@@ -112,6 +112,7 @@ def test_new_google_account_quota_session_and_subject_stability(google):
 def test_existing_email_requires_password_link_and_preserves_account(google):
     client, url, patch, calls = google
     original = register(client, "google@example.test")
+    client.cookies.clear()
     assert callback(client, start(client)).headers["location"] == "/login?google=link_required"
     assert client.get("/api/v1/me").status_code == 401
     login(client, "google@example.test")

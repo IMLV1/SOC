@@ -54,12 +54,6 @@ async function waitFor(run, predicate, timeout = 25000) {
     await page.getByLabel("อีเมล", { exact: true }).fill(email);
     await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
     await page.getByRole("button", { name: "สร้างบัญชี Analyst" }).click();
-    await page.getByRole("link", { name: "ไปเข้าสู่ระบบ" }).click();
-    await page.getByLabel("อีเมล", { exact: true }).fill(email);
-    await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
-    await page
-      .getByRole("button", { name: "เข้าสู่ระบบ", exact: true })
-      .click();
     await page.waitForURL("**/account");
     const csrf = (await (await context.request.get("/api/v1/auth/csrf")).json())
       .data.csrf_token;

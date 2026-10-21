@@ -97,9 +97,14 @@ def test_register_session_rotation_logout_and_quota(clients):
     client, url = clients
     user = register(client, "PERSON@Example.Test")
     assert user["role"] == "analyst" and user["email"] == "person@example.test"
-    assert client.get("/api/v1/auth/session").status_code == 401
+    registered_session = client.get("/api/v1/auth/session")
+    assert registered_session.status_code == 200
+    assert registered_session.json()["data"]["user"] == user
+    registration_cookie = client.cookies[auth.SESSION]
+    assert auth.CHALLENGE not in client.cookies
     first = login(client)
     cookie = client.cookies[auth.SESSION]
+    assert cookie != registration_cookie
     assert client.get("/api/v1/me").json()["data"] == user
     assert client.get("/api/v1/auth/session").json()["data"]["csrf_token"] == first["csrf_token"]
     limits = client.get("/api/v1/me/quota").json()["data"]
@@ -126,6 +131,43 @@ def test_register_session_rotation_logout_and_quota(clients):
         sql(url("migration_owner"), "SELECT token_hash,csrf_hash FROM app.auth_sessions")
     )
     assert all(len(r[0]) == 64 and r[0] != cookie and r[1] != first["csrf_token"] for r in rows)
+
+
+def test_registration_rotates_existing_browser_session(clients):
+    client, _ = clients
+    register(client, "first@example.test")
+    original_cookie = client.cookies[auth.SESSION]
+    second = register(client, "second@example.test")
+    assert client.cookies[auth.SESSION] != original_cookie
+    assert client.get("/api/v1/me").json()["data"] == second
+    client.cookies.set(auth.SESSION, original_cookie)
+    assert client.get("/api/v1/me").status_code == 401
+
+
+def test_registration_session_failure_rolls_back_account_and_quota(clients, monkeypatch):
+    from app.auth import routes
+
+    client, url = clients
+    original = routes.create_session
+
+    async def fail_after_session_insert(*args):
+        await original(*args)
+        raise RuntimeError("simulated session failure")
+
+    monkeypatch.setattr(routes, "create_session", fail_after_session_insert)
+    with pytest.raises(RuntimeError, match="simulated session failure"):
+        register(client)
+    assert auth.SESSION not in client.cookies
+    rows = asyncio.run(
+        sql(
+            url("migration_owner"),
+            """SELECT (SELECT count(*) FROM app.users),
+            (SELECT count(*) FROM app.user_quotas),
+            (SELECT count(*) FROM app.auth_sessions),
+            (SELECT count(*) FROM app.audit_logs)""",
+        )
+    )
+    assert tuple(rows[0]) == (0, 0, 0, 0)
 
 
 def test_origin_csrf_unknown_fields_and_generic_failures(clients):

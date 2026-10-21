@@ -9,7 +9,6 @@ import { useSession } from "./session-provider";
 export default function AuthForm({ register = false }: { register?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const [done, setDone] = useState(false);
   const router = useRouter();
   const { refresh } = useSession();
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -26,13 +25,8 @@ export default function AuthForm({ register = false }: { register?: boolean }) {
     try {
       await mutate(register ? "/auth/register" : "/auth/login", payload);
       form.reset();
-      if (register) {
-        setDone(true);
-        await refresh();
-      } else {
-        await refresh();
-        router.push("/account");
-      }
+      await refresh();
+      router.replace("/account");
     } catch (error) {
       setMessage(
         error instanceof ApiError && error.status === 429
@@ -91,66 +85,57 @@ export default function AuthForm({ register = false }: { register?: boolean }) {
             ? "สร้างบัญชี Analyst เพื่อเริ่มเส้นทางการฝึกของคุณ"
             : "กลับมาสำรวจหลักฐาน และต่อยอดการสืบสวนของคุณ"}
         </p>
-        {done ? (
-          <div role="status" className="auth-success">
-            <p>สมัครสำเร็จ กรุณาเข้าสู่ระบบด้วยบัญชีของคุณ</p>
-            <Link className="button" href="/login">
-              ไปเข้าสู่ระบบ
-            </Link>
-          </div>
-        ) : (
-          <form onSubmit={submit}>
-            {register && (
-              <label>
-                ชื่อที่แสดง
-                <input
-                  name="display_name"
-                  autoComplete="nickname"
-                  required
-                  maxLength={60}
-                  placeholder="ชื่อที่ใช้ในพื้นที่ฝึก"
-                />
-              </label>
-            )}
+        <form onSubmit={submit}>
+          {register && (
             <label>
-              อีเมล
+              ชื่อที่แสดง
               <input
-                name="email"
-                type="email"
-                autoComplete="username"
+                name="display_name"
+                autoComplete="nickname"
                 required
-                maxLength={254}
-                placeholder="you@example.com"
+                maxLength={60}
+                placeholder="ชื่อที่ใช้ในพื้นที่ฝึก"
               />
             </label>
-            <label>
-              รหัสผ่าน
-              <input
-                name="password"
-                type="password"
-                autoComplete={register ? "new-password" : "current-password"}
-                required
-                minLength={5}
-                maxLength={register ? 10 : 128}
-                placeholder="กรอกรหัสผ่านของคุณ"
-                aria-describedby="password-help"
-              />
-            </label>
-            <p className="form-help" id="password-help">
-              {register
-                ? "รหัสผ่านสำหรับบัญชีใหม่ 5–10 ตัวอักษร"
-                : "ใช้รหัสผ่านของบัญชีคุณ (บัญชีเดิมที่รหัสยาวยังเข้าสู่ระบบได้)"}
-            </p>
-            <button disabled={busy} type="submit">
-              {busy
-                ? "กำลังดำเนินการ…"
-                : register
-                  ? "สร้างบัญชี Analyst"
-                  : "เข้าสู่ระบบ"}
-            </button>
-            {message && <p role="alert">{message}</p>}
-          </form>
-        )}
+          )}
+          <label>
+            อีเมล
+            <input
+              name="email"
+              type="email"
+              autoComplete="username"
+              required
+              maxLength={254}
+              placeholder="you@example.com"
+            />
+          </label>
+          <label>
+            รหัสผ่าน
+            <input
+              name="password"
+              type="password"
+              autoComplete={register ? "new-password" : "current-password"}
+              required
+              minLength={5}
+              maxLength={register ? 10 : 128}
+              placeholder="กรอกรหัสผ่านของคุณ"
+              aria-describedby="password-help"
+            />
+          </label>
+          <p className="form-help" id="password-help">
+            {register
+              ? "รหัสผ่านสำหรับบัญชีใหม่ 5–10 ตัวอักษร"
+              : "ใช้รหัสผ่านของบัญชีคุณ (บัญชีเดิมที่รหัสยาวยังเข้าสู่ระบบได้)"}
+          </p>
+          <button disabled={busy} type="submit">
+            {busy
+              ? "กำลังดำเนินการ…"
+              : register
+                ? "สร้างบัญชี Analyst"
+                : "เข้าสู่ระบบ"}
+          </button>
+          {message && <p role="alert">{message}</p>}
+        </form>
         {!register && (
           <>
             <div className="auth-divider">หรือเชื่อมต่อด้วย</div>

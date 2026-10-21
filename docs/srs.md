@@ -169,7 +169,7 @@ production client จนรายละเอียด request/response/authoriz
 | ID / แหล่งเดิม | Use case / actor, precondition → flow → postcondition | Endpoints / screen | วิธีตรวจรับ (planned ยกเว้น FR-001) |
 |---|---|---|---|
 | FR-001 / SOC-002 | UC-01 Guest เปิด shell → health; ไม่ต้อง DB | `/health/live`, `/health/ready`, `/` | live 200, ready 503 ก่อน DB foundation; start/build/import/worker check |
-| FR-002 / SOC-003 | UC-02 Guest bootstrap → register Analyst → login; logout revoke | `/auth/*`, `/me`, `/me/quota`; Auth | ไม่ auto-login, CSRF/Origin, wrong password generic, expiry 401, disabled/revoked |
+| FR-002 / SOC-003 | UC-02 Guest bootstrap → register Analyst พร้อม session; login บัญชีเดิม; logout revoke | `/auth/*`, `/me`, `/me/quota`; Auth | สมัครแล้วเข้าสู่ระบบทันที, CSRF/Origin, wrong password generic, expiry 401, disabled/revoked |
 | FR-003 / SOC-004/005 | UC-03 Guest อ่าน snapshot/catalog ไม่มี mutation | `/scenarios`, `/demo/*`; Demo | ไม่ enqueue AI, exam bank/future data ไม่หลุด |
 | FR-004 / SOC-006/007 | UC-04 Analyst quota ผ่าน → create/pause/resume/finish | `/runs`, `/runs/{run_id}`, controls; Runs | server clock, idempotency/quota race, 409 version, restart ไม่ซ้ำ |
 | FR-005 / SOC-008/009 | UC-05 เจ้าของค้น released events/alerts | run `/events`, `/alerts`, `/overview`; Explorer | cursor/filter validation, same-run refs, detector ไม่อ่าน truth |
@@ -323,6 +323,6 @@ Retrieval v2 ที่ได้ TH Recall@5 0.95 เป็น developer-label me
 
 ## FR-001 Google login extension — user-approved 2026-10-16
 
-Password registration ยังคงไม่ auto-login ข้อยกเว้น Google verified identity ใหม่สร้าง Analyst พร้อม quota 10 runs/20 logical AI requests ต่อวัน UTC และออก opaque SOC session ทันที Existing email ไม่ auto-merge; เจ้าของต้อง password login แล้ว reauthenticate เพื่อ explicit link Google อีเมลเดียวกันหนึ่งครั้ง เก็บ issuer/sub เป็น unique identity กับ user ID เดิม ไม่ให้ email/domain กำหนด Instructor หรือย้าย ownership/quota Google-only account ไม่มี password login; unlink/password enrollment ยังไม่อยู่ในขอบเขต
+ข้อสรุปผู้ใช้ 21 ต.ค. 2026: Password registration สร้าง Analyst พร้อม quota 10 runs/20 logical AI requests ต่อวัน UTC และออก opaque SOC session ทันที เช่นเดียวกับ Google verified identity ใหม่ Account/quota/session ต้อง commit พร้อมกันก่อน Set-Cookie และ revoke session เดิมใน browser; หากสร้าง session ล้มเหลวต้อง rollback บัญชีใหม่ด้วย Existing email ไม่ auto-merge; เจ้าของต้อง password login แล้ว reauthenticate เพื่อ explicit link Google อีเมลเดียวกันหนึ่งครั้ง เก็บ issuer/sub เป็น unique identity กับ user ID เดิม ไม่ให้ email/domain กำหนด Instructor หรือย้าย ownership/quota Google-only account ไม่มี password login; unlink/password enrollment ยังไม่อยู่ในขอบเขต
 
 Mapping: GET `/api/v1/auth/google/status`, POST `/api/v1/auth/google/start` และ GET `/api/v1/auth/google/callback` ตาม OpenAPI approved; callback single-use browser/session-bound 5 นาที พร้อม nonce/PKCE ตรวจ signature/audience/issuer/expiry/verified email และออก session ใหม่เมื่อสำเร็จ Provider failure ไม่กระทบ password login; disabled user เข้าไม่ได้ Identity transaction advisory guard มาก่อน user/session locks การ consume flow อยู่ transaction แยกก่อน external IO ไม่มี transaction ค้างรอ Google และต้องตรวจ session/expiry ซ้ำก่อนผูกบัญชี

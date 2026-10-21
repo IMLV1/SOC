@@ -15,10 +15,6 @@ test("auth-only preview disables runner controls and refuses direct queue writes
   await page.getByLabel("อีเมล", { exact: true }).fill(email);
   await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
   await page.getByRole("button", { name: "สร้างบัญชี Analyst" }).click();
-  await page.getByRole("link", { name: "ไปเข้าสู่ระบบ" }).click();
-  await page.getByLabel("อีเมล", { exact: true }).fill(email);
-  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
   await expect(page).toHaveURL(/\/account$/);
   const cookie = (await page.context().cookies()).find(
     (item) => item.name === "soc_session",

@@ -44,7 +44,7 @@ Compose จัด origin ให้ตรง SOC_WEB_PORT จึงทดสอ�
 | Endpoints | พฤติกรรม |
 |---|---|
 | GET /auth/csrf | csrf_token ผูก cookie; pre-auth challenge อายุ 15 นาที |
-| POST /auth/register | Analyst เท่านั้น, quota 10/20, 201 user; ไม่สร้าง session และ consume challenge |
+| POST /auth/register | Analyst เท่านั้น, quota 10/20, 201 user; account/quota/session commit พร้อมกัน, consume challenge และออก session cookie ใหม่ |
 | POST /auth/login | generic failure, Argon2id verify; revoke cookie session เดิม, session/CSRF ใหม่; 200 user/expires_at/csrf_token |
 | GET /auth/session | active session/user เท่านั้น; 401 ถ้า expired/revoked/disabled |
 | POST /auth/logout | active session ต้อง CSRF; revoke atomic/audit; 204 ล้าง cookies; expired/absent logout ซ้ำได้แต่ต้อง Origin |
@@ -56,6 +56,8 @@ response models ปิด extra fields ไม่ส่ง password/token hashes;
 mutation ต้อง application/json + Origin + X-CSRF-Token (ยกเว้น expired logout ไม่บังคับ token)
 register duplicate ตอบ generic REGISTRATION_FAILED ไม่บอก field/account details;
 success 201 ตาม contract ยังทำให้ผู้เรียกแยก success/failure ได้ ไม่อ้างว่าปกปิดการมีบัญชีแบบสมบูรณ์
+
+ข้อสรุปผู้ใช้ 21 ต.ค. 2026: สมัครด้วย password สำเร็จแล้วเข้าสู่ระบบทันที หน้าเว็บ refresh session/CSRF แล้วพาไป `/account` เพื่อเริ่มบทเรียน ไม่เรียก login ซ้ำด้วยรหัสผ่านใน frontend; session เดิมใน browser ถูก revoke และ cookie ใหม่เผยแพร่หลัง transaction commit เท่านั้น ข้อนี้แทน policy ไม่ auto-login ในรายงานเก่า
 
 cookie `soc_session`/`soc_challenge`: HttpOnly, SameSite=Lax, Path=/, Secure โดย default
 opaque token สุ่ม 32 bytes; DB เก็บ SHA-256 เท่านั้น; CSRF derive แบบ domain-separated HMAC จาก opaque token

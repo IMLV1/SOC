@@ -28,3 +28,17 @@ Next.js dev ที่ `127.0.0.1:4175` proxy ไป API `127.0.0.1:8400` ขอ�
 Integration tests เฉพาะ password boundaries/legacy login/Google linking จำนวน 6 cases ติดที่ setup ของ `soc-local-test-db-1`: ไม่มี `vector.control` สำหรับ pgvector 0.8.2 จึง **6 setup errors** ก่อนเข้าทดสอบ ไม่แก้หรือ skip assertions เพื่อให้ผ่าน ฐานนี้เป็น `soc_test_foundation` แบบ tmpfs ตาม harness และไม่ใช่ฐานของเว็บ local
 
 ยังไม่ได้รัน full lesson → exam → Instructor review E2E ใหม่ในงานนี้ และยังไม่ยืนยัน GitHub CI, public deployment หรือ real AI/RAG
+
+## สมัครแล้วเข้าสู่ระบบทันที — follow-up หลัง `a5cc495`
+
+ตามคำขอผู้ใช้ล่าสุดวันที่ 21 ต.ค. 2026 `POST /auth/register` ยังคืน 201 `UserEnvelope` แต่สร้าง account/quota/session และ audit ใน transaction เดียว ก่อนออก HttpOnly session cookie และล้าง pre-auth challenge ใช้ session rotation เดียวกับ login หน้าเว็บอ่าน session/CSRF ใหม่แล้วไป `/account` โดยไม่ส่ง password ไป login ซ้ำ ไม่มี migration เพิ่ม
+
+ตรวจบน Python 3.12.14 และ Node 24.20.0 ใน local:
+
+- `ruff check app tests`, `ruff format --check app tests`, `mypy app`: ผ่าน
+- `pytest -q -m 'not integration'`: **103 passed, 84 deselected** รวม OpenAPI drift
+- `pytest tests/test_auth.py tests/test_google_login.py`: **28 passed** บน Compose project แยก `soc-ci-register-auto` ใช้ PostgreSQL 17.11 + pgvector 0.8.2 และฐาน `soc_test_foundation` แบบ tmpfs ครอบคลุม auto-session, rollback หลัง session insert ล้ม, revoke cookie เดิม, CSRF, password boundaries, legacy login และ Google linking
+- Playwright `auth.spec.ts`: **4 passed** บน `127.0.0.1:4175` รวมสมัครแล้วเข้าบัญชีทันที, cookie HttpOnly/SameSite, refresh, logout, stale response และ login ภายหลัง
+- Frontend lint/build/TypeScript และ browser asset leakage check: ผ่าน
+
+การใช้ฐานแยกพร้อม image ที่ถูกต้องทำให้ชุด auth integration รันได้; หลังตรวจลบเฉพาะ project `soc-ci-register-auto` และฐาน tmpfs ที่สร้างในงานนี้ ไม่เปลี่ยนหรือลบฐาน `soc-local-test-db-1` ที่ขาด vector ในการตรวจครั้งก่อน API local ของเว็บถูก rebuild ให้ใช้ behavior ใหม่นี้แล้ว ผลยังไม่ใช่การตรวจ GitHub CI หรือ public deployment

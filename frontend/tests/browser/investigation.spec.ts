@@ -12,13 +12,6 @@ test("manual investigation uses API, preserves drafts on 409 and keeps note revi
   await page.getByLabel("อีเมล", { exact: true }).fill(email);
   await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
   await page.getByRole("button", { name: "สร้างบัญชี Analyst" }).click();
-  await expect(
-    page.getByText("สมัครสำเร็จ กรุณาเข้าสู่ระบบด้วยบัญชีของคุณ"),
-  ).toBeVisible();
-  await page.getByRole("link", { name: "ไปเข้าสู่ระบบ" }).click();
-  await page.getByLabel("อีเมล", { exact: true }).fill(email);
-  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
   await expect(page).toHaveURL(/\/account$/);
   await page.goto("/runs");
   await page.getByRole("button", { name: "เริ่มรอบฝึก" }).click();

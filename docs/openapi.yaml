@@ -127,6 +127,7 @@ paths:
       - Auth
       summary: Register
       operationId: auth_register
+      description: Creates an Analyst account, quota and opaque session atomically; sets the session cookie.
       requestBody:
         content:
           application/json:

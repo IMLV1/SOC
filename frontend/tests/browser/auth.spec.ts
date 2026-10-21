@@ -12,7 +12,7 @@ test("new registration asks for 5–10 characters while login still accepts old 
   await expect(oldPassword).toHaveAttribute("maxlength", "128");
 });
 
-test("register does not log in; cookie login, refresh and logout use the same-origin API", async ({
+test("register signs in immediately; refresh, logout and later login use the same-origin API", async ({
   page,
   browser,
 }) => {
@@ -23,15 +23,8 @@ test("register does not log in; cookie login, refresh and logout use the same-or
   await page.getByLabel("อีเมล", { exact: true }).fill(email);
   await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
   await page.getByRole("button", { name: "สร้างบัญชี Analyst" }).click();
-  await expect(
-    page.getByText("สมัครสำเร็จ กรุณาเข้าสู่ระบบด้วยบัญชีของคุณ"),
-  ).toBeVisible();
-  expect((await page.request.get("/api/v1/me")).status()).toBe(401);
-  await page.getByRole("link", { name: "ไปเข้าสู่ระบบ" }).click();
-  await page.getByLabel("อีเมล", { exact: true }).fill(email);
-  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
   await expect(page).toHaveURL(/\/account$/);
+  expect((await page.request.get("/api/v1/me")).status()).toBe(200);
   await expect(page.getByText(email, { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "เริ่มบทเรียนพื้นฐาน" })).toHaveAttribute("href", "/learning");
   await page.reload();
@@ -93,6 +86,13 @@ test("register does not log in; cookie login, refresh and logout use the same-or
   );
   await expect(page.getByText(email, { exact: true })).toHaveCount(0);
   expect((await page.request.get("/api/v1/me")).status()).toBe(401);
+  await page.unroute("**/api/v1/auth/session");
+  await page.goto("/login");
+  await page.getByLabel("อีเมล", { exact: true }).fill(email);
+  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByText(email, { exact: true })).toBeVisible();
 });
 
 test("Guest demo is readable, cannot mutate and fits mobile/tablet/desktop", async ({

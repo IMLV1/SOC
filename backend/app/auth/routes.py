@@ -1,11 +1,12 @@
 import asyncio
 import secrets
 from datetime import UTC, datetime, timedelta
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from argon2.exceptions import VerificationError
 from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import service as auth
 from app.auth.models import (
@@ -48,6 +49,31 @@ def meta(request: Request) -> AuthMeta:
     return AuthMeta(request_id=request.state.request_id)
 
 
+async def create_session(
+    session: AsyncSession, request: Request, user_id: UUID
+) -> tuple[str, datetime]:
+    await session.execute(
+        text("""UPDATE app.auth_sessions SET revoked_at=now()
+        WHERE token_hash=:hash AND revoked_at IS NULL"""),
+        {"hash": auth.digest(request.cookies.get(auth.SESSION, ""))},
+    )
+    token = secrets.token_urlsafe(32)
+    expires = datetime.now(UTC) + timedelta(hours=24)
+    await session.execute(
+        text("""INSERT INTO app.auth_sessions
+        (id,user_id,token_hash,csrf_hash,expires_at)
+        VALUES (:id,:user,:token,:csrf,:expires)"""),
+        {
+            "id": uuid4(),
+            "user": user_id,
+            "token": auth.digest(token),
+            "csrf": auth.digest(auth.csrf(token)),
+            "expires": expires,
+        },
+    )
+    return token, expires
+
+
 @router.get("/auth/csrf", response_model=CsrfEnvelope, operation_id="auth_csrf")
 async def csrf_token(request: Request, response: Response) -> CsrfEnvelope:
     # Reuse a valid session/challenge binding; issue a new short-lived challenge only when needed.
@@ -84,10 +110,16 @@ async def csrf_token(request: Request, response: Response) -> CsrfEnvelope:
 
 
 @router.post(
-    "/auth/register", response_model=UserEnvelope, status_code=201, operation_id="auth_register"
+    "/auth/register",
+    response_model=UserEnvelope,
+    status_code=201,
+    operation_id="auth_register",
+    description=(
+        "Creates an Analyst account, quota and opaque session atomically; sets the session cookie."
+    ),
 )
 async def register(body: RegisterInput, request: Request, response: Response) -> UserEnvelope:
-    # Registration creates Analyst accounts only and deliberately does not create a session.
+    # Account, quota and initial session commit together before publishing the cookie.
     await auth.rate_limit(request, "register", body.email)
     async with auth.database(request).sessions() as session, session.begin():
         await auth.csrf_check(session, request)
@@ -115,7 +147,10 @@ async def register(body: RegisterInput, request: Request, response: Response) ->
         )
         await auth.consume_challenge(session, request)
         await auth.audit(session, "auth.register", user_id, request)
+        token, _ = await create_session(session, request, user_id)
+        await auth.audit(session, "auth.login", user_id, request)
         result = auth.view(dict(row))
+    auth.set_cookie(response, auth.SESSION, token, 86400)
     auth.clear_cookie(response, auth.CHALLENGE)
     return UserEnvelope(data=result, meta=meta(request))
 
@@ -147,25 +182,7 @@ async def login(body: LoginInput, request: Request, response: Response) -> Sessi
             correct = False
         if not correct or row is None or row["status"] != "active":
             raise auth.AuthError(401, "LOGIN_FAILED")
-        await session.execute(
-            text("""UPDATE app.auth_sessions SET revoked_at=now()
-            WHERE token_hash=:hash AND revoked_at IS NULL"""),
-            {"hash": auth.digest(request.cookies.get(auth.SESSION, ""))},
-        )
-        token = secrets.token_urlsafe(32)
-        expires = datetime.now(UTC) + timedelta(hours=24)
-        await session.execute(
-            text("""INSERT INTO app.auth_sessions
-            (id,user_id,token_hash,csrf_hash,expires_at)
-            VALUES (:id,:user,:token,:csrf,:expires)"""),
-            {
-                "id": uuid4(),
-                "user": row["id"],
-                "token": auth.digest(token),
-                "csrf": auth.digest(auth.csrf(token)),
-                "expires": expires,
-            },
-        )
+        token, expires = await create_session(session, request, row["id"])
         await auth.consume_challenge(session, request)
         await auth.audit(session, "auth.login", row["id"], request)
         result = SessionData(
