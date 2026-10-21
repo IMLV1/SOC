@@ -59,14 +59,10 @@ const learningPillars = [
 
 export default function Home() {
   const { session, preview } = useSession();
-  // Keep the primary action aligned with the current access state; the public
-  // preview is read-only, while authenticated learners can return to their runs.
-  const startHref = preview ? "/demo" : session ? "/runs" : "/register";
-  const startLabel = preview
-    ? "สำรวจข้อมูลตัวอย่าง"
-    : session
-      ? "กลับไปหน้ารอบฝึก"
-      : "สร้างบัญชีเพื่อเริ่มเรียน";
+  // The guest exercise is read-only. Authenticated learners start with the lesson,
+  // not with an unrelated training run; preview remains read-only.
+  const startHref = preview ? "/demo" : session ? "/learning" : "/demo";
+  const startLabel = session && !preview ? "ไปบทเรียนของฉัน" : "ลองอ่าน request ตัวอย่าง";
 
   return (
     <main className="home-page">
@@ -105,8 +101,8 @@ export default function Home() {
                 {startLabel}
                 <span aria-hidden="true">↗</span>
               </ShimmerLink>
-              <Link className="button button-secondary" href="/scenarios">
-                ดูสถานการณ์ฝึก
+              <Link className="button button-secondary" href={session && !preview ? "/runs" : "/register"}>
+                {session && !preview ? "เปิดรอบฝึก" : "สมัครเพื่อบันทึกความคืบหน้า"}
                 <span aria-hidden="true">→</span>
               </Link>
             </div>

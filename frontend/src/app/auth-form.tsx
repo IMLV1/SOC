@@ -130,14 +130,16 @@ export default function AuthForm({ register = false }: { register?: boolean }) {
                 type="password"
                 autoComplete={register ? "new-password" : "current-password"}
                 required
-                minLength={12}
-                maxLength={128}
+                minLength={5}
+                maxLength={register ? 10 : 128}
                 placeholder="กรอกรหัสผ่านของคุณ"
                 aria-describedby="password-help"
               />
             </label>
             <p className="form-help" id="password-help">
-              รหัสผ่าน 12–128 ตัวอักษร
+              {register
+                ? "รหัสผ่านสำหรับบัญชีใหม่ 5–10 ตัวอักษร"
+                : "ใช้รหัสผ่านของบัญชีคุณ (บัญชีเดิมที่รหัสยาวยังเข้าสู่ระบบได้)"}
             </p>
             <button disabled={busy} type="submit">
               {busy

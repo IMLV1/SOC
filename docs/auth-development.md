@@ -26,12 +26,18 @@ docker compose up --build -d --wait
 เปิด [สมัครสมาชิก](http://127.0.0.1:3000/register), [เข้าสู่ระบบ](http://127.0.0.1:3000/login),
 [บัญชี](http://127.0.0.1:3000/account) และ [Guest demo](http://127.0.0.1:3000/demo)
 ใช้บัญชีที่สมัครเอง ไม่มี default password; Instructor ยังสร้างด้วย provisioning ตาม [คู่มือ DB](local-development.md)
+บัญชี Analyst ที่สมัครใหม่ใช้รหัสผ่าน 5–10 ตัวอักษรตามคำขอปัจจุบัน; login และการยืนยันเพื่อเชื่อม Google ยังรับรหัสเดิมได้ถึง 128 ตัวอักษร ส่วน Instructor ที่ provision ผ่าน operator ยังคง 12–128 ตัวอักษร การลดขั้นต่ำเหลือ 5 ทำให้เสี่ยงต่อการเดารหัสมากขึ้นก่อนเปิดใช้งานสาธารณะ
 bootstrap/migrate exit 0 เป็นปกติ; migration 0002 เพิ่ม auth_rate_limits และเก็บข้อมูลจาก 0001 ไว้
 
 Native API ต้องตั้ง DB env ตามคู่มือ DB รวม `AUTH_ORIGINS=http://127.0.0.1:3000,http://localhost:3000`
 และ `AUTH_COOKIE_SECURE=false` เฉพาะ loopback HTTP development
 HTTPS ใช้ Secure=true (ค่าเริ่มต้น) และระบุ origin ที่ไว้ใจอย่างเจาะจง ไม่ใช้ wildcard
 Compose จัด origin ให้ตรง SOC_WEB_PORT จึงทดสอบผ่าน Next.js proxy ได้
+ถ้าเปิด Next.js dev server แยกอีกพอร์ต เช่น `127.0.0.1:4175` ให้ตั้ง
+`SOC_AUTH_ORIGINS=http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:4175`
+ก่อนสร้าง API container ใหม่ (เปลี่ยน `3000` ให้ตรง `SOC_WEB_PORT` ที่ใช้อยู่)
+แล้วรัน `docker compose up -d --no-deps --force-recreate api`.
+ต้องระบุ origin เต็มและเจาะจง; อย่าใช้ wildcard หรือปิด Origin/CSRF validation.
 
 ## Contract ที่เปิดจริง
 

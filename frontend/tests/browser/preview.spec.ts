@@ -8,7 +8,7 @@ test("auth-only preview disables runner controls and refuses direct queue writes
     "Explicit preview acceptance only",
   );
   const email = `preview-${Date.now()}@example.test`;
-  const password = `Test-only-${Date.now()}-password`;
+  const password = crypto.randomUUID().slice(0, 10);
   await page.goto("/register");
   await expect(page.getByText(/Free preview: ทดสอบสมัครสมาชิก/)).toBeVisible();
   await page.getByLabel("ชื่อที่แสดง").fill("Preview Analyst");

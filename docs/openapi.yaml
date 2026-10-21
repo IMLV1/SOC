@@ -5509,7 +5509,7 @@ components:
           maxLength: 254
         password: &id005
           type: string
-          minLength: 12
+          minLength: 5
           maxLength: 128
           writeOnly: true
       required:
@@ -5521,7 +5521,11 @@ components:
       additionalProperties: false
       properties:
         email: *id004
-        password: *id005
+        password:
+          type: string
+          minLength: 5
+          maxLength: 10
+          writeOnly: true
         display_name:
           type: string
           minLength: 1
@@ -5874,7 +5878,7 @@ components:
         password:
           type: string
           maxLength: 128
-          minLength: 12
+          minLength: 5
           title: Password
       additionalProperties: false
       type: object
@@ -5937,8 +5941,8 @@ components:
           title: Email
         password:
           type: string
-          maxLength: 128
-          minLength: 12
+          maxLength: 10
+          minLength: 5
           title: Password
         display_name:
           type: string
@@ -7578,7 +7582,7 @@ components:
           anyOf:
           - type: string
             maxLength: 128
-            minLength: 12
+            minLength: 5
           - type: 'null'
           title: Password
       additionalProperties: false

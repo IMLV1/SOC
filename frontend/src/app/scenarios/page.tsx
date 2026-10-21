@@ -31,7 +31,8 @@ export default function ScenariosPage() {
       <h1>สถานการณ์ฝึก</h1>
       <p>
         ดูหัวข้อและเป้าหมายการฝึกได้โดยไม่ต้องเข้าสู่ระบบ
-        เข้าสู่ระบบเพื่อเริ่มรอบฝึก ข้อสอบจริงยังไม่เปิด
+        เข้าสู่ระบบเพื่อเริ่มรอบฝึก รายการนี้ไม่ใช่ข้อสอบเลื่อนระดับ;
+        หากต้องการสอบให้เริ่มที่บทเรียนพื้นฐานก่อน
       </p>
       {loading ? (
         <p role="status">กำลังโหลดสถานการณ์…</p>
@@ -78,7 +79,7 @@ export default function ScenariosPage() {
           ))}
         </div>
       )}
-      <Link href="/demo">ดูตัวอย่างการอ่าน request และ response</Link>
+      <p><Link href="/learning">ไปเส้นทางบทเรียนและข้อสอบ</Link> · <Link href="/demo">ลองอ่าน request ก่อนสมัคร</Link></p>
     </main>
   );
 }

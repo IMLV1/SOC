@@ -24,6 +24,7 @@ export default function LearningPage() {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [active, setActive] = useState(0);
+  const [revealedStep, setRevealedStep] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -92,12 +93,12 @@ export default function LearningPage() {
   }, [attemptId, attemptStatus]);
 
   async function completeStep() {
-    if (!lesson || !progress || active >= lesson.steps.length || saving) return;
+    if (!lesson || !progress || active >= lesson.steps.length || saving || revealedStep !== lesson.steps[active].id) return;
     setSaving(true); setError("");
     try {
       const step = lesson.steps[active];
       const saved = await write<Progress>(`/lessons/${lessonId}/steps/${step.id}/complete`, { expected_version: progress.version });
-      setProgress(saved); setActive(saved.completed_steps.length);
+      setProgress(saved); setActive(saved.completed_steps.length); setRevealedStep(null);
     } catch (cause) {
       const message = cause instanceof ApiError && cause.status === 409
         ? "ความคืบหน้ามีการเปลี่ยนจากอีกหน้าต่าง โหลดข้อมูลล่าสุดแล้ว"
@@ -155,7 +156,7 @@ export default function LearningPage() {
     <p className="eyebrow">LEARNING PATH / LEVEL 01</p>
     <h1>เส้นทางเรียนรู้ SOC</h1>
     <p>เริ่มจากอ่าน HTTP request และ response ทีละจุด ความคืบหน้าบันทึกกับบัญชีของคุณบน server</p>
-    {!sessionLoading && !session && <section className="learning-card" aria-labelledby="login-required"><h2 id="login-required">เข้าสู่ระบบเพื่ออ่านบทเรียน</h2><p>Guest ดูได้เฉพาะข้อมูลเส้นทาง บทเรียนและการบันทึกความคืบหน้าต้องใช้บัญชี</p><Link className="button" href="/login">เข้าสู่ระบบ</Link></section>}
+    {!sessionLoading && !session && <section className="learning-card" aria-labelledby="login-required"><h2 id="login-required">เข้าสู่ระบบเพื่ออ่านบทเรียน</h2><p>ยังไม่มีบัญชีใช่ไหม? ลองอ่าน request ตัวอย่างได้ก่อนโดยไม่บันทึกคะแนน บทเรียนและความคืบหน้าจริงต้องใช้บัญชี</p><div className="demo-actions"><Link className="button" href="/demo">ลองข้อมูลตัวอย่าง</Link><Link className="button button-secondary" href="/login">เข้าสู่ระบบ</Link></div></section>}
     {session && loading && <p role="status">กำลังโหลดบทเรียนและความคืบหน้า…</p>}
     {session && error && <p role="alert">{error} <button className="button-secondary" onClick={() => void load()}>โหลดใหม่</button></p>}
     {session && lesson && progress && !loading && <>
@@ -169,9 +170,12 @@ export default function LearningPage() {
       </section>
       {active < lesson.steps.length ? <section className="learning-card" aria-live="polite">
         <p className="eyebrow">ขั้น {active + 1} / {lesson.steps.length}</p><h2>{lesson.steps[active].title}</h2>
-        <pre className="lesson-evidence"><code>{lesson.steps[active].target}</code></pre>
-        <p>{lesson.steps[active].explanation}</p><p><strong>สิ่งที่ยังสรุปไม่ได้:</strong> {lesson.steps[active].limitation}</p>
-        <button disabled={saving} onClick={() => void completeStep()}>{saving ? "กำลังบันทึก…" : "ทำขั้นนี้เสร็จ"}</button>
+        <p>กดข้อมูลตัวอย่างด้านล่างเพื่ออ่านจุดที่กำลังเรียน แล้วค่อยบันทึกขั้นนี้</p>
+        <button className="lesson-target" type="button" aria-expanded={revealedStep === lesson.steps[active].id} onClick={() => setRevealedStep(lesson.steps[active].id)}>
+          <span>กดดู: {lesson.steps[active].title}</span><code>{lesson.steps[active].target}</code>
+        </button>
+        {revealedStep === lesson.steps[active].id && <div className="lesson-explanation"><p>{lesson.steps[active].explanation}</p><p><strong>สิ่งที่ยังสรุปไม่ได้:</strong> {lesson.steps[active].limitation}</p></div>}
+        <button disabled={saving || revealedStep !== lesson.steps[active].id} onClick={() => void completeStep()}>{saving ? "กำลังบันทึก…" : "เข้าใจแล้ว บันทึกขั้นนี้"}</button>
       </section> : <section className="learning-card" aria-live="polite">
         <h2>{progress.completed_at ? "จบบทเรียนแล้ว" : "ครบทุกขั้นแล้ว"}</h2>
         {progress.completed_at ? <p>ความคืบหน้าถูกบันทึกแล้ว กลับมาทบทวนได้ทุกเมื่อ</p> : <><p>ยืนยันการจบบทเรียนเพื่อบันทึก lesson completion</p><button disabled={saving} onClick={() => void completeLesson()}>{saving ? "กำลังบันทึก…" : "จบบทเรียนและบันทึก"}</button></>}

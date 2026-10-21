@@ -6,7 +6,7 @@ test("manual investigation uses API, preserves drafts on 409 and keeps note revi
 }) => {
   test.setTimeout(150000);
   const email = `investigation-${Date.now()}@example.test`;
-  const password = `Test-only-${Date.now()}-password`;
+  const password = crypto.randomUUID().slice(0, 10);
   await page.goto("/register");
   await page.getByLabel("ชื่อที่แสดง").fill("Investigation Analyst");
   await page.getByLabel("อีเมล", { exact: true }).fill(email);

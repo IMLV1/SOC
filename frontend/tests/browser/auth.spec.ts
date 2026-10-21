@@ -1,11 +1,23 @@
 import { expect, test } from "@playwright/test";
 
+test("new registration asks for 5–10 characters while login still accepts old longer passwords", async ({ page }) => {
+  await page.goto("/register");
+  const newPassword = page.getByLabel("รหัสผ่าน", { exact: true });
+  await expect(newPassword).toHaveAttribute("minlength", "5");
+  await expect(newPassword).toHaveAttribute("maxlength", "10");
+  await expect(page.getByText("รหัสผ่านสำหรับบัญชีใหม่ 5–10 ตัวอักษร")).toBeVisible();
+  await page.goto("/login");
+  const oldPassword = page.getByLabel("รหัสผ่าน", { exact: true });
+  await expect(oldPassword).toHaveAttribute("minlength", "5");
+  await expect(oldPassword).toHaveAttribute("maxlength", "128");
+});
+
 test("register does not log in; cookie login, refresh and logout use the same-origin API", async ({
   page,
   browser,
 }) => {
   const email = `browser-${Date.now()}@example.test`;
-  const password = `Test-only-${Date.now()}-password`;
+  const password = crypto.randomUUID().slice(0, 5);
   await page.goto("/register");
   await page.getByLabel("ชื่อที่แสดง").fill("Browser Analyst");
   await page.getByLabel("อีเมล", { exact: true }).fill(email);
@@ -21,6 +33,7 @@ test("register does not log in; cookie login, refresh and logout use the same-or
   await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByText(email, { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "เริ่มบทเรียนพื้นฐาน" })).toHaveAttribute("href", "/learning");
   await page.reload();
   await expect(page.getByText(email, { exact: true })).toBeVisible();
   const cookie = (await page.context().cookies()).find(
@@ -91,6 +104,7 @@ test("Guest demo is readable, cannot mutate and fits mobile/tablet/desktop", asy
     await expect(
       page.getByRole("heading", { name: "GET /help", exact: true }),
     ).toBeVisible();
+    await expect(page.getByRole("heading", { name: /กด Method/ })).toBeVisible();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -101,4 +115,31 @@ test("Guest demo is readable, cannot mutate and fits mobile/tablet/desktop", asy
     (await page.request.post("/api/v1/demo/events", { data: {} })).status(),
   ).toBe(405);
   expect((await page.request.get("/api/v1/me")).status()).toBe(401);
+});
+
+test("Guest can practice reading each request field without signing in", async ({ page }) => {
+  await page.goto("/demo");
+  const next = page.getByRole("button", { name: "ไปขั้นถัดไป" });
+  await expect(next).toBeDisabled();
+  await page.getByRole("button", { name: "Path /help" }).click();
+  await expect(page.getByRole("status").getByText("ยังไม่ใช่ช่องนี้")).toBeVisible();
+  await page.getByRole("button", { name: "Method GET" }).click();
+  await expect(page.getByText(/GET มักใช้ขออ่านข้อมูล/)).toBeVisible();
+  await next.click();
+  await page.getByRole("button", { name: "Path /help" }).click();
+  await next.click();
+  await page.getByRole("button", { name: "Response status 200" }).click();
+  await expect(page.getByText(/ไม่ได้แปลว่ามีการบุกรุก/)).toBeVisible();
+  await next.click();
+  await page.getByRole("button", { name: /Time \(UTC\)/ }).click();
+  await next.click();
+  await expect(page.getByRole("heading", { name: "ลองเชื่อมข้อมูลหลายจุด" })).toBeVisible();
+  await page.getByRole("button", { name: "ลองตัวอย่างถัดไป" }).click();
+  await expect(page.getByRole("heading", { name: "GET /missing-page" })).toBeVisible();
+  await page.getByRole("button", { name: "Method GET" }).click();
+  await next.click();
+  await page.getByRole("button", { name: "Path /missing-page" }).click();
+  await next.click();
+  await page.getByRole("button", { name: "Response status 404" }).click();
+  await expect(page.getByText(/ไม่ได้พิสูจน์ว่าทั้งเคสปลอดภัย/)).toBeVisible();
 });

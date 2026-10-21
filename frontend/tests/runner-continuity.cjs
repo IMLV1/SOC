@@ -3,6 +3,7 @@ const { chromium } = require("@playwright/test");
 const { execFileSync } = require("node:child_process");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const { randomUUID } = require("node:crypto");
 const origin = "http://127.0.0.1:13006";
 const docker = process.env.SOC_DOCKER_BIN || "docker";
 process.env.SOC_WEB_PORT = "13006";
@@ -48,7 +49,7 @@ async function waitFor(run, predicate, timeout = 25000) {
     const page = await context.newPage();
     await page.goto("/register");
     const email = `continuity-${Date.now()}@example.test`,
-      password = `Test-only-${Date.now()}-password`;
+      password = randomUUID().slice(0, 10);
     await page.getByLabel("ชื่อที่แสดง").fill("Continuity test");
     await page.getByLabel("อีเมล", { exact: true }).fill(email);
     await page.getByLabel("รหัสผ่าน", { exact: true }).fill(password);

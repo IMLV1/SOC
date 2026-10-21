@@ -83,7 +83,7 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
   browser,
 }) => {
   const email = `learning-${Date.now()}@example.test`;
-  const password = `Test-only-${Date.now()}-password`;
+  const password = crypto.randomUUID().slice(0, 10);
 
   await page.goto("/learning");
   await expect(
@@ -106,7 +106,10 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
 
   await page.goto("/learning");
   await expect(page.getByText("ขั้น 1 / 5")).toBeVisible();
-  await page.getByRole("button", { name: "ทำขั้นนี้เสร็จ" }).click();
+  await expect(page.getByRole("button", { name: "เข้าใจแล้ว บันทึกขั้นนี้" })).toBeDisabled();
+  await page.getByRole("button", { name: /กดดู: Method และ Path/ }).click();
+  await expect(page.getByText(/คำขอหนึ่งรายการยังไม่บอกว่าใคร/)).toBeVisible();
+  await page.getByRole("button", { name: "เข้าใจแล้ว บันทึกขั้นนี้" }).click();
   await expect(page.getByText("ขั้น 2 / 5")).toBeVisible();
   await page.reload();
   await expect(page.getByText("เรียนแล้ว 1 จาก 5 ขั้น")).toBeVisible();
@@ -123,7 +126,8 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
 
   for (let step = 2; step <= 5; step += 1) {
     await expect(page.getByText(`ขั้น ${step} / 5`)).toBeVisible();
-    await page.getByRole("button", { name: "ทำขั้นนี้เสร็" }).click();
+    await page.getByRole("button", { name: /กดดู:/ }).click();
+    await page.getByRole("button", { name: "เข้าใจแล้ว บันทึกขั้นนี้" }).click();
   }
   await expect(page.getByText("ครบทุกขั้นแล้ว")).toBeVisible();
   await page.getByRole("button", { name: "จบบทเรียนและบันทึก" }).click();

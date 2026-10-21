@@ -91,7 +91,7 @@ Instructor ใช้ endpoint ปกติเพื่อฝึกในรอ�
 | GET | `/me` | cookie | 200 id, display_name, email, role, status |
 | GET | `/me/quota` | cookie | 200 run/AI limit, used, reserved, reset_at |
 
-Validation ที่เสนอ: display_name 1–60 chars หลัง trim, email ไม่เกิน 254 chars และ normalize ก่อน unique check, password 12–128 chars ไม่ trim หรือเก็บ plaintext; registration/login failure ไม่บอกว่า email ใดมีบัญชีอยู่ ห้าม client ส่ง role, status หรือ quota ใน register
+Validation ปัจจุบัน: display_name 1–60 chars หลัง trim, email ไม่เกิน 254 chars และ normalize ก่อน unique check, password สมัครใหม่ 5–10 chars; login และ Google account linking รับ 5–128 chars เพื่อรองรับบัญชีเดิมที่รหัสยาวกว่า ส่วน Instructor ที่ provision ผ่าน operator ยังคง 12–128 chars. ไม่ trim หรือเก็บ plaintext password; registration/login failure ไม่บอกว่า email ใดมีบัญชีอยู่ ห้าม client ส่ง role, status หรือ quota ใน register
 
 Logout ซ้ำที่ session หมดแล้วไม่มีผลแก้ข้อมูลอื่น ตรวจ Origin และล้าง cookie ได้ ส่วน logout ของ session ที่ยัง active ต้องตรวจ CSRF ตามปกติ
 

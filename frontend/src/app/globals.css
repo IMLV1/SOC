@@ -1,3 +1,51 @@
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Anakotmai";
+  src: url("/fonts/Anakotmai-Light.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Anakotmai";
+  src: url("/fonts/Anakotmai-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Anakotmai";
+  src: url("/fonts/Anakotmai-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
   /* Shared design tokens keep the landing page and signed-in screens consistent. */
   color-scheme: light;
@@ -27,8 +75,9 @@
   --shadow-raised: 0 14px 34px rgba(24, 57, 43, 0.12);
   --content-width: 1240px;
   --content-gutter: clamp(20px, 5vw, 64px);
-  --font-sans: "Thonburi", "Leelawadee UI", "Tahoma", system-ui, sans-serif;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  /* JetBrains Mono supplies Latin glyphs; Thai falls through to Anakotmai. */
+  --font-sans: "JetBrains Mono", "Anakotmai", monospace;
+  --font-mono: "JetBrains Mono", "Anakotmai", monospace;
 }
 
 * {
@@ -49,7 +98,7 @@ body {
   color: var(--ink);
   background: var(--canvas);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.75;
   letter-spacing: -0.012em;
   -webkit-font-smoothing: antialiased;
@@ -201,7 +250,7 @@ h4 {
   color: var(--ink);
   font-weight: 600;
   line-height: 1.35;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
 }
 
 h1 {
@@ -659,8 +708,9 @@ hr {
   isolation: isolate;
   width: calc(100% + 2 * var(--content-gutter));
   margin-inline: calc(-1 * var(--content-gutter));
-  padding: 28px var(--content-gutter) 72px;
+  padding: 24px var(--content-gutter) 62px;
   overflow: hidden;
+  background: linear-gradient(125deg, #f5fbf8 0%, #fff 48%, #f5f4ff 100%);
 }
 
 .hero-stage > .magic-grid-pattern {
@@ -708,10 +758,10 @@ hr {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(460px, 1.08fr);
+  grid-template-columns: minmax(0, 0.98fr) minmax(460px, 1.02fr);
   align-items: center;
-  gap: clamp(38px, 7vw, 100px);
-  padding: clamp(52px, 8vw, 100px) 0 20px;
+  gap: clamp(38px, 6vw, 82px);
+  padding: clamp(40px, 5vw, 68px) 0 20px;
 }
 
 .hero-copy {
@@ -739,11 +789,11 @@ hr {
 }
 
 .hero-grid h1 {
-  margin: 13px 0 24px;
-  font-size: clamp(3.2rem, 7vw, 6.4rem);
-  font-weight: 600;
-  line-height: 1.19;
-  letter-spacing: -0.075em;
+  margin: 13px 0 19px;
+  font-size: clamp(3.2rem, 6vw, 5.35rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
 }
 
 .hero-grid h1 .aurora-text {
@@ -764,7 +814,7 @@ hr {
 }
 
 .hero-lead {
-  max-width: 55ch;
+  max-width: 51ch;
   color: #aeb9c9;
   font-size: clamp(0.99rem, 1.25vw, 1.12rem);
 }
@@ -774,7 +824,7 @@ hr {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin: 29px 0 22px;
+  margin: 23px 0 18px;
 }
 
 .hero-actions .button {
@@ -785,7 +835,7 @@ hr {
   display: flex;
   align-items: center;
   gap: 11px;
-  margin-top: 30px;
+  margin-top: 18px;
   color: var(--ink-muted);
 }
 
@@ -1084,7 +1134,7 @@ hr {
 
 .section-heading h2 {
   margin: 0;
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  font-size: clamp(1.9rem, 3vw, 2.8rem);
 }
 
 .section-heading > p {
@@ -1390,7 +1440,7 @@ hr {
   margin: 25px 0 20px;
   font-size: clamp(2.5rem, 5.4vw, 5rem);
   line-height: 1.27;
-  letter-spacing: -0.07em;
+  letter-spacing: -0.035em;
 }
 
 .auth-story h2 span {
@@ -1550,7 +1600,7 @@ hr {
   border-radius: 50%;
   color: #9eb7ff;
   background: #202738;
-  font: 700 0.82rem/1 Arial, sans-serif;
+  font: 700 0.82rem/1 var(--font-sans);
 }
 
 .google-login p,
@@ -2398,7 +2448,7 @@ input[type="checkbox"] {
 
 @media (max-width: 600px) {
   body {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .account-nav {
@@ -2564,6 +2614,78 @@ input[type="checkbox"] {
   }
 }
 
+/* Guided public exercise: the visual hierarchy follows the actual click order. */
+.demo-page > .notice { max-width: 74ch; }
+.demo-event-picker,
+.demo-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.demo-event-picker { margin: 26px 0 18px; }
+.demo-event-picker button {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+.demo-event-picker button[aria-pressed="true"] {
+  border-color: var(--mint);
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+.demo-playground {
+  display: grid;
+  grid-template-columns: minmax(280px, .78fr) minmax(0, 1.22fr);
+  gap: 18px;
+  align-items: start;
+}
+.demo-instruction,
+.demo-request,
+.account-next {
+  min-width: 0;
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.demo-instruction h2,
+.demo-request h2,
+.account-next h2 { margin: 0 0 12px; font-size: 1.25rem; }
+.demo-instruction > p:not(.eyebrow),
+.demo-request > p,
+.account-next li { color: var(--ink-muted); }
+.demo-feedback { padding: 13px; border-radius: 10px; background: #fff8e9; color: #68470f !important; }
+.demo-feedback--correct { background: #edf8f3; color: #176c52 !important; }
+.demo-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+.demo-fields button {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  text-align: left;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  background: var(--surface-raised);
+}
+.demo-fields button[aria-pressed="true"] { border-color: var(--mint); background: #edf8f3; }
+.demo-fields small { color: var(--ink-muted); }
+.demo-fields strong { overflow-wrap: anywhere; font-family: var(--font-mono); }
+.demo-caveat { margin-bottom: 0; font-size: .85rem; }
+.demo-actions { margin-top: 18px; }
+.account-next { margin: 26px 0; }
+.account-next ol { padding-left: 22px; line-height: 1.9; }
+.account-next .hero-actions { margin-bottom: 0; }
+.lesson-target {
+  display: grid;
+  width: 100%;
+  gap: 10px;
+  margin: 14px 0;
+  text-align: left;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  background: var(--surface-raised);
+}
+.lesson-target[aria-expanded="true"] { border-color: var(--mint); background: #edf8f3; }
+.lesson-target code { overflow-wrap: anywhere; font-family: var(--font-mono); }
+.lesson-explanation { margin: 12px 0 18px; }
+@media (max-width: 800px) { .demo-playground { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .demo-fields { grid-template-columns: 1fr; } }
+
 @media (max-width: 360px) {
   .account-nav {
     padding-inline: 14px;
@@ -2636,21 +2758,64 @@ body {
 }
 
 .home-bottom-cta {
-  border-color: rgba(22, 132, 97, 0.2);
-  background: linear-gradient(110deg, #f0faf5, #f8f7ff);
-  box-shadow: var(--shadow-card);
+  border-color: transparent;
+  color: #eaf9f1;
+  background: linear-gradient(115deg, #193d30, #112b24 72%);
+  box-shadow: 0 24px 56px rgba(19, 55, 42, 0.18);
+}
+
+.home-bottom-cta h2 {
+  color: #fff;
+}
+
+.home-bottom-cta p:not(.eyebrow) {
+  color: #cce8db;
+}
+
+.home-bottom-cta .eyebrow {
+  color: #9bf0cb;
+}
+
+.home-bottom-cta__pattern {
+  opacity: 0.15;
+}
+
+.home-bottom-cta__pattern::after {
+  background: radial-gradient(ellipse at center, transparent 20%, #112b24 86%);
+}
+
+.home-bottom-cta .button-quiet {
+  border-color: rgba(212, 242, 225, 0.42);
+  color: #f4fff8;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.home-bottom-cta .button-quiet:hover {
+  border-color: #9bf0cb;
+  color: #fff;
+  background: rgba(155, 240, 203, 0.12);
 }
 
 .learning-pillar:hover {
-  border-color: rgba(89, 230, 188, 0.32);
-  background: linear-gradient(150deg, rgba(24, 35, 42, 0.98), rgba(13, 17, 26, 0.98));
+  border-color: rgba(89, 230, 188, 0.38);
+  background: linear-gradient(150deg, #1b3c31, #10251f);
 }
 
 .learning-pillar {
-  border-color: rgba(177, 198, 221, 0.2);
+  border-color: rgba(177, 198, 221, 0.14);
+  border-radius: 16px;
   color: #f5f7fa;
-  background: linear-gradient(150deg, #19202e, #0c1019);
-  box-shadow: 0 16px 38px rgba(12, 20, 17, 0.16), inset 0 1px rgba(255, 255, 255, 0.045);
+  background: linear-gradient(150deg, #192d27, #10231e);
+  box-shadow: 0 16px 38px rgba(12, 20, 17, 0.13);
+}
+
+.learning-pillar::before,
+.learning-pillar__icon {
+  display: none;
+}
+
+.learning-pillar__topline {
+  margin-bottom: 27px;
 }
 
 .learning-pillar h3 {
@@ -2658,7 +2823,10 @@ body {
 }
 
 .learning-pillar__index {
-  color: #c4ccd7;
+  color: #9bf0cb;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .learning-pillar__label {
@@ -2672,19 +2840,55 @@ body {
 }
 
 .learning-pillar__description {
-  color: #d3dce5;
-  font-size: 0.86rem;
+  color: #d4e8dd;
+  font-size: 0.88rem;
+}
+
+.magic-card.workflow-visual {
+  --magic-glow: rgba(123, 232, 185, 0.1);
+  border-color: rgba(6, 55, 39, 0.28);
+  border-radius: 18px;
+  color: #eaf9f1;
+  background: linear-gradient(145deg, #19382d, #10251f 72%);
+  box-shadow: 0 28px 70px rgba(18, 52, 39, 0.2);
+}
+
+.workflow-visual__header,
+.workflow-visual__footer,
+.workflow-step {
+  border-color: rgba(218, 246, 231, 0.17);
+}
+
+.workflow-visual .micro-label,
+.step-index {
+  color: #9bf0cb;
+}
+
+.workflow-step__body strong {
+  color: #f4fff8;
+}
+
+.workflow-step__body small,
+.workflow-step__code,
+.workflow-visual__footer,
+.telemetry-caption {
+  color: #bddacb;
+}
+
+.step-index {
+  border-color: rgba(155, 240, 203, 0.3);
+  background: rgba(155, 240, 203, 0.08);
 }
 
 .workflow-visual__telemetry {
   background:
-    radial-gradient(ellipse at center, rgba(112, 91, 198, 0.08), transparent 48%),
-    linear-gradient(180deg, rgba(22, 132, 97, 0.035), transparent);
+    radial-gradient(ellipse at center, rgba(121, 215, 169, 0.13), transparent 48%),
+    linear-gradient(180deg, rgba(5, 24, 18, 0.15), transparent);
 }
 
 .workflow-visual__telemetry::before,
 .workflow-visual__telemetry::after {
-  border-color: rgba(26, 69, 53, 0.16);
+  border-color: rgba(206, 239, 218, 0.24);
 }
 
 .run-summary > div,
@@ -2726,11 +2930,77 @@ select:disabled {
   background: #f8fbfa;
 }
 
+.account-page > h1 {
+  max-width: 18ch;
+  margin-bottom: 17px;
+  font-size: clamp(2.3rem, 4.5vw, 4rem);
+  line-height: 1.18;
+}
+
+.account-page > p:not(.eyebrow) {
+  max-width: 68ch;
+}
+
+.scenario-list article,
+.learning-card,
+.run-panel,
+.run-list li,
+.note-card {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.scenario-list article:hover,
+.run-list li:hover {
+  border-color: rgba(22, 132, 97, 0.5);
+}
+
+.scenario-list h2,
+.learning-card h2,
+.run-panel h2 {
+  font-weight: 700;
+}
+
+.run-summary strong,
+.event-number,
+.event-list time,
+.run-topline {
+  font-variant-numeric: tabular-nums;
+}
+
+.account-page > [role="status"],
+.account-page > [role="alert"] {
+  width: fit-content;
+  max-width: 100%;
+  padding: 13px 17px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-raised);
+}
+
+.account-page > [role="alert"] {
+  border-color: rgba(184, 58, 74, 0.24);
+  color: #8d2635;
+  background: #fff1f2;
+}
+
+:where(input, textarea, select):focus-visible {
+  outline: 3px solid var(--mint);
+  outline-offset: 3px;
+}
+
 .safe-mode-pill,
 .workflow-visual__status,
 .run-status {
   color: #176c52;
   background: #edf8f3;
+}
+
+.workflow-visual .workflow-visual__status {
+  border-color: rgba(155, 240, 203, 0.35);
+  color: #b5f4d5;
+  background: rgba(155, 240, 203, 0.1);
 }
 
 .notice,
@@ -2759,11 +3029,13 @@ pre {
 
 .hero-lead,
 .hero-proof-row strong,
-.workflow-visual__status,
-.workflow-visual__header p,
-.workflow-visual__header strong,
 .path-stage__state {
   color: var(--ink-soft);
+}
+
+.workflow-visual .workflow-visual__header p,
+.workflow-visual .workflow-visual__header strong {
+  color: #f4fff8;
 }
 
 .google-login button:hover:not(:disabled),
@@ -2776,4 +3048,28 @@ pre {
 ::selection {
   color: #10231b;
   background: #bcebd7;
+}
+
+@media (max-width: 900px) {
+  .hero-grid {
+    padding-top: 44px;
+  }
+
+  .magic-card.workflow-visual {
+    transform: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-grid {
+    padding-top: 30px;
+  }
+
+  .hero-grid h1 {
+    letter-spacing: -0.025em;
+  }
+
+  .learning-pillar {
+    min-height: 0;
+  }
 }

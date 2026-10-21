@@ -17,7 +17,20 @@ export default function Account() {
     <main className="account-page">
       <p className="eyebrow">YOUR ANALYST WORKSPACE</p>
       <h1>บัญชีของคุณ</h1>
-      <p>จัดการการเข้าสู่ระบบ และกลับไปต่อยอดการฝึกของคุณ</p>
+      <p>เริ่มจากบทเรียนพื้นฐานก่อนทำข้อสอบเลื่อนระดับ หรือเปิดรอบฝึกแยกต่างหากเพื่อสำรวจเคส</p>
+      <section className="account-next" aria-labelledby="account-next-title">
+        <p className="eyebrow">เริ่มตรงนี้</p>
+        <h2 id="account-next-title">เส้นทางสำหรับผู้เริ่มต้น</h2>
+        <ol>
+          <li>ลองกดอ่าน request ตัวอย่าง (ไม่บันทึกคะแนน)</li>
+          <li>เรียนบทพื้นฐานทีละขั้น ระบบบันทึกความคืบหน้า</li>
+          <li>จบบทเรียนแล้วจึงเริ่มข้อสอบระดับเริ่มต้น</li>
+        </ol>
+        <div className="hero-actions">
+          <Link className="button" href={preview ? "/demo" : "/learning"}>{preview ? "ลองข้อมูลตัวอย่าง" : "เริ่มบทเรียนพื้นฐาน"}</Link>
+          <Link className="button button-secondary" href="/demo">ดูตัวอย่างก่อน</Link>
+        </div>
+      </section>
       <div className="account-grid">
         <section className="account-card" aria-labelledby="profile-title">
           <div className="profile-avatar" aria-hidden="true">
@@ -45,12 +58,7 @@ export default function Account() {
             </div>
           </dl>
           <div className="hero-actions">
-            <Link className="button" href="/runs">
-              ไปหน้ารอบฝึก <span aria-hidden="true">↗</span>
-            </Link>
-            <Link className="button button-secondary" href="/demo">
-              อ่านข้อมูลตัวอย่าง
-            </Link>
+            {!preview && <Link className="button button-secondary" href="/runs">เปิดรอบฝึก (แยกจากข้อสอบ)</Link>}
           </div>
         </section>
         <section className="account-card" aria-labelledby="connection-title">
@@ -62,7 +70,7 @@ export default function Account() {
       <p className="notice">
         {preview
           ? "Free preview: สมัคร เข้าสู่ระบบ และดูตัวอย่างได้ ยังไม่มี runner สำหรับเริ่มรอบฝึก"
-          : "รอบฝึก S02 เปิดใช้งานแล้ว ส่วนบทเรียนแบบลำดับขั้นและข้อสอบยังไม่เปิด"}
+          : "บทเรียนและข้อสอบระดับเริ่มต้นเปิดในระบบ local แล้ว; รอบฝึกเป็นคนละส่วนกับข้อสอบ ส่วนระดับกลาง/ชำนาญและ AI/RAG จริงยังไม่พร้อม"}
       </p>
     </main>
   );

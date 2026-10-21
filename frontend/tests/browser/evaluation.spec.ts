@@ -5,7 +5,7 @@ test("finish training freezes evaluation and exposes the JSON export", async ({
 }) => {
   test.setTimeout(120000);
   const email = `evaluation-${Date.now()}@example.test`;
-  const password = `Test-only-${Date.now()}-password`;
+  const password = crypto.randomUUID().slice(0, 10);
   await page.goto("/register");
   await page.getByLabel("ชื่อที่แสดง").fill("Evaluation Runner");
   await page.getByLabel("อีเมล", { exact: true }).fill(email);

@@ -27,7 +27,7 @@ BINDING = "soc_google_flow"
 
 class GoogleStartInput(Strict):
     purpose: Literal["login", "link"] = "login"
-    password: str | None = Field(default=None, min_length=12, max_length=128)
+    password: str | None = Field(default=None, min_length=5, max_length=128)
 
 
 class GoogleStartData(Strict):

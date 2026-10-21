@@ -13,7 +13,8 @@ from app.db.session import Database
 from app.main import app
 
 pytestmark = pytest.mark.integration
-PASSWORD = "Only-a-test-password-123"
+PASSWORD = "Test123!9"
+PROVISION_PASSWORD = "Only-a-test-password-123"
 
 
 @pytest.fixture
@@ -48,6 +49,48 @@ def login(client, email="person@example.test"):
     )
     assert response.status_code == 200, response.text
     return response.json()["data"]
+
+
+@pytest.mark.parametrize("length,expected_status", [(4, 422), (5, 201), (10, 201), (11, 422)])
+def test_registration_password_boundaries(clients, length, expected_status):
+    client, _ = clients
+    response = client.post(
+        "/api/v1/auth/register",
+        headers=csrf(client),
+        json={
+            "email": "boundary@example.test",
+            "display_name": "Boundary",
+            "password": "x" * length,
+        },
+    )
+    assert response.status_code == expected_status
+
+
+def test_provisioned_long_password_still_logs_in(clients):
+    client, url = clients
+
+    async def create():
+        db = Database(url("migration_owner"))
+        try:
+            await provision_user(
+                db,
+                email="existing@example.test",
+                display_name="Existing",
+                password=PROVISION_PASSWORD,
+                role="analyst",
+                daily_runs=10,
+                daily_ai_requests=20,
+            )
+        finally:
+            await db.close()
+
+    asyncio.run(create())
+    response = client.post(
+        "/api/v1/auth/login",
+        headers=csrf(client),
+        json={"email": "existing@example.test", "password": PROVISION_PASSWORD},
+    )
+    assert response.status_code == 200
 
 
 def test_register_session_rotation_logout_and_quota(clients):
@@ -158,7 +201,7 @@ def test_identity_isolation_and_assignment_policy(clients):
                 db,
                 email="teacher@example.test",
                 display_name="Teacher",
-                password=PASSWORD,
+                password=PROVISION_PASSWORD,
                 role="instructor",
                 daily_runs=10,
                 daily_ai_requests=20,

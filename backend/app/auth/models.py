@@ -12,7 +12,7 @@ class Strict(BaseModel):
 
 class LoginInput(Strict):
     email: str = Field(max_length=254)
-    password: str = Field(min_length=12, max_length=128)
+    password: str = Field(min_length=5, max_length=128)
 
     @field_validator("email", mode="before")
     @classmethod
@@ -26,6 +26,7 @@ class LoginInput(Strict):
 
 
 class RegisterInput(LoginInput):
+    password: str = Field(min_length=5, max_length=10)
     display_name: str = Field(min_length=1, max_length=60)
 
     @field_validator("display_name", mode="before")

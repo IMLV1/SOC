@@ -10,7 +10,7 @@ test("login, start S02, inspect released evidence, pause and resume on responsiv
       csrfBootstraps += 1;
   });
   const email = `runner-${Date.now()}@example.test`;
-  const password = `Test-only-${Date.now()}-password`;
+  const password = crypto.randomUUID().slice(0, 10);
   await page.goto("/register");
   await page.getByLabel("ชื่อที่แสดง").fill("Browser Runner");
   await page.getByLabel("อีเมล", { exact: true }).fill(email);
