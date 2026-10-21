@@ -99,6 +99,8 @@ jobs:
       - working-directory: frontend
         run: |
           npm ci
+          node scripts/sync-curriculum.mjs --check
+          node --test tests/curriculum.test.mjs
           npm run lint
           npm run typecheck
           npm run build

@@ -278,6 +278,11 @@ provider embeddings จริงต้องผ่านการเลือก
 
 ### 15 — Learning path, onboarding และ server-side progress
 
+เพิ่มเติม 21 ต.ค. 2026: มี training JSON 3 ระดับ / 9 บท / 45 ขั้น และหน้า `/demo/learning`
+แบบไม่เรียกฐานข้อมูล สำหรับตรวจเนื้อหาก่อนเชื่อม environment จริงเท่านั้น
+ไม่เปลี่ยนผลสอบ/progress/unlock และไม่ใช่ acceptance ของ multi-level server gates หรือ Dify
+ดู [คู่มือ](learning-content-seed.md) และ [ผลตรวจ preview](learning-preview-verification.md)
+
 - [x] ผ่าน local acceptance — หลัง 04/05; lesson persistence/owner/gate integration และ `/learning` browser refresh/responsive flow ผ่าน 18 ต.ค. 2026; ดู [ผลตรวจข้อ 15](step-15-verification.md)
 
 สถานะปัจจุบัน: local acceptance ผ่าน; disposable Compose ล่าสุด 77 integration passed/82 deselected, smoke 3 passed, browser E2E 26 passed/1 skipped รวม journey retake; GitHub CI run 39495958300 ผ่านครบทุก job บน `c4abb42`. ดู [ผลตรวจข้อ 15](step-15-verification.md)

@@ -156,6 +156,7 @@ export default function LearningPage() {
     <p className="eyebrow">LEARNING PATH / LEVEL 01</p>
     <h1>เส้นทางเรียนรู้ SOC</h1>
     <p>เริ่มจากอ่าน HTTP request และ response ทีละจุด ความคืบหน้าบันทึกกับบัญชีของคุณบน server</p>
+    <p><Link href="/demo/learning">ลองบทเรียนจาก JSON ครบ 3 ระดับ (ไม่บันทึกคะแนน ไม่ใช้ฐานข้อมูล)</Link></p>
     {!sessionLoading && !session && <section className="learning-card" aria-labelledby="login-required"><h2 id="login-required">เข้าสู่ระบบเพื่ออ่านบทเรียน</h2><p>ยังไม่มีบัญชีใช่ไหม? ลองอ่าน request ตัวอย่างได้ก่อนโดยไม่บันทึกคะแนน บทเรียนและความคืบหน้าจริงต้องใช้บัญชี</p><div className="demo-actions"><Link className="button" href="/demo">ลองข้อมูลตัวอย่าง</Link><Link className="button button-secondary" href="/login">เข้าสู่ระบบ</Link></div></section>}
     {session && loading && <p role="status">กำลังโหลดบทเรียนและความคืบหน้า…</p>}
     {session && error && <p role="alert">{error} <button className="button-secondary" onClick={() => void load()}>โหลดใหม่</button></p>}

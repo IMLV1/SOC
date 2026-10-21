@@ -32,12 +32,14 @@ export default function SessionProvider({
   preview?: boolean;
 }) {
   const pathname = usePathname();
+  const filePreview = pathname === "/demo/learning";
   const [navOpen, setNavOpen] = useState(false);
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const generation = useRef(0);
   const refresh = useCallback(() => {
+    if (filePreview) return Promise.resolve();
     const current = ++generation.current;
     return read<SessionData>("/auth/session")
       .then((session) => {
@@ -58,8 +60,9 @@ export default function SessionProvider({
       .finally(() => {
         if (current === generation.current) setLoading(false);
       });
-  }, []);
+  }, [filePreview]);
   useEffect(() => {
+    if (filePreview) return;
     void refresh();
     const focus = () => {
       void refresh();
@@ -70,7 +73,7 @@ export default function SessionProvider({
       window.removeEventListener("focus", focus);
       window.clearInterval(timer);
     };
-  }, [refresh]);
+  }, [refresh, filePreview]);
   async function logout() {
     try {
       await mutate<void>("/auth/logout", {});
@@ -84,7 +87,13 @@ export default function SessionProvider({
     }
   }
   return (
-    <Context.Provider value={{ session, loading, error, refresh, preview }}>
+    <Context.Provider value={{
+      session: filePreview ? null : session,
+      loading: filePreview ? false : loading,
+      error: filePreview ? "" : error,
+      refresh,
+      preview,
+    }}>
       {preview && (
         <p role="status" className="account-message">
           Free preview: ทดสอบสมัครสมาชิก/เข้าสู่ระบบและดูตัวอย่างได้ ·
@@ -123,7 +132,7 @@ export default function SessionProvider({
           <Link
             href="/demo"
             onClick={() => setNavOpen(false)}
-            aria-current={pathname === "/demo" ? "page" : undefined}
+            aria-current={pathname.startsWith("/demo") ? "page" : undefined}
           >
             ดูตัวอย่าง
           </Link>
@@ -152,7 +161,7 @@ export default function SessionProvider({
           )}
         </div>
         <div className="nav-account" id="account-links">
-          {loading ? (
+          {filePreview ? <span>ตัวอย่างจากไฟล์ · ไม่เชื่อมบัญชี</span> : loading ? (
             <span role="status">กำลังตรวจบัญชี…</span>
           ) : session ? (
             <>
@@ -185,7 +194,7 @@ export default function SessionProvider({
           )}
         </div>
       </nav>
-      {error && (
+      {!filePreview && error && (
         <p role="alert" className="account-message">
           {error} <button onClick={() => void refresh()}>ลองใหม่</button>
         </p>
