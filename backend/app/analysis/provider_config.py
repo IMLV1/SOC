@@ -1,8 +1,9 @@
-"""Provider configuration. Real dispatch currently fails closed in the worker."""
+"""Default mock; external dispatch requires a separately reviewed investigation release."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlsplit
 
 
@@ -12,6 +13,7 @@ class ProviderConfig:
     chat_model: str
     embedding_model: str
     key_file: Path | None
+    investigation_snapshot: dict[str, Any] | None = None
 
     def read_key(self) -> str:
         if self.mode != "dify" or self.key_file is None:
@@ -27,8 +29,8 @@ class ProviderConfig:
 
 def load_config(env: Mapping[str, str]) -> ProviderConfig:
     # Local and CI stay deterministic. Direct model-provider calls are disabled;
-    # Dify is the sole intended external AI boundary. The worker currently
-    # rejects real dispatch until its structured/citation adapter is integrated.
+    # Dify is the sole external AI boundary. Missing/unapproved release config
+    # fails admission before a real run or provider request can be created.
     mode = env.get("SOC_AI_PROVIDER", "mock")
     if mode == "mock":
         return ProviderConfig(mode, "mock-v1", "fake-hash-16-v1", None)
@@ -38,5 +40,14 @@ def load_config(env: Mapping[str, str]) -> ProviderConfig:
         local = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
         if not parsed.hostname or (parsed.scheme != "https" and not local):
             raise ValueError("Dify Base URL must use HTTPS")
-        return ProviderConfig(mode, "dify-app", "dify-managed", None)
+        from app.analysis.investigation_config import model_pin, release_snapshot
+
+        snapshot = release_snapshot(env)
+        return ProviderConfig(
+            mode,
+            model_pin(snapshot),
+            "dify-managed",
+            Path(env["DIFY_ANALYSIS_APP_KEY_FILE"]),
+            snapshot,
+        )
     raise ValueError("Unsupported provider mode")

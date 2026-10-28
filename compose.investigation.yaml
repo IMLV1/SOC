@@ -1,0 +1,25 @@
+# Operator opt-in only, after migration/release/cost review. Never used by the
+# friend-runtime startup command; no operator services or public ports here.
+services:
+  api:
+    environment: &investigation
+      SOC_AI_PROVIDER: dify
+      DIFY_ANALYSIS_RELEASE_FILE: /run/config/investigation.json
+      DIFY_ANALYSIS_APP_KEY_FILE: /run/secrets/investigation_key
+    volumes:
+      - ${DIFY_ANALYSIS_RELEASE_HOST_FILE:?Set reviewed private release file}:/run/config/investigation.json:ro
+  worker:
+    environment:
+      <<: *investigation
+    volumes:
+      - ${DIFY_ANALYSIS_RELEASE_HOST_FILE}:/run/config/investigation.json:ro
+    secrets: [investigation_key]
+  evaluator:
+    environment:
+      DIFY_ANALYSIS_RELEASE_FILE: /run/config/investigation.json
+      DIFY_ANALYSIS_APP_KEY_FILE: /run/secrets/investigation_key
+    volumes:
+      - ${DIFY_ANALYSIS_RELEASE_HOST_FILE}:/run/config/investigation.json:ro
+secrets:
+  investigation_key:
+    file: ${DIFY_ANALYSIS_KEY_HOST_FILE:?Set separate investigation app key file}
