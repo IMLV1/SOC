@@ -14,7 +14,7 @@ test("built browser assets contain no server fixture or truth payloads", async (
     );
     assert.doesNotMatch(
       source,
-      /SIM-T-204|CHG-T-404|records\/export|expected_evidence_keys|threat_label|account_owner_denied_activity/,
+      /SIM-T-204|CHG-T-404|records\/export|expected_evidence_keys|threat_label|account_owner_denied_activity|Published practice drift|TRAIN-PORTAL|TR-L1-02/,
     );
   }
 });

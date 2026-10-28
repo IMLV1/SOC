@@ -1,0 +1,14 @@
+# Explicit opt-in secret mount only. Does not enable calls or approve a release.
+services:
+  api:
+    environment:
+      DIFY_APP_KEY_FILE: /run/secrets/dify_app_key
+    secrets: [dify_app_key]
+  worker:
+    environment:
+      DIFY_APP_KEY_FILE: /run/secrets/dify_app_key
+    secrets: [dify_app_key]
+
+secrets:
+  dify_app_key:
+    file: ${DIFY_APP_KEY_HOST_FILE:-./.local/secrets/dify_app_key.txt}

@@ -1,0 +1,5 @@
+[
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50004","stable_key":"E04","version":1,"purpose":"exam","title":"Investigation case","difficulty":"intermediate","duration_ms":75000,"learning_objectives":["Correlate released evidence","Identify missing context"],"enabled":true},
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50005","stable_key":"E05","version":1,"purpose":"exam","title":"Investigation case","difficulty":"intermediate","duration_ms":75000,"learning_objectives":["Correlate released evidence","Identify missing context"],"enabled":true},
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50006","stable_key":"E06","version":1,"purpose":"exam","title":"Investigation case","difficulty":"intermediate","duration_ms":75000,"learning_objectives":["Correlate released evidence","Identify missing context"],"enabled":true}
+]

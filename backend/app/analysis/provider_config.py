@@ -33,7 +33,7 @@ def load_config(env: Mapping[str, str]) -> ProviderConfig:
     if mode == "mock":
         return ProviderConfig(mode, "mock-v1", "fake-hash-16-v1", None)
     if mode == "dify":
-        base_url = env.get("DIFY_API_BASE_URL", "").strip()
+        base_url = env.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1").strip()
         parsed = urlsplit(base_url)
         local = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
         if not parsed.hostname or (parsed.scheme != "https" and not local):

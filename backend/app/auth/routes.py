@@ -5,12 +5,14 @@ from uuid import UUID, uuid4
 
 from argon2.exceptions import VerificationError
 from fastapi import APIRouter, Depends, Request, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import service as auth
 from app.auth.models import (
     AuthMeta,
+    ConfirmationEnvelope,
     CsrfData,
     CsrfEnvelope,
     LoginInput,
@@ -113,12 +115,23 @@ async def csrf_token(request: Request, response: Response) -> CsrfEnvelope:
     "/auth/register",
     response_model=UserEnvelope,
     status_code=201,
+    responses={202: {"model": ConfirmationEnvelope}},
     operation_id="auth_register",
     description=(
         "Creates an Analyst account, quota and opaque session atomically; sets the session cookie."
     ),
 )
-async def register(body: RegisterInput, request: Request, response: Response) -> UserEnvelope:
+async def register(
+    body: RegisterInput, request: Request, response: Response
+) -> UserEnvelope | JSONResponse:
+    from app.auth import supabase_provider, supabase_service
+
+    if supabase_provider.enabled():
+        provider_result = await supabase_service.password_auth(
+            body, request, response, register=True
+        )
+        assert isinstance(provider_result, (UserEnvelope, JSONResponse))
+        return provider_result
     # Account, quota and initial session commit together before publishing the cookie.
     await auth.rate_limit(request, "register", body.email)
     async with auth.database(request).sessions() as session, session.begin():
@@ -157,6 +170,14 @@ async def register(body: RegisterInput, request: Request, response: Response) ->
 
 @router.post("/auth/login", response_model=SessionEnvelope, operation_id="auth_login")
 async def login(body: LoginInput, request: Request, response: Response) -> SessionEnvelope:
+    from app.auth import supabase_provider, supabase_service
+
+    if supabase_provider.enabled():
+        provider_result = await supabase_service.password_auth(
+            body, request, response, register=False
+        )
+        assert isinstance(provider_result, SessionEnvelope)
+        return provider_result
     await auth.rate_limit(request, "login", body.email)
     async with auth.database(request).sessions() as session, session.begin():
         await auth.csrf_check(session, request)
@@ -209,16 +230,42 @@ async def current_session(request: Request) -> SessionEnvelope:
 
 @router.post("/auth/logout", status_code=204, operation_id="auth_logout")
 async def logout(body: Strict, request: Request) -> Response:
+    from app.auth import supabase_provider
+
+    provider_token = None
     auth.origin(request)
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.identity(session, request)
         if user:
             await auth.csrf_check(session, request)
+            if supabase_provider.enabled():
+                encrypted = await session.scalar(
+                    text("SELECT encrypted_tokens FROM app.supabase_sessions WHERE session_id=:id"),
+                    {"id": user["session_id"]},
+                )
+                if encrypted:
+                    try:
+                        provider_token = supabase_provider.unseal(encrypted).get("access_token")
+                    except auth.AuthError:
+                        # A lost/rotated encryption key must not prevent local revocation.
+                        provider_token = None
+                await session.execute(
+                    text(
+                        "UPDATE app.supabase_sessions SET encrypted_tokens='' WHERE session_id=:id"
+                    ),
+                    {"id": user["session_id"]},
+                )
             await session.execute(
                 text("UPDATE app.auth_sessions SET revoked_at=now() WHERE id=:id"),
                 {"id": user["session_id"]},
             )
             await auth.audit(session, "auth.logout", user["id"], request)
+    if provider_token:
+        try:
+            await supabase_provider.call("POST", "/logout?scope=local", token=provider_token)
+        except auth.AuthError:
+            # Local revocation already committed; outage cannot keep SOC access alive.
+            pass
     response = Response(status_code=204)
     auth.clear_cookie(response, auth.SESSION)
     auth.clear_cookie(response, auth.CHALLENGE)

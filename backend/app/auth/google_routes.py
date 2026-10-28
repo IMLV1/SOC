@@ -42,6 +42,8 @@ class GoogleStartEnvelope(Strict):
 class GoogleStatusData(Strict):
     available: bool
     linked: bool
+    link_available: bool = True
+    provider_origin: str | None = None
 
 
 class GoogleStatusEnvelope(Strict):
@@ -70,6 +72,23 @@ def configuration() -> oidc.GoogleConfig:
 
 @router.get("/status", response_model=GoogleStatusEnvelope, operation_id="google_status")
 async def status(request: Request) -> GoogleStatusEnvelope:
+    from app.auth import supabase_provider
+
+    if supabase_provider.enabled():
+        settings = await supabase_provider.call("GET", "/settings")
+        identity = getattr(request.state, "supabase_identity", None)
+        async with auth.database(request).sessions() as session, session.begin():
+            user = await auth.identity(session, request)
+            linked = bool(user and identity and identity.google_linked)
+        return GoogleStatusEnvelope(
+            data=GoogleStatusData(
+                available=bool(settings.get("external", {}).get("google")),
+                linked=linked,
+                link_available=False,
+                provider_origin=supabase_provider.configuration()[0],
+            ),
+            meta=AuthMeta(request_id=request.state.request_id),
+        )
     linked = False
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.identity(session, request)
@@ -95,6 +114,17 @@ async def status(request: Request) -> GoogleStatusEnvelope:
 async def start(
     body: GoogleStartInput, request: Request, response: Response
 ) -> GoogleStartEnvelope:
+    from app.auth import supabase_provider, supabase_service
+
+    if supabase_provider.enabled():
+        return GoogleStartEnvelope(
+            data=GoogleStartData(
+                authorization_url=await supabase_service.google_start(
+                    request, response, body.purpose
+                )
+            ),
+            meta=AuthMeta(request_id=request.state.request_id),
+        )
     config = configuration()
     await auth.rate_limit(request, "google_start")
     state, binding, nonce, verifier = (secrets.token_urlsafe(32) for _ in range(4))
@@ -148,6 +178,10 @@ async def start(
     "/callback", response_class=RedirectResponse, operation_id="google_callback", status_code=303
 )
 async def callback(request: Request) -> RedirectResponse:
+    from app.auth import supabase_provider, supabase_service
+
+    if supabase_provider.enabled():
+        return await supabase_service.google_callback(request)
     destination = "/login?google=failed"
     token = None
     try:

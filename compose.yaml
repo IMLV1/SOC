@@ -79,7 +79,7 @@ services:
       AUTH_COOKIE_SECURE: "false"
       AUTH_ORIGINS: ${SOC_AUTH_ORIGINS:-http://127.0.0.1:${SOC_WEB_PORT:-3000},http://localhost:${SOC_WEB_PORT:-3000}}
       SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
-      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-}
+      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
       GOOGLE_OAUTH_ENABLED: ${GOOGLE_OAUTH_ENABLED:-false}
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
       GOOGLE_OAUTH_REDIRECT_URI: ${GOOGLE_OAUTH_REDIRECT_URI:-}
@@ -105,7 +105,7 @@ services:
       <<: *db-env
       DB_PASSWORD_FILE: /run/secrets/worker_runtime
       SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
-      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-}
+      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
       DIFY_APP_KEY_FILE: /run/secrets/dify_app_key
     secrets: [worker_runtime, dify_app_key]
     depends_on:

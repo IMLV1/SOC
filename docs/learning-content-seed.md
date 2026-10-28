@@ -1,5 +1,9 @@
 # เนื้อหาฝึก JSON — 3 ระดับสำหรับเตรียมทดสอบ
 
+> อัปเดต 22 ต.ค. 2026: เอกสารนี้เป็นประวัติช่วงเตรียม JSON ปัจจุบัน lesson/practice
+> ใช้ API/PostgreSQL และถอด public snapshots แล้ว ดู [Database training](database-training.md)
+> ต้นฉบับ backend ยังคงไว้เป็น operator seed ไม่ใช่แหล่งข้อมูล runtime ของ frontend
+
 เพิ่มวันที่ 21 ต.ค. 2026 ตามคำขอให้เตรียมเป็น **ไฟล์ JSON เท่านั้น ไม่แตะ PostgreSQL ในเครื่อง**
 
 ต้นฉบับ: [curriculum-v1.json](../backend/fixtures/learning/curriculum-v1.json)

@@ -17,6 +17,8 @@ export default function RunsPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [startError, setStartError] = useState("");
+  const [startErrorCode, setStartErrorCode] = useState("");
   const load = useCallback(async () => {
     try {
       const [page, catalog] = await Promise.all([
@@ -75,9 +77,10 @@ export default function RunsPage() {
     }
   }
   async function start() {
-    if (!selected || preview) return;
+    if (!selected || preview || busy || loading) return;
     setBusy(true);
-    setMessage("");
+    setStartError("");
+    setStartErrorCode("");
     try {
       const run = await write<Run>(
         "/runs",
@@ -86,13 +89,22 @@ export default function RunsPage() {
       );
       router.push(`/runs/${run.id}`);
     } catch (error) {
-      setMessage(
-        error instanceof ApiError && error.status === 409
-          ? "มีรอบที่กำลังทำอยู่ หรือคำขอซ้ำไม่ตรงกัน"
-          : error instanceof ApiError && error.status === 429
-            ? "โควตารอบฝึกวันนี้หมดแล้ว"
-            : "เริ่มรอบฝึกไม่สำเร็จ",
+      const code = error instanceof ApiError ? error.code : "";
+      setStartErrorCode(code);
+      setStartError(
+        code === "RUN_ALREADY_RUNNING"
+          ? "มีรอบฝึกหรือข้อสอบที่กำลังทำอยู่ ให้เปิดรอบเดิมจากประวัติด้านล่าง หรือตรวจสถานะข้อสอบก่อนเริ่มรอบใหม่"
+          : code === "IDEMPOTENCY_CONFLICT"
+            ? "คำขอซ้ำไม่ตรงกับคำขอเดิม กรุณาโหลดรายการล่าสุดก่อนลองเริ่มใหม่"
+            : error instanceof ApiError && error.status === 401
+              ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
+              : error instanceof ApiError && error.status === 429
+                ? "โควตารอบฝึกวันนี้หมดแล้ว"
+                : error instanceof ApiError && error.status === 503
+                  ? "ระบบเริ่มรอบฝึกยังไม่พร้อม กรุณาลองใหม่ภายหลัง หรือไปหน้าฝึกอ่านหลักฐาน"
+                  : "เริ่มรอบฝึกไม่สำเร็จ กรุณาลองใหม่ หากยังไม่ได้ ให้ตรวจสถานะ API และ runner",
       );
+      // Reload domain state without erasing the failure that explains this action.
       void load();
     } finally {
       setBusy(false);
@@ -109,6 +121,7 @@ export default function RunsPage() {
         เลือกสถานการณ์ แล้วติดตามหลักฐานที่ระบบปล่อยตามเวลาจริง
         รอบฝึกยังไม่ใช่ข้อสอบเลื่อนระดับ
       </p>
+      <p><Link href="/practice">ฝึกอ่านหลักฐานรวมพร้อมบันทึกคำตอบ</Link> — แบบฝึกจากฐานข้อมูลแยกจากรอบ simulation และข้อสอบ</p>
       {sessionLoading ? (
         <p role="status">กำลังตรวจบัญชี…</p>
       ) : !session ? (
@@ -135,29 +148,34 @@ export default function RunsPage() {
             </label>
             <button
               onClick={() => void start()}
-              disabled={preview || busy || !selected}
+              disabled={preview || busy || loading || !selected}
             >
               {preview
                 ? "Runner ยังไม่พร้อมบน preview"
                 : busy
                   ? "กำลังเริ่ม…"
-                  : "เริ่มรอบฝึก"}
+                  : loading
+                    ? "กำลังโหลดสถานการณ์…"
+                    : !selected
+                      ? "ยังไม่มีสถานการณ์ให้เริ่ม"
+                      : "เริ่มรอบฝึก"}
             </button>
             <p className="run-muted">
-              เริ่มได้ครั้งละหนึ่งรอบที่กำลังทำอยู่ · โหมด AI mock
-              ไม่ใช่ผลประเมินจริง
+              รอบนี้ใช้ API/ฐานข้อมูลและ runner จริง เริ่มได้เมื่อไม่มีรอบที่กำลังทำหรือข้อสอบค้างอยู่ · log มาจาก fixture ที่เตรียมไว้ ส่วน AI mock จำลองเฉพาะคำวิเคราะห์ ไม่ใช่ผลประเมินจริง
             </p>
           </section>
-          {message && (
+          {(startError || message) && (
             <p role="alert" className="run-alert">
-              {message}{" "}
+              {startError || message}{" "}
+              {startErrorCode === "RUN_ALREADY_RUNNING" && <><Link href="/learning">ตรวจสถานะข้อสอบ</Link>{" "}</>}
+              {startError && <Link href="/login">ตรวจการเข้าสู่ระบบ</Link>}{" "}
               <button
                 onClick={() => {
                   setLoading(true);
                   void load();
                 }}
               >
-                ลองใหม่
+                โหลดรายการใหม่
               </button>
             </p>
           )}

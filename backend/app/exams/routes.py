@@ -33,7 +33,7 @@ from app.grading.exam_policy import (
 )
 from app.grading.rubric import FOUNDATIONS_RUBRIC, score_rubric
 from app.http_models import ErrorEnvelope, Meta
-from app.learning.catalog import LESSON_ID, LEVEL_ID
+from app.learning.catalog import LEVEL_ID
 from app.runs.service import effective_ms, server_time, start_run
 from app.scenarios.models import ScenarioView, TrainingSelection
 
@@ -256,9 +256,10 @@ async def start_attempt(
                 await session.execute(
                     text("""SELECT p.version,p.completed_at FROM app.user_lesson_progress p
                        JOIN app.lessons l ON l.id=p.lesson_id AND l.level_id=:level
-                       WHERE p.user_id=:owner AND p.lesson_id=:lesson
+                       WHERE p.user_id=:owner AND p.lesson_id=(SELECT id FROM app.lessons
+                           WHERE level_id=:level AND published_at<=now() ORDER BY id LIMIT 1)
                        ORDER BY l.version DESC LIMIT 1 FOR UPDATE OF p"""),
-                    {"level": level_id, "owner": owner, "lesson": LESSON_ID},
+                    {"level": level_id, "owner": owner},
                 )
             )
             .mappings()
@@ -268,6 +269,16 @@ async def start_attempt(
             raise auth.AuthError(409, "LESSON_REQUIRED")
         if progress["version"] != body.expected_progress_version:
             raise auth.AuthError(409, "VERSION_CONFLICT")
+        incomplete = await session.scalar(
+            text("""SELECT 1 FROM app.lessons l WHERE l.level_id=:level
+                AND l.published_at<=now() AND NOT EXISTS(
+                SELECT 1 FROM app.user_lesson_progress p WHERE p.user_id=:owner
+                    AND p.lesson_id=l.id AND p.lesson_version=l.version
+                    AND p.completed_at IS NOT NULL) LIMIT 1"""),
+            {"level": level_id, "owner": owner},
+        )
+        if incomplete:
+            raise auth.AuthError(409, "LESSON_REQUIRED")
 
         now = await server_time(session)
         await session.execute(

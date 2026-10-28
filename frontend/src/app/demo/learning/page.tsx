@@ -1,10 +1,8 @@
-import { Suspense } from "react";
-import CurriculumPreview from "./reader";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "บทเรียนตัวอย่าง 3 ระดับ — Sentinel" };
+export const metadata = { title: "เส้นทางเรียนรู้ — Sentinel" };
 
-export default function LearningPreviewPage() {
-  return <Suspense fallback={<main className="account-page"><p role="status">กำลังเปิดเนื้อหาจากไฟล์…</p></main>}>
-    <CurriculumPreview />
-  </Suspense>;
+export default async function LearningPreviewPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+  const { view } = await searchParams;
+  redirect(view === "practice" ? "/practice" : "/learning");
 }

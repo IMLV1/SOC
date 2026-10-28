@@ -57,6 +57,13 @@ test("Google login uses CSRF POST before navigating to the fixed Google destinat
     }),
   );
   await page.goto("/login");
+  const logo = page
+    .getByRole("button", { name: "เข้าสู่ระบบด้วย Google" })
+    .locator("svg.google-logo");
+  await expect(logo).toBeVisible();
+  await expect(logo).toHaveAttribute("width", "24");
+  await expect(logo).toHaveAttribute("height", "24");
+  await expect(logo).toHaveAttribute("aria-hidden", "true");
   await page.getByRole("button", { name: "เข้าสู่ระบบด้วย Google" }).click();
   await expect(
     page.getByRole("heading", { name: "Offline Google destination" }),

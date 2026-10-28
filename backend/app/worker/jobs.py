@@ -14,6 +14,7 @@ from app.detection.worker import detect_run
 from app.knowledge.service import ingest
 from app.runs.service import effective_ms, enqueue_release, server_time
 from app.scenarios.fixtures import FixtureEvent, content_hash, load_fixture
+from app.tutor.worker import process_question
 from app.worker.fencing import lock_domain, require_lease
 
 FIXTURE_ROOT = Path(__file__).resolve().parents[2] / "fixtures/events/training"
@@ -47,7 +48,8 @@ async def claim(database: Database, worker_id: str) -> dict[str, Any] | None:
             (
                 await session.execute(
                     text("""SELECT id FROM app.jobs
-            WHERE type IN ('release_events','detect_events','analyze_evidence','ingest_knowledge')
+            WHERE type IN ('release_events','detect_events','analyze_evidence',
+                          'ingest_knowledge','tutor_question')
               AND attempts < 3 AND
               ((status='queued' AND available_at<=clock_timestamp())
                OR (status='running' AND lease_expires_at<=clock_timestamp()))
@@ -259,7 +261,9 @@ async def process_one(database: Database, worker_id: str) -> bool:
     if job is None:
         return False
     try:
-        if job["type"] == "ingest_knowledge":
+        if job["type"] == "tutor_question":
+            await process_question(database, job)
+        elif job["type"] == "ingest_knowledge":
             await ingest(database, job)
         elif job["type"] == "release_events":
             await release_events(database, job)

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import GoogleLogin from "../features/google-login";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ApiError, mutate } from "../lib/api";
 import { useSession } from "./session-provider";
 
@@ -10,7 +10,10 @@ export default function AuthForm({ register = false }: { register?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
-  const { refresh } = useSession();
+  const { session, loading, error: sessionError, refresh } = useSession();
+  useEffect(() => {
+    if (!loading && session) router.replace("/account");
+  }, [loading, session, router]);
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -23,14 +26,22 @@ export default function AuthForm({ register = false }: { register?: boolean }) {
       ...(register ? { display_name: String(data.get("display_name")) } : {}),
     };
     try {
-      await mutate(register ? "/auth/register" : "/auth/login", payload);
+      const result = await mutate<{ status?: string }>(register ? "/auth/register" : "/auth/login", payload);
       form.reset();
+      if (result.status === "email_confirmation_required") {
+        setMessage("กรุณายืนยันอีเมลจากข้อความของ Supabase แล้วกลับมาเข้าสู่ระบบ ยังไม่มีการเปิด session จนกว่าจะยืนยันสำเร็จ");
+        return;
+      }
       await refresh();
       router.replace("/account");
     } catch (error) {
       setMessage(
         error instanceof ApiError && error.status === 429
           ? "คำขอถี่เกินไป กรุณารอหนึ่งนาทีแล้วลองใหม่"
+          : error instanceof ApiError && error.code === "ACCOUNT_LINK_REQUIRED"
+            ? "อีเมลนี้มีบัญชีเดิมอยู่แล้ว กรุณาติดต่อผู้ดูแลเพื่อยืนยันและย้ายบัญชี ระบบจะไม่รวมบัญชีให้อัตโนมัติ"
+          : error instanceof ApiError && error.status === 503
+            ? "ระบบยืนยันตัวตนยังไม่พร้อม กรุณาลองใหม่ภายหลัง"
           : register
             ? "สมัครไม่สำเร็จ กรุณาตรวจข้อมูลหรือลองเข้าสู่ระบบ"
             : "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจข้อมูลและลองใหม่",
@@ -38,6 +49,32 @@ export default function AuthForm({ register = false }: { register?: boolean }) {
     } finally {
       setBusy(false);
     }
+  }
+  if (loading || session) {
+    return (
+      <main>
+        <p role="status">
+          {loading ? "กำลังตรวจสอบการเข้าสู่ระบบ…" : "กำลังไปหน้าบัญชี…"}
+        </p>
+      </main>
+    );
+  }
+  if (sessionError) {
+    return (
+      <main>
+        <p role="alert">ยังยืนยันสถานะการเข้าสู่ระบบไม่ได้ กรุณาลองอีกครั้ง</p>
+        <button
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            await refresh();
+            setBusy(false);
+          }}
+        >
+          {busy ? "กำลังตรวจสอบ…" : "ตรวจสอบอีกครั้ง"}
+        </button>
+      </main>
+    );
   }
   return (
     <main className="auth-page">
@@ -116,15 +153,15 @@ export default function AuthForm({ register = false }: { register?: boolean }) {
               type="password"
               autoComplete={register ? "new-password" : "current-password"}
               required
-              minLength={5}
-              maxLength={register ? 10 : 128}
+              minLength={register ? 6 : 5}
+              maxLength={register ? 12 : 128}
               placeholder="กรอกรหัสผ่านของคุณ"
               aria-describedby="password-help"
             />
           </label>
           <p className="form-help" id="password-help">
             {register
-              ? "รหัสผ่านสำหรับบัญชีใหม่ 5–10 ตัวอักษร"
+              ? "รหัสผ่านสำหรับบัญชีใหม่ 6–12 ตัวอักษร"
               : "ใช้รหัสผ่านของบัญชีคุณ (บัญชีเดิมที่รหัสยาวยังเข้าสู่ระบบได้)"}
           </p>
           <button disabled={busy} type="submit">

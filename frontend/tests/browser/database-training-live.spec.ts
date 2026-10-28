@@ -1,0 +1,46 @@
+import { expect, test } from "@playwright/test";
+
+test("live API: register, practice, persist draft, submit correct and incorrect answers, reload history", async ({ page }) => {
+  // Run against the disposable local-auth stack, never against a human cloud account.
+  const email = `practice-${Date.now()}@example.test`;
+  await page.goto("/register");
+  await page.getByLabel("ชื่อที่แสดง", { exact: true }).fill("Practice E2E Learner");
+  await page.getByLabel("อีเมล", { exact: true }).fill(email);
+  await page.getByLabel("รหัสผ่าน", { exact: true }).fill(crypto.randomUUID().slice(0, 10));
+  await page.getByRole("button", { name: "สร้างบัญชี Analyst", exact: true }).click();
+  await expect(page).toHaveURL(/\/account$/);
+  await page.goto("/practice");
+  const catalogResponse = await page.request.get("/api/v1/practice/cases");
+  expect(catalogResponse.ok()).toBe(true);
+  const catalog = (await catalogResponse.json()).data;
+  expect(catalog).toHaveLength(30);
+  const selected = catalog.find((item: { stable_key: string }) => item.stable_key === "TR-L1-02");
+  expect(selected.available).toBe(true);
+  await page.getByRole("combobox", { name: "เคส", exact: true }).selectOption(selected.id);
+  await expect(page.getByRole("heading", { name: "ตรวจการลองรหัสผ่านซ้ำ", exact: true })).toBeVisible();
+  await page.getByRole("checkbox").check();
+  await page.getByRole("combobox", { name: "Severity", exact: true }).selectOption("medium");
+  await page.getByRole("combobox", { name: "Disposition", exact: true }).selectOption("true_positive");
+  const reason = page.getByLabel("เหตุผล หลักฐานที่รองรับ และสิ่งที่ยังไม่ทราบ");
+  await reason.fill("พบความพยายามซ้ำ แต่ยังไม่มี session ที่สำเร็จในหลักฐานนี้");
+  await page.getByRole("button", { name: "บันทึกร่าง", exact: true }).click();
+  await expect(page.getByRole("main").getByRole("status")).toContainText("บันทึกร่างในบัญชีแล้ว");
+  await page.reload();
+  await expect(reason).toHaveValue("พบความพยายามซ้ำ แต่ยังไม่มี session ที่สำเร็จในหลักฐานนี้");
+  await page.getByRole("button", { name: "ส่งคำตอบและตรวจข้อสรุป", exact: true }).click();
+  await expect(page.locator(".practice-correct").first()).toContainText("ถูกต้อง");
+  await page.getByRole("combobox", { name: "Severity", exact: true }).selectOption("critical");
+  await reason.fill("ลองทบทวนผลเมื่อเลือกความรุนแรงที่ไม่มีหลักฐานรองรับ");
+  await page.getByRole("button", { name: "ส่งคำตอบและตรวจข้อสรุป", exact: true }).click();
+  await expect(page.locator(".practice-incorrect")).toContainText("ยังไม่ถูก");
+  await page.reload();
+  await expect(reason).toHaveValue("ลองทบทวนผลเมื่อเลือกความรุนแรงที่ไม่มีหลักฐานรองรับ");
+  await expect(page.getByRole("heading", { name: "ประวัติคำตอบ · 2" })).toBeVisible();
+  const historyResponse = await page.request.get(`/api/v1/practice/cases/${selected.id}/answers`);
+  expect(historyResponse.ok()).toBe(true);
+  const history = (await historyResponse.json()).data;
+  expect(history).toHaveLength(2);
+  expect(history[0].feedback.classification_correct).toBe(false);
+  expect(history[1].feedback.classification_correct).toBe(true);
+  expect(history.every((item: { feedback: { is_exam_result: boolean } }) => !item.feedback.is_exam_result)).toBe(true);
+});

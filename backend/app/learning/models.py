@@ -58,9 +58,18 @@ class ProgressView(StrictModel):
     version: int
 
 
+class LevelStatus(StrictModel):
+    level_id: UUID
+    unlocked: bool
+    all_lessons_completed: bool
+    exam_case_count: int = Field(ge=0)
+    passed_case_count: int = Field(ge=0)
+
+
 class MePathData(StrictModel):
     lessons: list[ProgressView]
     next_action: Literal["continue_lesson", "review_lesson_exam_unavailable"]
+    level_statuses: list[LevelStatus] = Field(default_factory=list)
 
 
 class MePathEnvelope(StrictModel):

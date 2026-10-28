@@ -1,5 +1,7 @@
 # SOC Platform — Architecture
 
+แผนภาพ implementation ปัจจุบัน (Supabase Auth/PostgreSQL และ DB training) อยู่ใน [current-system.md](current-system.md) ส่วนเอกสารนี้เก็บรายละเอียดการออกแบบและประวัติไว้ ไม่อ้างว่า Dify เปิดใช้งานแล้ว
+
 > **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
 
 เอกสารนี้อธิบายโครงสร้างระบบที่วางไว้ และบันทึกการตัดสินใจทางเทคนิค เอกสารถูกเขียนตั้งแต่ 12 ต.ค. 2026 จึงไม่ใช่สถานะล่าสุดของทุก feature ให้ดู [implementation checklist](implementation-checklist.md) เพื่อดูว่าส่วนใดทำแล้วและผ่านการตรวจแบบใด

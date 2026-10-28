@@ -32,7 +32,7 @@ export default function SessionProvider({
   preview?: boolean;
 }) {
   const pathname = usePathname();
-  const filePreview = pathname === "/demo/learning";
+  const filePreview = false;
   const [navOpen, setNavOpen] = useState(false);
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,6 +150,7 @@ export default function SessionProvider({
           >
             เส้นทางเรียนรู้
           </Link>
+          <Link href="/practice" onClick={() => setNavOpen(false)} aria-current={pathname.startsWith("/practice") ? "page" : undefined}>ฝึกอ่านหลักฐาน</Link>
           {session && (
             <Link
               href="/runs"

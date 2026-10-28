@@ -6,6 +6,9 @@
 
 ## ถ้าเพิ่งเข้ามาอ่าน
 
+เริ่มจาก [ระบบและแผนภาพล่าสุด](current-system.md), [วิธีเล่น/สคริปต์นำเสนอ](presentation-guide.md)
+และ [ตรวจ Deliverables](presentation-readiness.md) สำหรับสถานะ working tree 27 ต.ค. 2026
+
 1. [ภาพรวมโครงการและข้อจำกัด](soc-simulation.md)
 2. [เส้นทางเรียนและข้อสอบ](learning-path.md)
 3. [สถาปัตยกรรมระบบ](architecture.md)
@@ -13,11 +16,17 @@
 
 ## วิธีเปิดและพัฒนา
 
+งาน Dify ล่าสุด: [การตั้งค่า](dify-configuration.md) · [ขอบเขต/ผลตรวจ Tutor](dify-integration-verification.md) · [วิธีทดสอบทุก Flow](end-to-end-test-plan.md)
+
+ให้เพื่อนทดลอง/ร่วมพัฒนา: [URL สาธารณะต่างจาก clone รันเองอย่างไร](friend-testing.md)
+
 | เอกสาร | ใช้เมื่อ |
 |---|---|
 | [เริ่มระบบในเครื่อง](local-development.md) | เปิดเว็บ API และ PostgreSQL ด้วย Docker หรือเตรียมฐานข้อมูล local |
 | [เริ่มต้นโค้ดและเวอร์ชันเครื่องมือ](getting-started.md) | ตรวจ runtime และคำสั่งทดสอบพื้นฐาน |
 | [ตั้งค่าบัญชีผู้ใช้](auth-development.md) | ทำความเข้าใจสมัครสมาชิก เข้าสู่ระบบ และ Guest demo |
+| [ย้ายไป Supabase](supabase-migration.md) | PostgreSQL/Auth bridge, operator/runtime แยก และเงื่อนไข Google/confirmation |
+| [ผลตรวจ Supabase](supabase-verification.md) | live DB/health ที่ตรวจแล้ว เทียบกับ fake-provider tests และข้อที่ยังต้องตรวจจริง |
 | [พัฒนาสถานการณ์ฝึก](scenario-development.md) | เพิ่มหรือแก้ fixture ของสถานการณ์จำลอง |
 | [ตรวจ CI ในเครื่อง](ci-local.md) | รัน checks ก่อนส่งขึ้น GitHub |
 | [แผน CI/CD](ci-cd.md) | อ่านแผน build, staging, release และ rollback; ส่วนที่ยังไม่มีระบบรองรับจะระบุว่าเป็นแผน |
@@ -39,8 +48,13 @@
 
 ## รายงานผลตรวจ
 
-เนื้อหาฝึก JSON 3 ระดับ พร้อมหน้า `/demo/learning` ที่ไม่เรียกฐานข้อมูล:
+สถานะบทเรียน/แบบฝึก DB ล่าสุด: [Database training](database-training.md)
+ใช้แทนหน้า runtime JSON เดิม รายงาน preview ด้านล่างเป็นประวัติ ไม่ใช่ runtime ปัจจุบัน
+
+ประวัติ preview JSON เดิม (เลิกใช้เป็น runtime แล้ว; `/demo/learning` redirect ไปหน้าที่ใช้ DB):
 [คู่มือเนื้อหา seed](learning-content-seed.md) · [ผลตรวจ preview](learning-preview-verification.md)
+
+[แก้เริ่มรอบฝึกแล้ว error หาย](run-start-feedback-verification.md)
 
 รายงานเหล่านี้เป็นบันทึกตามวันที่และ commit ที่ระบุในแต่ละไฟล์ ไม่ได้ยืนยันสภาพแวดล้อมอื่นหรือ commit ใหม่กว่า:
 

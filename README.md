@@ -4,13 +4,17 @@
 
 ## สถานะปัจจุบัน
 
-ระบบมีทั้ง prototype และเว็บแอปที่พัฒนาแยกกัน เว็บแอปใช้ Next.js, FastAPI และ PostgreSQL มีระบบบัญชี บทเรียน รอบฝึก ตัวตรวจจับ Ticket การวิเคราะห์ และข้อสอบที่ Instructor ตรวจได้. AI runtime ใช้ mock จนกว่า Dify integration จะผ่านการตรวจรับ
+คู่มือส่งงานล่าสุด: [ระบบ/Flow/ER](docs/current-system.md) · [วิธีเล่นและนำเสนอ](docs/presentation-guide.md) · [สิ่งที่ยังขาดตาม Deliverables](docs/presentation-readiness.md)
+
+ให้เพื่อนทดลอง: [ส่งอะไรให้เพื่อน / วิธี clone และเปิด local stack](docs/friend-testing.md)
+
+ระบบมีทั้ง prototype และเว็บแอปที่พัฒนาแยกกัน เว็บแอปใช้ Next.js, FastAPI และ PostgreSQL มีระบบบัญชี บทเรียน รอบฝึก ตัวตรวจจับ Ticket การวิเคราะห์ และข้อสอบที่ Instructor ตรวจได้. Local Supabase stack ของผู้พัฒนาเปิด Dify lesson Tutor แล้วเมื่อ 28 ต.ค. 2026 แต่ checkout ใหม่ยังไม่เปิด real AI อัตโนมัติ; investigation provider ยังใช้ mock
 
 ## ขอบเขต RAG ที่ต้องเข้าใจให้ตรงกัน
 
 ทิศทางผลิตภัณฑ์ที่ผู้ใช้ยืนยันคือใช้บริการ RAG ภายนอก โดยระบุ Dify และให้ repository เรียกบริการผ่าน API เท่านั้น ไม่ควรอธิบายว่าทีมสร้างระบบ RAG เอง
 
-อย่างไรก็ตาม source เคยมี pipeline ภายในและ Gemini adapter; ปิดเส้นทาง Gemini ใน runtime ปัจจุบันแล้ว. เพิ่ม Dify Chat API client ฝั่ง backend แต่ยังไม่ได้ต่อเข้ากับ worker; ไม่มี Base URL/API key ในเครื่องและยังไม่มีการเรียกจริง. จึงยังไม่ถือว่าเชื่อมบริการภายนอกพร้อมแล้ว
+Source ยังเก็บ pipeline ภายในและ Gemini adapter เดิมเพื่ออ้างอิง; ปิดเส้นทาง Gemini ใน runtime ปัจจุบันแล้ว. ผู้ช่วยสอนในหน้าบทเรียนเชื่อม Dify Workflow ผ่าน server/worker และเก็บประวัติใน DB โดยตรวจ release/citations/budget ตาม [ผลตรวจล่าสุด](docs/dify-integration-verification.md) ไม่ใช่ AI grading หรือการยืนยัน public deployment
 
 การทดสอบในเครื่องไม่ได้แปลว่าเปิดใช้บน staging หรือ production แล้ว ข้อ 14 ยังรอการตรวจคุณภาพและการกระทบยอดการเรียก provider ที่ไม่ทราบผล 6 ครั้ง ส่วนข้อ 18–19 ยังขาดหลักฐาน staging, rollback และ backup/restore ดู [รายการงานและสถานะ](docs/implementation-checklist.md)
 

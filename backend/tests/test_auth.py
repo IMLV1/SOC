@@ -51,7 +51,7 @@ def login(client, email="person@example.test"):
     return response.json()["data"]
 
 
-@pytest.mark.parametrize("length,expected_status", [(4, 422), (5, 201), (10, 201), (11, 422)])
+@pytest.mark.parametrize("length,expected_status", [(5, 422), (6, 201), (12, 201), (13, 422)])
 def test_registration_password_boundaries(clients, length, expected_status):
     client, _ = clients
     response = client.post(
@@ -351,7 +351,8 @@ def test_login_rate_limit_is_shared_and_no_demo_mutations(clients, monkeypatch):
         json={"email": "none@example.test", "password": PASSWORD},
     )
     assert response.status_code == 429 and response.headers["retry-after"] == "60"
-    assert client.get("/api/v1/demo/events").status_code == 200
+    # Public demo now depends on published DB content; no hard-coded fallback.
+    assert client.get("/api/v1/demo/events").json()["data"] == []
     assert client.post("/api/v1/demo/events", json={}).status_code == 405
     assert client.get("/api/v1/me").status_code == 401
 

@@ -5,7 +5,7 @@ from app.auth.google_routes import GoogleStartInput
 from app.auth.models import LoginInput, RegisterInput
 
 
-@pytest.mark.parametrize("length", [5, 10])
+@pytest.mark.parametrize("length", [6, 10, 12])
 def test_registration_accepts_requested_boundaries(length: int) -> None:
     body = RegisterInput.model_validate(
         {"email": "learner@example.test", "display_name": "Learner", "password": "x" * length}
@@ -13,7 +13,7 @@ def test_registration_accepts_requested_boundaries(length: int) -> None:
     assert len(body.password) == length
 
 
-@pytest.mark.parametrize("length", [4, 11, 129])
+@pytest.mark.parametrize("length", [0, 4, 5, 13, 129])
 def test_registration_rejects_out_of_range_passwords(length: int) -> None:
     with pytest.raises(ValidationError):
         RegisterInput.model_validate(

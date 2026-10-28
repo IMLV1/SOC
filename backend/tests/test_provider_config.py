@@ -8,6 +8,11 @@ def test_mock_is_default_and_ignores_legacy_gemini_credentials():
     assert config.mode == "mock" and config.key_file is None
 
 
+def test_dify_cloud_default_does_not_enable_live_provider():
+    assert load_config({"DIFY_API_BASE_URL": "https://api.dify.ai/v1"}).mode == "mock"
+    assert load_config({"SOC_AI_PROVIDER": "dify"}).mode == "dify"
+
+
 def test_dify_is_the_only_configurable_external_provider():
     config = load_config(
         {"SOC_AI_PROVIDER": "dify", "DIFY_API_BASE_URL": "https://dify.example.test/v1"}

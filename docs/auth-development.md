@@ -26,7 +26,11 @@ docker compose up --build -d --wait
 เปิด [สมัครสมาชิก](http://127.0.0.1:3000/register), [เข้าสู่ระบบ](http://127.0.0.1:3000/login),
 [บัญชี](http://127.0.0.1:3000/account) และ [Guest demo](http://127.0.0.1:3000/demo)
 ใช้บัญชีที่สมัครเอง ไม่มี default password; Instructor ยังสร้างด้วย provisioning ตาม [คู่มือ DB](local-development.md)
-บัญชี Analyst ที่สมัครใหม่ใช้รหัสผ่าน 5–10 ตัวอักษรตามคำขอปัจจุบัน; login และการยืนยันเพื่อเชื่อม Google ยังรับรหัสเดิมได้ถึง 128 ตัวอักษร ส่วน Instructor ที่ provision ผ่าน operator ยังคง 12–128 ตัวอักษร การลดขั้นต่ำเหลือ 5 ทำให้เสี่ยงต่อการเดารหัสมากขึ้นก่อนเปิดใช้งานสาธารณะ
+ผู้ใช้ยืนยัน 22 ต.ค. 2026: บัญชี Analyst ที่สมัครใหม่ใช้รหัสผ่าน 6–12 ตัวอักษร; login และการยืนยันเพื่อเชื่อม Google เดิมยังรับรหัส 5–128 ตัวอักษรเพื่อรักษาบัญชีเก่า ส่วน Instructor ที่ provision ผ่าน operator ยังคง 12–128 ตัวอักษร ไม่แก้ password hashes เก่าและไม่เติมอักขระเพื่อหลบข้อจำกัด provider
+
+Supabase stack ใหม่ใช้ PostgreSQL + server-only Supabase Auth bridge แล้ว ส่วน compose local เดิมยังคง auth local
+ดู [คู่มือ Supabase](supabase-migration.md) และ [ผลตรวจ](supabase-verification.md) สำหรับ environment จริง
+email confirmation/Google provider settings และการย้ายบัญชีเก่าเป็นคนละเรื่องกับการมี SDK/helper
 bootstrap/migrate exit 0 เป็นปกติ; migration 0002 เพิ่ม auth_rate_limits และเก็บข้อมูลจาก 0001 ไว้
 
 Native API ต้องตั้ง DB env ตามคู่มือ DB รวม `AUTH_ORIGINS=http://127.0.0.1:3000,http://localhost:3000`
@@ -65,6 +69,8 @@ session absolute expiry 24 ชั่วโมง; UI ตรวจใหม่เ
 ไม่มี token ใน localStorage และไม่มี shared caching สำหรับข้อมูลสมาชิก
 rate limits เก็บ DB แยก transaction เพื่อให้นับ failed login: login/register 10 requests/minute ต่อ IP และ email,
 CSRF bootstrap 30/minute ต่อ IP; 429 พร้อม Retry-After 60; hash keys ไม่เก็บ email/IP ดิบ
+บันทึกขั้นเรียนแยกเป็น 60/minute ต่อ IP เพื่อรองรับ 18 saves ต่อระดับ
+ยังตรวจ step order, owner, level gate และ expected_version ฝั่ง server ทุกครั้ง
 ยังไม่เชื่อ X-Forwarded-For: หลัง proxy ผู้ใช้แชร์ IP bucket ได้ ต้องตั้ง trusted proxy policy ก่อน public hosting
 expired counters ลบได้ด้วย retention_runtime; retention scheduler ยังเป็นงานภายหลัง
 

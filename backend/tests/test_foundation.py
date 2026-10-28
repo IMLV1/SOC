@@ -145,4 +145,14 @@ def test_frontend_has_no_reference_assets_or_default_credentials() -> None:
             assert "prototype/" not in text
             assert "ground-truth" not in text
             assert "@demo.test" not in text
-    assert "NEXT_PUBLIC_" not in (ROOT / "frontend/.env.example").read_text()
+    # Supabase Auth now needs these two public settings. Keep a closed allowlist
+    # and empty values: no DB password, service_role or secret key may be exported.
+    public_settings = dict(
+        line.split("=", 1)
+        for line in (ROOT / "frontend/.env.example").read_text().splitlines()
+        if line.startswith("NEXT_PUBLIC_")
+    )
+    assert public_settings == {
+        "NEXT_PUBLIC_SUPABASE_URL": "",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "",
+    }

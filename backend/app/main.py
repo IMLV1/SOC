@@ -32,9 +32,11 @@ from app.http_models import (
 from app.investigation.routes import admin_router as admin_ticket_router
 from app.investigation.routes import router as ticket_router
 from app.knowledge.routes import router as rag_router
+from app.learning.practice_routes import router as practice_router
 from app.learning.routes import router as learning_router
 from app.runs.routes import router as run_router
 from app.scenarios.routes import router as scenario_router
+from app.tutor.routes import router as tutor_router
 
 
 @asynccontextmanager
@@ -63,6 +65,8 @@ app.include_router(admin_ticket_router)
 app.include_router(analysis_router)
 app.include_router(rag_router)
 app.include_router(learning_router)
+app.include_router(practice_router)
+app.include_router(tutor_router)
 app.include_router(exam_router)
 app.include_router(evaluation_router)
 app.include_router(instructor_evaluation_router)
@@ -74,6 +78,21 @@ async def request_context(
 ) -> Response:
     # Generate locally; never reflect an untrusted header or any request payload.
     request.state.request_id = str(uuid4())
+    from app.auth import supabase_provider, supabase_service
+
+    if (
+        supabase_provider.enabled()
+        and request.url.path.startswith("/api/v1/")
+        and request.url.path != "/api/v1/auth/logout"
+    ):
+        try:
+            await supabase_service.prepare(request)
+        except AuthError as exc:
+            if exc.status != 401:
+                unavailable = await auth_error(request, exc)
+                unavailable.headers["X-Request-ID"] = request.state.request_id
+                unavailable.headers["Cache-Control"] = "no-store"
+                return unavailable
     if (
         os.getenv("SOC_PREVIEW_MODE") == "auth_only"
         and request.method in {"POST", "PATCH", "PUT", "DELETE"}

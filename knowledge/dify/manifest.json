@@ -1,0 +1,22 @@
+{
+  "release": "sentinel-learner-knowledge-1.0.0",
+  "status": "approved_for_lesson_tutor",
+  "reviewed_at": "2026-10-28",
+  "review_scope": "Codex automated content/structure review for lesson tutoring only; not human or exam approval",
+  "retrieval_review": "retrieval-review-20261028.json",
+  "created_at": "2026-10-27",
+  "audience": "learner",
+  "documents": [
+    {
+      "path": "soc-learning-guide-v1.md",
+      "stable_key": "sentinel-soc-learning-guide",
+      "revision": "1.0.0",
+      "language": "th-en",
+      "reviewer": "Codex (automated review)",
+      "sha256": "f0255fc9445ecab0b462eedf30351d4973805df31622b9d69031dcc123982c4d",
+      "section_ids": "SOC-001..SOC-020",
+      "dify_dataset_id": "300689de-7c3e-4505-8ffc-8ad3e0bbeda2",
+      "dify_document_id": "884d192c-2d99-4804-a080-c07b91df404c"
+    }
+  ]
+}

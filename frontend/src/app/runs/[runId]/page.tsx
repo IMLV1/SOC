@@ -290,7 +290,7 @@ export default function RunDetailPage() {
                   <strong>
                     {run.analysis_mode === "mock"
                       ? "mode=mock · ผลจำลอง ไม่ใช่คะแนน"
-                      : "mode=real · Gemini · ใช้ข้อมูลจำลองเท่านั้น"}
+                      : "mode=real · ใช้ข้อมูลจำลองในการฝึกเท่านั้น"}
                   </strong>
                 </div>
                 <div className="run-actions">

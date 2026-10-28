@@ -30,11 +30,10 @@ def test_published_training_lesson_has_five_ordered_steps_without_exam_material(
     assert LEVELS[0]["ordinal"] == 1
 
 
-def test_guest_learning_path_exposes_metadata_only():
+def test_learning_catalog_requires_configured_database_not_a_static_fallback():
     with TestClient(app) as client:
         response = client.get("/api/v1/learning-path")
-    assert response.status_code == 200
-    assert response.json()["data"]["levels"][0]["ordinal"] == 1
+    assert response.status_code == 503
     serialized = response.text.lower()
     for field in ("explanation", "limitation", "ground_truth", "answer_key"):
         assert field not in serialized

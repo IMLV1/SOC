@@ -1,5 +1,7 @@
 # Prototype alignment
 
+สำหรับ flow ล่าสุด 27 ต.ค. 2026 ให้ใช้ [current-system.md](current-system.md) และ [คู่มือเล่น](presentation-guide.md): `/learning` → `/practice` → `/runs` → practical exam/review โดย `/knowledge-check` ยังรอตรวจ ไม่มีคะแนนผ่านอัตโนมัติ คง `prototype/` เป็น reference ไม่ย้ายทับเว็บจริง
+
 > เอกสารนี้เปรียบเทียบต้นแบบกับระบบหลักตามวันที่ด้านล่าง. ใช้ [checklist](implementation-checklist.md) สำหรับสถานะปัจจุบัน; รายการ feature ในรายงานนี้อาจเก่ากว่า source ปัจจุบัน
 
 อัปเดต: 15 ตุลาคม 2026

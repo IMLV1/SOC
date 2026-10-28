@@ -7,6 +7,15 @@ import requests
 from app.knowledge.dify_client import DifyConfig, DifyUnavailable, _parse_reply, chat
 
 
+def test_cloud_base_url_defaults_without_reading_credentials():
+    config = DifyConfig.from_env({"DIFY_APP_KEY_FILE": "/not-read-until-dispatch"})
+    assert config.base_url == "https://api.dify.ai/v1"
+    with pytest.raises(DifyUnavailable, match="DIFY_CONFIGURATION_INVALID"):
+        DifyConfig.from_env({})
+    with pytest.raises(DifyUnavailable, match="DIFY_CONFIGURATION_INVALID"):
+        DifyConfig.from_env({"DIFY_API_BASE_URL": "", "DIFY_APP_KEY_FILE": "key"})
+
+
 def test_dify_config_requires_https_and_server_secret(tmp_path: Path):
     with pytest.raises(DifyUnavailable, match="DIFY_CONFIGURATION_INVALID"):
         DifyConfig.from_env(

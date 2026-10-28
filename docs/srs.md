@@ -1,5 +1,13 @@
 # SOC Learning Lab — SRS ฉบับเริ่มต้น
 
+## Decision เพิ่มเติม 28 ต.ค. 2026 — Dify Free lesson Tutor
+
+ผู้ใช้อนุมัติใช้ Published-latest API ของ Dify Free และตรวจ workflow_id หลังตอบกลับ แทน pinned execution ที่ Sandbox ปฏิเสธ ยอมรับว่าการตรวจเกิดหลัง dispatch ไม่ป้องกันการเรียก Flow ใหม่ครั้งแรก แต่เมื่อพบ mismatch ต้องไม่แสดงคำตอบและหยุดรับคำขอใหม่จน operator อนุมัติรุ่นใหม่ ไม่มี automatic retry/fallback
+
+ใช้เฉพาะผู้ช่วยสอนบทเรียน: ตรวจ owner, lesson gate, CSRF/Origin และ no-active-exam; ไม่มีการเปลี่ยน rubric/retake/คะแนน/unlock งบรวมคง US$0.25/วัน UTC และ 20 logical AI requests/ผู้ใช้/วัน ไม่มีเพดาน 200 ตลอดอายุใช้งาน Release นี้ตรวจ Groq Free + Full Text/no rerank แล้ว สำรองและ account USD0.001 เต็มเพดานต่อคำขอที่ทราบผล ไม่ถือว่าเป็นราคาเงินจริงหรือเดาเป็นศูนย์ unknown dispatch คง hold ข้ามวันจน reconcile ปิด policy และตรวจใหม่ก่อนเปลี่ยน plan/Flow/credentials/retrieval ดู [ผลตรวจ](dify-integration-verification.md)
+
+ส่วนเสริม implementation ล่าสุด: [Flow, use cases, ER และ NFR acceptance](current-system.md), [สถานะส่งมอบ](presentation-readiness.md) และ [คู่มือนำเสนอ](presentation-guide.md) ไม่เปลี่ยน decision register/rubric เดิม; ข้อเขียน 10 ข้อและ Dify grading ยังมี requirement ค้าง ไม่ถือว่าการเก็บคำตอบครบคือประเมินผ่านแล้ว
+
 > **วิธีอ่าน:** SRS นี้รวม requirement, decision ที่อนุมัติ และ draft เก่าหลายช่วงไว้ด้วยกัน. ใช้ decision register ล่าสุดและ checklist เป็นสถานะปัจจุบัน. ข้อความที่บอกว่า feature “ยังไม่เริ่ม/ยังไม่มี” เป็น snapshot เก่า เว้นแต่มีรายงานล่าสุดยืนยัน. RAG ข้อ 13–14 เดิมใช้ pgvector ภายใน แต่ผู้ใช้ยืนยันภายหลังให้เรียกบริการ RAG ภายนอกผ่าน API; รายละเอียดเดิมจึงยังต้องปรับให้ตรง
 
 วันที่ 13 ตุลาคม 2026 · Checklist 01 / SOC-001–002 · **Draft domain contract**
@@ -247,6 +255,25 @@ role ต่างหาก ไม่ purge งานยังทำ/unknown rese
 PostgreSQL 17.11/digest ผ่าน local integration ตั้งแต่ข้อ 02; production hosting/pgvector compatibility ยังรอข้อ 13/18
 
 ## 8. Decision register — ข้อสรุปที่ผู้ใช้มอบหมายให้กำหนด และเรื่องที่ยังค้าง
+
+### ข้อตัดสินใจเพิ่มเติม 22 ต.ค. 2026 — Supabase และรหัสผ่าน
+
+ผู้ใช้ยืนยันให้ย้ายฐานข้อมูลไป **Supabase PostgreSQL** และใช้ **Supabase Auth สำหรับสมัคร/login/Google**
+แทนการสร้างบัญชี/password authentication กับ Google OAuth เองในระยะยาว
+สมัครใหม่ใช้รหัสผ่าน **6–12 ตัวอักษร** ตามที่ยืนยันล่าสุด; ไม่แก้ hash เก่าหรือเติมอักขระให้ password
+ระหว่างเปลี่ยนผ่าน login เดิมยังรับ 5–128 ตาม compatibility policy เดิม
+เป้าหมายนี้มีผลเหนือข้อความ architecture/auth เดิมที่ขัดกัน แต่ยังไม่ใช่การเปิดใช้งาน Supabase Auth จริง
+ยังต้องกำหนด/ทดสอบ identity mapping, account migration, session/CSRF/token revocation และการเชื่อม FastAPI
+โดยคง owner/assignment/Analyst-Instructor/quota/scoring policies เดิม ไม่ให้ user metadata กำหนดสิทธิ์
+ไม่ auto-merge ผู้ใช้จาก email ตรงกัน ไม่ลบข้อมูลเดิม และไม่เปิด app/private/ops/kb ผ่าน public Data API
+รายละเอียดและส่วนที่ค้างดู [Supabase migration](supabase-migration.md)
+
+Implementation 22 ต.ค.: ใช้ server-only Supabase Auth REST bridge โดยคง opaque SOC cookie/CSRF
+provider tokens เข้ารหัสฝั่ง server, refresh lease/fencing และ read-only session predicate
+กัน revoked/banned/deleted users โดยไม่ให้ runtime อ่าน managed auth tables
+ถ้าสมัครแล้ว provider ออก session ให้เข้าสู่ระบบทันที; ถ้า email confirmation ยังไม่ผ่านคืน 202 pending
+ไม่ปิด verification หรือ email auto-merge เพื่อให้ดูเหมือนทำงานครบ
+ผลตรวจ runtime/ข้อจำกัด Google ดูรายงาน Supabase แยกจากการมีโค้ดหรือ deployment
 
 ข้อ 12 ได้ข้อยืนยันผู้ใช้ 15 ต.ค. 2026: Free Tier/no billing, budget 0 บาท,
 global 100 requests/วัน UTC, 200,000 tokens/วัน, 5 requests/rolling minute;

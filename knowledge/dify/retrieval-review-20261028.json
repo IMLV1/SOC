@@ -1,0 +1,39 @@
+{
+  "status": "approved_for_lesson_tutor",
+  "execution_mode": "published_latest_with_response_version_check",
+  "cost_basis": "groq_free_full_text_no_rerank",
+  "call_bound_usd": "0.001000",
+  "reviewer": "Codex (automated structural/content review; not human approval)",
+  "observed_at": "2026-10-28",
+  "workflow_id": "99030ca5-fe8a-4b9e-a5ea-b1405053137f",
+  "dataset_id": "300689de-7c3e-4505-8ffc-8ad3e0bbeda2",
+  "document_id": "884d192c-2d99-4804-a080-c07b91df404c",
+  "method": "SHA-256 of raw chunk textarea read from Dify UI; not rendered Markdown",
+  "chunk_hashes": {
+    "intro": "9a0ad79d0315a25365e8cb67afb575cba383df5090e0eed1fd0c82dadd3e7456",
+    "SOC-001": "eace5f48d7123176bf75017f3769824e87363ee76dfb87c7c999589a7288e036",
+    "SOC-002": "ab1e40ea42d7350ac4383c5cc7afc8f0d4e8bdedf8061bfa383dece7af63c457",
+    "SOC-003": "548de3fc61e6108ea269d219978f261524cfcd4a6d18c401f859cc6c85e6157e",
+    "SOC-004": "1891cde518ab94071656df79371763c7e0617361d7b5f7cde31ada28bd786315",
+    "SOC-005": "10115b2d1afe6128525422250b118a51bf789cf1c755f57e8a766357332e2de8",
+    "SOC-006": "d1bf23e0a8e24620c57ecb1ff8bf8ec7c5ac37ca8416fc927a79c0c1b35e898c",
+    "SOC-007": "be193a574767a3036a8566d9d53b2285e3cad6f3964072def29dd11a6ac23de1",
+    "SOC-008": "9f49a996773e3bd050cca2f352359a516717ae27c624d7d795ecad332f85476a",
+    "SOC-009": "6135630df21ab227e0dd94977491ebcbc64936f2eb1c5af00d74a81edce58d2c",
+    "SOC-010": "54b845fc25d5d3a6a0aa57ed13db961bbd73329de6c062ee37194ccadeb234ee",
+    "SOC-011": "48cd64d5172719f92e7f16cef1935264fafc97db16a19fe847feb6c320964ce1",
+    "SOC-012": "8fb7f3cff105b07475324800f36881989993623899096a76f5178a10b8248415",
+    "SOC-013": "50d29a814d21bacf8339e89aa1edabd19a4abe627660d6805f3c8798dbab30fb",
+    "SOC-014": "89ad66580d887381df2a85f23116ac89a2fdff6d1324984c86d5b71e66dba41a",
+    "SOC-015": "ea6b6c9f7476ae20ddde006e7bcc3b3eb688685c2b81bae0c8d5330c276daec6",
+    "SOC-016": "762556fcea3a1d883f45146c969d61e5c83d067c08cbdbfea5b3ce208679f4ce",
+    "SOC-017": "395a28fa7f4cb21b11f833bfae572697e0d0946c8612ee6a336fe4b0d558afa0",
+    "SOC-018": "810bf8e948516a7b4fb4e1d424a038af7a742eb1bee2d1d3a84ce37d8076deb7",
+    "SOC-019": "9b1256dfedcbc47e231786f1f6af07a8489fbb141da88757a2f5cb9854d55c71",
+    "SOC-020": "53411034445cac41a64b1555f28d4c794245c01e9e6862eb15e25989a51cc4f7"
+  },
+  "limitations": [
+    "Citation presence is not semantic correctness certification.",
+    "Pinned execution is unavailable on Free; user approved published-latest with version validation after dispatch. Account USD 0.001 per known completed request as a conservative ceiling, not a measured bill. Unknown calls retain their holds."
+  ]
+}

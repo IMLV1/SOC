@@ -1,4 +1,5 @@
 "use client";
+import { Google } from "@thesvg/react";
 import { useEffect, useState } from "react";
 import { ApiError, mutate, read } from "../lib/api";
 import type {
@@ -30,7 +31,6 @@ export default function GoogleLogin({
           setMessage(
             "มีบัญชี SOC อีเมลนี้แล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่าน แล้วเชื่อม Google ที่หน้าบัญชี",
           );
-        if (result === "success") setMessage("เชื่อมต่อ Google สำเร็จ");
       })
       .catch((error) => {
         if (!active) return;
@@ -56,9 +56,15 @@ export default function GoogleLogin({
       );
       setPassword("");
       const destination = new URL(result.authorization_url);
+      const supabaseOrigin = status?.provider_origin;
+      const supabase = !!supabaseOrigin &&
+        /^https:\/\/[a-z0-9]{20}\.supabase\.co$/.test(supabaseOrigin) &&
+        destination.origin === supabaseOrigin &&
+        destination.pathname === "/auth/v1/authorize" &&
+        destination.searchParams.get("provider") === "google";
       if (
-        destination.origin !== "https://accounts.google.com" ||
-        destination.pathname !== "/o/oauth2/v2/auth"
+        !supabase && (destination.origin !== "https://accounts.google.com" ||
+        destination.pathname !== "/o/oauth2/v2/auth")
       )
         throw new Error("Invalid authorization URL");
       window.location.assign(destination.href);
@@ -81,6 +87,8 @@ export default function GoogleLogin({
       )}
       {status?.linked ? (
         <p>เชื่อมบัญชี Google แล้ว ใช้ Google เข้าบัญชีเดิมได้</p>
+      ) : account && status?.link_available === false ? (
+        <p>บัญชีนี้ยังไม่ได้เชื่อม Google</p>
       ) : (
         status?.available &&
         (account ? (
@@ -107,14 +115,17 @@ export default function GoogleLogin({
         ) : (
           <>
             <button disabled={busy} type="button" onClick={() => start()}>
-              <span className="google-g" aria-hidden="true">
-                G
-              </span>
+              <Google
+                className="google-logo"
+                width={24}
+                height={24}
+                aria-hidden="true"
+                focusable="false"
+              />
               {busy ? "กำลังไป Google…" : "เข้าสู่ระบบด้วย Google"}
             </button>
             <p>
-              บัญชีใหม่เป็น Analyst; หากมีบัญชี SOC แล้ว ให้เชื่อม Google
-              ในหน้าบัญชีก่อน
+              ใช้บัญชี Google เพื่อเข้าสู่ระบบหรือเริ่มบัญชีผู้เรียนใหม่
             </p>
           </>
         ))

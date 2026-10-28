@@ -18,6 +18,9 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.118.0",
+    "@thesvg/react": "3.3.9",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"

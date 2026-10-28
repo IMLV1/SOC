@@ -1,11 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-test("new registration asks for 5–10 characters while login still accepts old longer passwords", async ({ page }) => {
+test("new registration asks for 6–12 characters while login still accepts old longer passwords", async ({ page }) => {
+  await page.route("**/api/**", (route) => {
+    if (new URL(route.request().url()).pathname === "/api/v1/auth/google/status") {
+      return route.fulfill({ json: { data: { available: false, linked: false } } });
+    }
+    return route.fulfill({ status: 401, json: { error: { code: "AUTH_REQUIRED" } } });
+  });
   await page.goto("/register");
   const newPassword = page.getByLabel("รหัสผ่าน", { exact: true });
-  await expect(newPassword).toHaveAttribute("minlength", "5");
-  await expect(newPassword).toHaveAttribute("maxlength", "10");
-  await expect(page.getByText("รหัสผ่านสำหรับบัญชีใหม่ 5–10 ตัวอักษร")).toBeVisible();
+  await expect(newPassword).toHaveAttribute("minlength", "6");
+  await expect(newPassword).toHaveAttribute("maxlength", "12");
+  await expect(page.getByText("รหัสผ่านสำหรับบัญชีใหม่ 6–12 ตัวอักษร")).toBeVisible();
   await page.goto("/login");
   const oldPassword = page.getByLabel("รหัสผ่าน", { exact: true });
   await expect(oldPassword).toHaveAttribute("minlength", "5");
@@ -17,7 +23,7 @@ test("register signs in immediately; refresh, logout and later login use the sam
   browser,
 }) => {
   const email = `browser-${Date.now()}@example.test`;
-  const password = crypto.randomUUID().slice(0, 5);
+  const password = crypto.randomUUID().slice(0, 6);
   await page.goto("/register");
   await page.getByLabel("ชื่อที่แสดง").fill("Browser Analyst");
   await page.getByLabel("อีเมล", { exact: true }).fill(email);

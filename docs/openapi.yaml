@@ -126,8 +126,9 @@ paths:
       tags:
       - Auth
       summary: Register
+      description: Creates an Analyst account, quota and opaque session atomically; sets
+        the session cookie.
       operationId: auth_register
-      description: Creates an Analyst account, quota and opaque session atomically; sets the session cookie.
       requestBody:
         content:
           application/json:
@@ -195,6 +196,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfirmationEnvelope'
       x-contract-status: approved
       x-requirements:
       - FR-002
@@ -5524,8 +5531,8 @@ components:
         email: *id004
         password:
           type: string
-          minLength: 5
-          maxLength: 10
+          minLength: 6
+          maxLength: 12
           writeOnly: true
         display_name:
           type: string
@@ -5942,8 +5949,8 @@ components:
           title: Email
         password:
           type: string
-          maxLength: 10
-          minLength: 5
+          maxLength: 12
+          minLength: 6
           title: Password
         display_name:
           type: string
@@ -7597,6 +7604,15 @@ components:
         linked:
           type: boolean
           title: Linked
+        link_available:
+          type: boolean
+          title: Link Available
+          default: true
+        provider_origin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Origin
       additionalProperties: false
       type: object
       required:
@@ -7615,6 +7631,29 @@ components:
       - data
       - meta
       title: GoogleStatusEnvelope
+    ConfirmationData:
+      properties:
+        status:
+          type: string
+          const: email_confirmation_required
+          title: Status
+      additionalProperties: false
+      type: object
+      required:
+      - status
+      title: ConfirmationData
+    ConfirmationEnvelope:
+      properties:
+        data:
+          $ref: '#/components/schemas/ConfirmationData'
+        meta:
+          $ref: '#/components/schemas/AuthMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      - meta
+      title: ConfirmationEnvelope
   securitySchemes:
     SessionCookie:
       type: apiKey

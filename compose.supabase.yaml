@@ -1,0 +1,114 @@
+# Separate stack: no local PostgreSQL, bootstrap, migrations, or seeds at startup.
+name: soc-supabase
+
+x-db: &db
+  DB_PROVIDER: supabase
+  DB_PROJECT_REF: ${SUPABASE_PROJECT_REF:?Set project reference}
+  DB_CONNECTION_MODE: session
+  DB_HOST: ${SUPABASE_DB_HOST:?Set session pooler host}
+  DB_PORT: "5432"
+  DB_NAME: postgres
+  DB_SSL_CA_FILE: /run/certs/supabase.crt
+
+x-runtime: &runtime
+  user: ${SOC_RUNTIME_UID:?Set non-root host UID}:${SOC_RUNTIME_GID:?Set host GID}
+  restart: unless-stopped
+  read_only: true
+  tmpfs: [/tmp]
+
+services:
+  migrate:
+    profiles: [operator]
+    image: soc-supabase-api:local
+    user: ${SOC_RUNTIME_UID}:${SOC_RUNTIME_GID}
+    read_only: true
+    tmpfs: [/tmp]
+    command: [python, -m, app.db.migrate]
+    environment:
+      <<: *db
+      DB_PASSWORD_FILE: /run/secrets/database
+      RELEASE_SHA: ${RELEASE_SHA:-uncommitted-supabase-local}
+    volumes:
+      - ${SUPABASE_SECRETS_DIR}/migration_owner.txt:/run/secrets/database:ro
+      - ${SUPABASE_CA_FILE}:/run/certs/supabase.crt:ro
+    restart: "no"
+
+  seed:
+    profiles: [operator]
+    image: soc-supabase-seed:local
+    build: {context: ./backend, target: seed}
+    user: ${SOC_RUNTIME_UID}:${SOC_RUNTIME_GID}
+    read_only: true
+    tmpfs: [/tmp]
+    environment:
+      <<: *db
+      DB_PASSWORD_FILE: /run/secrets/database
+    volumes:
+      - ${SUPABASE_SECRETS_DIR}/migration_owner.txt:/run/secrets/database:ro
+      - ${SUPABASE_CA_FILE}:/run/certs/supabase.crt:ro
+    restart: "no"
+
+  api:
+    <<: *runtime
+    image: soc-supabase-api:local
+    build: {context: ./backend, target: api}
+    ports: ["127.0.0.1:${SUPABASE_API_PORT:-8440}:8000"]
+    environment:
+      <<: *db
+      DB_PASSWORD_FILE: /run/secrets/database
+      AUTH_PROVIDER: supabase
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+      AUTH_ORIGINS: ${AUTH_ORIGINS:?Set exact frontend origins}
+      SUPABASE_URL: ${SUPABASE_URL:?Set Supabase URL}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:?Set publishable key}
+      SUPABASE_TOKEN_KEY_FILE: /run/secrets/token_key
+      SUPABASE_AUTH_CALLBACK_URL: ${SUPABASE_AUTH_CALLBACK_URL:?Set callback URL}
+      SOC_AI_PROVIDER: mock
+      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
+      SOC_KB_ENABLED: "false"
+    volumes:
+      - ${SUPABASE_SECRETS_DIR:?Set private secret directory}/api_runtime.txt:/run/secrets/database:ro
+      - ${SUPABASE_SECRETS_DIR}/tokens.key:/run/secrets/token_key:ro
+      - ${SUPABASE_CA_FILE:?Set downloaded CA file}:/run/certs/supabase.crt:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=6)"]
+      interval: 20s
+      timeout: 8s
+      retries: 3
+
+  worker:
+    <<: *runtime
+    image: soc-supabase-runner:local
+    build: {context: ./backend, target: runner}
+    command: [python, -m, app.worker]
+    environment:
+      <<: *db
+      DB_PASSWORD_FILE: /run/secrets/database
+      SOC_AI_PROVIDER: mock
+      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
+      SOC_KB_ENABLED: "false"
+    volumes:
+      - ${SUPABASE_SECRETS_DIR}/worker_runtime.txt:/run/secrets/database:ro
+      - ${SUPABASE_CA_FILE}:/run/certs/supabase.crt:ro
+    healthcheck:
+      test: [CMD, python, -m, app.worker, --check]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+
+  evaluator:
+    <<: *runtime
+    image: soc-supabase-runner:local
+    build: {context: ./backend, target: runner}
+    command: [python, -m, app.evaluation]
+    environment:
+      <<: *db
+      DB_PASSWORD_FILE: /run/secrets/database
+    volumes:
+      - ${SUPABASE_SECRETS_DIR}/evaluator_runtime.txt:/run/secrets/database:ro
+      - ${SUPABASE_CA_FILE}:/run/certs/supabase.crt:ro
+    healthcheck:
+      test: [CMD, python, -m, app.evaluation, --check]
+      interval: 30s
+      timeout: 8s
+      retries: 3

@@ -127,6 +127,21 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
   await expect(page.getByText("จบบทเรียนแล้ว")).toBeVisible();
   await expect(page.getByRole("button", { name: "เริ่มข้อสอบระดับนี้" })).toBeVisible();
 
+  // The level now contains three DB-backed lessons, not one static starter.
+  const catalogResponse = await page.request.get("/api/v1/learning-path");
+  expect(catalogResponse.ok()).toBe(true);
+  const catalog = (await catalogResponse.json()).data;
+  for (const lesson of catalog.levels[0].lessons.slice(1)) {
+    await page.getByRole("combobox", { name: "บทเรียนในฐานข้อมูล", exact: true }).selectOption(lesson.id);
+    for (let step = 1; step <= 5; step += 1) {
+      await expect(page.getByText(`ขั้น ${step} / 5`)).toBeVisible();
+      await page.getByRole("button", { name: /กดดู:/ }).click();
+      await page.getByRole("button", { name: "เข้าใจแล้ว บันทึกขั้นนี้" }).click();
+    }
+    await page.getByRole("button", { name: "จบบทเรียนและบันทึก" }).click();
+    await expect(page.getByText("จบบทเรียนแล้ว")).toBeVisible();
+  }
+
   await page.getByRole("button", { name: "เริ่มข้อสอบระดับนี้" }).click();
   await expect(page.getByRole("heading", { name: "Investigation case" })).toBeVisible();
   await page.getByRole("checkbox").first().check();
@@ -166,8 +181,11 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
   await expect(page.getByRole("button", { name: "เริ่ม attempt ถัดไป" })).toBeVisible();
 
   const path = await (await page.request.get("/api/v1/me/learning-path")).json();
-  expect(path.data.lessons[0].completed_steps).toHaveLength(5);
-  expect(path.data.lessons[0].completed_at).not.toBeNull();
+  expect(path.data.lessons).toHaveLength(3);
+  for (const progress of path.data.lessons) {
+    expect(progress.completed_steps).toHaveLength(5);
+    expect(progress.completed_at).not.toBeNull();
+  }
   expect(path.data.next_action).toBe("review_lesson_exam_unavailable");
 
   if (reviewedAgainstLiveApi && process.env.COMPOSE_PROJECT_NAME?.startsWith("soc-ci-")) {

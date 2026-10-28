@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, read, write } from "../../lib/api";
 import { useSession } from "../session-provider";
+import LessonTutor from "../../features/lesson-tutor";
 
 type Lesson = {
   id: string;
@@ -17,9 +18,15 @@ type ExamEvent = { id: string; release_seq: number; event_time: string; source: 
 type Attempt = { id: string; level_id: string; status: string; version: number; expires_at: string; events: ExamEvent[]; answer: { evidence_event_ids: string[]; severity: string; disposition: string; reason: string } | null };
 type ExamResult = { attempt_id: string; status: string; score: number | null; maximum: number; criteria: { key: string; score: number; maximum: number; feedback: string }[] };
 
-const lessonId = "15000000-0000-4000-8000-000000000101";
+type Level = { id: string; ordinal: number; title: string; lessons: { id: string; title: string; version: number }[] };
+type LevelStatus = { level_id: string; unlocked: boolean; all_lessons_completed: boolean; exam_case_count: number; passed_case_count: number };
+type LearningPath = { lessons: Progress[]; next_action: string; level_statuses?: LevelStatus[] };
 
 export default function LearningPage() {
+  const [lessonId, setLessonId] = useState("15000000-0000-4000-8000-000000000101");
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [allProgress, setAllProgress] = useState<Progress[]>([]);
+  const [levelStatuses, setLevelStatuses] = useState<LevelStatus[]>([]);
   const { session, loading: sessionLoading } = useSession();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
@@ -39,10 +46,13 @@ export default function LearningPage() {
     if (!session) { setLoading(false); return; }
     setLoading(true); setError("");
     try {
-      const [lessonData, pathData] = await Promise.all([
+      const [lessonData, pathData, catalog] = await Promise.all([
         read<Lesson>(`/lessons/${lessonId}`),
-        read<{ lessons: Progress[]; next_action: string }>("/me/learning-path"),
+        read<LearningPath>("/me/learning-path"),
+        read<{ levels: Level[] }>("/learning-path"),
       ]);
+      setLevels(catalog.levels); setAllProgress(pathData.lessons);
+      setLevelStatuses(pathData.level_statuses ?? []);
       setLesson(lessonData);
       const saved = pathData.lessons.find((item) => item.lesson_id === lessonId);
       setProgress(saved ?? { lesson_id: lessonId, lesson_version: lessonData.version, completed_steps: [], completed_at: null, version: 0 });
@@ -62,9 +72,9 @@ export default function LearningPage() {
         setExamResult(latestResult);
       }
     } catch (cause) {
-      setError(cause instanceof ApiError && cause.status === 401 ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง" : "โหลดบทเรียนไม่สำเร็จ กรุณาลองใหม่");
+      setError(cause instanceof ApiError && cause.status === 401 ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง" : cause instanceof ApiError && cause.status === 404 ? "บทเรียนนี้ยังไม่เปิดให้บัญชีคุณ กรุณาเรียนและสอบระดับก่อนหน้าให้ผ่านก่อน" : "โหลดบทเรียนไม่สำเร็จ กรุณาลองใหม่");
     } finally { setLoading(false); }
-  }, [session]);
+  }, [session, lessonId]);
 
   useEffect(() => {
     let active = true;
@@ -113,7 +123,9 @@ export default function LearningPage() {
     setSaving(true); setError("");
     try {
       const saved = await write<Progress>(`/lessons/${lessonId}/complete`, { expected_version: progress.version });
-      setProgress(saved);
+      setProgress(saved); setAllProgress((items) => [...items.filter((item) => item.lesson_id !== saved.lesson_id), saved]);
+      const path = await read<LearningPath>("/me/learning-path");
+      setAllProgress(path.lessons); setLevelStatuses(path.level_statuses ?? []);
     } catch (cause) {
       const message = cause instanceof ApiError && cause.status === 409
         ? "ความคืบหน้ามีการเปลี่ยนจากอีกหน้าต่าง โหลดข้อมูลล่าสุดแล้ว"
@@ -127,7 +139,9 @@ export default function LearningPage() {
     if (!progress || saving) return;
     setSaving(true); setError("");
     try {
-      const result = await write<Attempt>(`/learning/levels/${lesson?.level_id}/attempts`, { expected_progress_version: progress.version }, { idempotencyKey: crypto.randomUUID() });
+      const firstLesson = levels.find((level) => level.id === lesson?.level_id)?.lessons[0]?.id;
+      const firstProgress = allProgress.find((item) => item.lesson_id === firstLesson);
+      const result = await write<Attempt>(`/learning/levels/${lesson?.level_id}/attempts`, { expected_progress_version: firstProgress?.version ?? progress.version }, { idempotencyKey: crypto.randomUUID() });
       setExamResult(null); setAttempt(result); setEvidence([]); setReason("");
     } catch (cause) {
       const code = cause instanceof ApiError ? cause.code : "";
@@ -152,17 +166,49 @@ export default function LearningPage() {
     } finally { setSaving(false); }
   }
 
+  const currentLevel = levels.find((item) => item.id === lesson?.level_id);
+  const currentLevelStatus = levelStatuses.find((item) => item.level_id === lesson?.level_id);
+  const allLessonsCompleted = currentLevelStatus?.all_lessons_completed ?? (
+    !!currentLevel?.lessons.length && currentLevel.lessons.every((item) => allProgress.some((p) => p.lesson_id === item.id && p.lesson_version === item.version && p.completed_at))
+  );
+  const levelExamComplete = !!currentLevelStatus?.exam_case_count && currentLevelStatus.passed_case_count >= currentLevelStatus.exam_case_count;
+  const waitingForReview = !!examResult && ["submitted", "needs_review"].includes(examResult.status);
+  const canStartExam = allLessonsCompleted && !attempt && !waitingForReview && !levelExamComplete && !saving && !loading;
+
   return <main className="account-page learning-page">
-    <p className="eyebrow">LEARNING PATH / LEVEL 01</p>
+    <p className="eyebrow">เรียน → ฝึก → สอบ</p>
     <h1>เส้นทางเรียนรู้ SOC</h1>
     <p>เริ่มจากอ่าน HTTP request และ response ทีละจุด ความคืบหน้าบันทึกกับบัญชีของคุณบน server</p>
-    <p><Link href="/demo/learning">ลองบทเรียนจาก JSON ครบ 3 ระดับ (ไม่บันทึกคะแนน ไม่ใช้ฐานข้อมูล)</Link></p>
+    <p>บทเรียนและความคืบหน้าอ่านจากฐานข้อมูล ไม่ใช้ไฟล์ใน browser เป็นผลการเรียน</p>
+    <div className="demo-actions"><Link className="button button-secondary" href="/practice">ฝึกอ่านหลักฐานรวม</Link><Link href="/knowledge-check">ทบทวนข้อเขียน 10 ข้อต่อระดับ</Link><a href="#practical-exam">ไปข้อสอบภาคปฏิบัติ</a></div>
+    <section className="learning-card" aria-labelledby="play-flow-title"><h2 id="play-flow-title">เริ่มเล่นตามลำดับนี้</h2><ol>
+      <li>เรียน: กดดูหลักฐาน อ่านข้อจำกัด แล้วบันทึกขั้นเรียนให้ครบทุกบทของระดับ</li>
+      <li>ฝึก: เลือกเคส ส่งข้อสรุป และอ่าน feedback สีเขียว/แดงจากกฎอ้างอิง ไม่ใช่ผล AI</li>
+      <li>Simulation: ไปสถานการณ์ฝึกเพื่ออ่าน event และฝึกสร้าง ticket/note ก่อนจบรอบ</li>
+      <li>สอบ: เริ่มเป็นลำดับสุดท้าย ไม่มีผู้ช่วย AI ระหว่างสอบ ผลรอตรวจจน Instructor ประเมิน</li>
+    </ol><p>ข้อเขียน 10 ข้อเป็นการทบทวนแยก ยังไม่ใช้แทนข้อสอบเลื่อนระดับ ดูสถานะการเปิดใช้ Dify ในส่วนผู้ช่วยสอนด้านล่าง</p></section>
+    <section className="learning-card" id="practical-exam" aria-labelledby="practical-exam-title"><h2 id="practical-exam-title">สอบภาคปฏิบัติและการเลื่อนระดับ</h2>
+      {!session ? <p>เข้าสู่ระบบและเรียนให้ครบก่อนเริ่มสอบ</p> : !lesson ? <p>เลือกบทเรียนที่เปิดให้บัญชีคุณเพื่อดูสถานะระดับ</p> : <>
+        <p>ระดับที่เลือก: {currentLevel?.title ?? "กำลังโหลด"}</p>
+        {currentLevelStatus && <p>ผ่านเคสสอบ {currentLevelStatus.passed_case_count} / {currentLevelStatus.exam_case_count} เคส</p>}
+        <p>ต้องจบบทเรียนทุกบทของระดับก่อนเริ่ม ผลข้อเขียนและแบบฝึกไม่ใช่การสอบผ่าน ระหว่างสอบไม่มีผู้ช่วย AI</p>
+        {levelExamComplete ? <p>ผ่านเคสสอบครบระดับนี้แล้ว</p> : <><button disabled={!canStartExam} onClick={() => void startExam()}>{saving ? "กำลังเตรียมข้อสอบ…" : examResult?.status === "passed" ? "เริ่มเคสสอบถัดไป" : examResult ? "เริ่ม attempt ถัดไป" : "เริ่มข้อสอบระดับนี้"}</button>
+          {!allLessonsCompleted && <p>ยังเริ่มไม่ได้: ต้องจบบทเรียนทุกบทของระดับนี้ก่อน</p>}
+          {waitingForReview && <p>ส่งข้อสอบแล้ว รอ Instructor ตรวจ ก่อนเริ่มเคสถัดไป</p>}
+          {attempt && <p>มีข้อสอบที่กำลังทำอยู่ อ่านหลักฐานและส่งคำตอบด้านล่างก่อน</p>}
+        </>}
+        <button className="button-secondary" disabled={saving || loading} onClick={() => void load()}>ตรวจผลและสิทธิ์ล่าสุด</button>
+      </>}
+    </section>
+    {levels.length > 0 && <section className="learning-card"><h2>เลือกบทเรียน</h2><label>บทเรียนในฐานข้อมูล<select value={lessonId} disabled={saving} onChange={(event) => { setLesson(null); setProgress(null); setRevealedStep(null); setLessonId(event.target.value); }}>
+      {levels.map((level) => <optgroup key={level.id} label={`ระดับ ${level.ordinal}: ${level.title}`}>{level.lessons.map((item) => <option key={item.id} value={item.id}>{item.title}{allProgress.some((p) => p.lesson_id === item.id && p.completed_at) ? " · เรียนแล้ว" : ""}</option>)}</optgroup>)}
+    </select></label><p>ต้องเรียนตามลำดับ ระดับกลาง/ชำนาญเปิดเมื่อสอบผ่านระดับก่อนหน้าตามสิทธิ์ฝั่ง server</p></section>}
     {!sessionLoading && !session && <section className="learning-card" aria-labelledby="login-required"><h2 id="login-required">เข้าสู่ระบบเพื่ออ่านบทเรียน</h2><p>ยังไม่มีบัญชีใช่ไหม? ลองอ่าน request ตัวอย่างได้ก่อนโดยไม่บันทึกคะแนน บทเรียนและความคืบหน้าจริงต้องใช้บัญชี</p><div className="demo-actions"><Link className="button" href="/demo">ลองข้อมูลตัวอย่าง</Link><Link className="button button-secondary" href="/login">เข้าสู่ระบบ</Link></div></section>}
     {session && loading && <p role="status">กำลังโหลดบทเรียนและความคืบหน้า…</p>}
     {session && error && <p role="alert">{error} <button className="button-secondary" onClick={() => void load()}>โหลดใหม่</button></p>}
     {session && lesson && progress && !loading && <>
       <section className="learning-card">
-        <p className="eyebrow">บทเรียนตัวอย่าง · เวอร์ชัน {lesson.version}</p>
+        <p className="eyebrow">บทเรียน · เวอร์ชัน {lesson.version}</p>
         <h2>{lesson.title}</h2>
         <p>เรียนแล้ว {progress.completed_steps.length} จาก {lesson.steps.length} ขั้น</p>
         <ol className="lesson-steps">{lesson.steps.map((step, index) => <li key={step.id} aria-current={index === active && active < lesson.steps.length ? "step" : undefined}>
@@ -180,8 +226,8 @@ export default function LearningPage() {
       </section> : <section className="learning-card" aria-live="polite">
         <h2>{progress.completed_at ? "จบบทเรียนแล้ว" : "ครบทุกขั้นแล้ว"}</h2>
         {progress.completed_at ? <p>ความคืบหน้าถูกบันทึกแล้ว กลับมาทบทวนได้ทุกเมื่อ</p> : <><p>ยืนยันการจบบทเรียนเพื่อบันทึก lesson completion</p><button disabled={saving} onClick={() => void completeLesson()}>{saving ? "กำลังบันทึก…" : "จบบทเรียนและบันทึก"}</button></>}
-        {progress.completed_at && !attempt && (!examResult || ["failed", "expired"].includes(examResult.status)) && <button disabled={saving} onClick={() => void startExam()}>{saving ? "กำลังเตรียมข้อสอบ…" : examResult ? "เริ่ม attempt ถัดไป" : "เริ่มข้อสอบระดับนี้"}</button>}
       </section>}
+      <LessonTutor lessonId={lessonId} examActive={Boolean(attempt)} />
       {attempt && <section className="learning-card" aria-labelledby="exam-title">
         <p className="eyebrow">ข้อสอบ · หมดเวลา {new Date(attempt.expires_at).toLocaleString("th-TH")}</p><h2 id="exam-title">Investigation case</h2>
         <p>เลือก event ที่ใช้เป็นหลักฐาน แล้วบันทึกข้อสรุปของคุณ คำตอบจะถูกส่งตรวจและแก้ไขไม่ได้</p>

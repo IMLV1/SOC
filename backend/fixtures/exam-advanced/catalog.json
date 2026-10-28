@@ -1,0 +1,5 @@
+[
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50007","stable_key":"E07","version":1,"purpose":"exam","title":"Investigation case","difficulty":"advanced","duration_ms":75000,"learning_objectives":["Compare independent evidence","Qualify uncertainty"],"enabled":true},
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50008","stable_key":"E08","version":1,"purpose":"exam","title":"Investigation case","difficulty":"advanced","duration_ms":75000,"learning_objectives":["Compare independent evidence","Qualify uncertainty"],"enabled":true},
+  {"id":"624f6eda-9044-48ea-8ee8-91fdf1e50009","stable_key":"E09","version":1,"purpose":"exam","title":"Investigation case","difficulty":"advanced","duration_ms":75000,"learning_objectives":["Compare independent evidence","Qualify uncertainty"],"enabled":true}
+]

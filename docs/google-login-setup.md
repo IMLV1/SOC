@@ -1,5 +1,66 @@
 # Google login สำหรับ SOC local
 
+## Supabase Google Auth — ใช้ส่วนนี้สำหรับ environment 22 ต.ค. 2026
+
+ส่วนหลังเส้นคั่นเป็นคู่มือ direct Google OAuth เก่า ไม่ใช่ config ของ stack Supabase ใหม่นี้
+สถานะจริง: [Supabase verification](supabase-verification.md); provider ยังปิดจนผู้ใช้ตั้งค่า Dashboard
+
+### 1. Google Cloud
+
+เปิด [Google Cloud Console](https://console.cloud.google.com/), เลือก project เดิมหรือสร้าง SOC ใหม่
+เข้า Google Auth Platform → Branding/Get started ใส่ชื่อ Sentinel SOC และอีเมลติดต่อ
+Audience เลือก External; ระหว่างทดสอบเพิ่มบัญชี Google ของตน/เพื่อนใน Test users ตามที่ console รองรับ
+Data Access ใช้เฉพาะ openid/email/profile ไม่เปิด Gmail/Drive permissions หรือบริการที่มีค่าใช้จ่าย
+
+### 2. สร้าง Web client
+
+Google Auth Platform → Clients → Create client → Web application
+ตั้งชื่อ SOC Supabase Web; ใส่ค่าต่อไปนี้ให้ตรงช่อง ไม่สลับ Google callback กับ callback ของเว็บ
+
+| ช่อง | ค่า environment นี้ |
+|---|---|
+| Authorized JavaScript origins | `http://127.0.0.1:4175` |
+| Authorized redirect URIs | `https://bcehkugtxgatdgesvowc.supabase.co/auth/v1/callback` |
+
+กด Create แล้วเก็บ Client ID/Secret ไว้ส่วนตัว ไม่ส่ง Secret ในแชต/ใส่ repository/frontend
+อย่าใช้ callback 13014/direct Google ของ Windows ในบันทึกเก่าด้านล่างแทน Supabase callback
+
+### 3. Supabase Google provider
+
+ใน project นี้เข้า Authentication → Sign In / Providers (บางหน้าชื่อ Providers) → Google
+เปิด provider ใส่ Client ID/Client Secret ที่สร้าง แล้ว Save
+ไม่เปิด Skip nonce checks/Allow users without email เพื่อหลบ validation
+
+### 4. Supabase URL Configuration
+
+Authentication → URL Configuration:
+
+- Site URL: `http://127.0.0.1:4175`
+- Redirect URLs: เพิ่ม `http://127.0.0.1:4175/api/v1/auth/google/callback`
+- ถ้าต้องการให้ลิงก์ยืนยันอีเมลกลับหน้า login ให้เพิ่ม `http://127.0.0.1:4175/login` ตาม email configuration
+
+ช่วง local นี้ให้เปิดเว็บด้วย **127.0.0.1** ตาม callback ที่ตั้ง ไม่สลับเป็น localhost
+เพราะ binding cookie เป็น host-specific เมื่อ deploy จึงค่อยเพิ่ม HTTPS origin/redirect จริงแบบ exact
+ไม่ใช้ wildcard กว้าง ๆ หรือ port ของ Supabase CLI local เพราะ environment นี้ใช้ managed project
+
+### 5. ทดสอบ
+
+เปิด `http://127.0.0.1:4175/login`, reload หน้าแล้วปุ่ม Google จะแสดงเมื่อ Auth settings available=true
+กด → Google consent → Supabase → same-origin callback → account
+ตรวจ refresh/logout/relogin และ quota 10/20; ผู้สมัครใหม่ยังเป็น Analyst ไม่เลือก role จาก Google metadata
+ไม่ต้องสมัครด้วย password ก่อนสำหรับบัญชี Google ใหม่ แต่ระบบไม่รวมประวัติของบัญชี local เก่าเอง
+
+หาก redirect_uri_mismatch ให้เทียบ callback ของ Google กับ Supabase ให้ตรงทั้ง scheme/host/path
+หากเข้าทดสอบไม่ได้ ตรวจ Audience/Test users และ provider Save ก่อน ไม่แก้โดยปิด PKCE/CSRF/TLS
+เมื่อทำเสร็จแจ้งว่า “ตั้ง Google แล้ว” เพื่อทดสอบ availability/callback ต่อ โดยไม่ส่ง Secret
+
+อ้างอิง [Supabase Google Auth](https://supabase.com/docs/guides/auth/social-login/auth-google)
+และ [Google Web OAuth](https://developers.google.com/identity/protocols/oauth2/web-server)
+
+---
+
+## บันทึก direct Google OAuth เดิม (ประวัติ ไม่ใช่ Supabase runtime config)
+
 > **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
 
 คู่มือนี้อธิบายการเชื่อม Google login สำหรับ local. โค้ด migration/API/UI มีแล้ว แต่การทดสอบในเครื่องไม่เท่ากับเปิดใช้กับผู้ใช้จริง. ค่าเริ่มต้นปิด และไม่ deploy หรือเปิด billing จากเอกสารนี้

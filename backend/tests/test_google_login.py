@@ -64,6 +64,8 @@ def test_new_google_account_quota_session_and_subject_stability(google):
     assert client.get("/api/v1/auth/google/status").json()["data"] == {
         "available": True,
         "linked": False,
+        "link_available": True,
+        "provider_origin": None,
     }
     state = start(client)
     binding = client.cookies[BINDING]

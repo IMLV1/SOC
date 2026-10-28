@@ -1,5 +1,12 @@
 # SOC Platform — API Contract (Draft)
 
+Tutor endpoints ฝั่ง FastAPI และข้อจำกัด release/budget/citations เพิ่มวันที่ 28 ต.ค. 2026 อยู่ใน [Dify Tutor contract](dify-integration-verification.md) ยังไม่เลื่อนเป็น approved OpenAPI อัตโนมัติ
+
+API บทเรียนจาก DB, practice draft/submit/history และข้อเขียน: [Database training](database-training.md)
+ใช้ Pydantic allowlists/typed frontend โดยยังไม่เลื่อน draft เป็น approved OpenAPI อัตโนมัติ
+
+ส่วนเพิ่ม 27 ต.ค. 2026: `GET /api/v1/me/learning-path` ส่ง `level_statuses[]` พร้อม `level_id`, `unlocked`, `all_lessons_completed`, `exam_case_count`, `passed_case_count` ของผู้ใช้ที่ login เท่านั้น นับเคส enabled และผล revision ล่าสุดต่อ attempt ไม่ส่ง private labels/เฉลย ค่า `next_action` เดิมคงไว้เพื่อ compatibility; UI ใช้สถานะระดับกับ result/active attempt ไม่ตีความข้อความ legacy ว่าไม่มีระบบสอบ
+
 เอกสารนี้อธิบายสัญญา API; บางส่วนยังเป็น draft. ใน repo มี API สำหรับ auth, training, investigation, analysis, learning และ exam/review แต่บาง route ยังไม่อยู่ใน OpenAPI ที่อนุมัติ. RAG API ที่อ้างในโค้ดปัจจุบันรองรับ pipeline ภายใน; ทิศทางที่ผู้ใช้ยืนยันคือเรียกบริการภายนอก (Dify) ผ่าน API และยังต้องปรับ contract ให้ตรง. ดูป้าย `approved`/`draft` ใน [OpenAPI](openapi.yaml) และ [checklist](implementation-checklist.md)
 กติกา exam ใน SRS §3–5 มีผลเหนือ generic training projection: Instructor อ่านเฉลยสอบได้หลัง
 submit เท่านั้น; ผู้เรียนได้รับเฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม (ผู้ใช้ยืนยันแล้ว)
@@ -84,16 +91,21 @@ Instructor ใช้ endpoint ปกติเพื่อฝึกในรอ�
 | Method | Endpoint | Input | ผลสำเร็จ |
 |---|---|---|---|
 | GET | `/auth/csrf` | — | 200 token ผูก pre-auth/session cookie; `Cache-Control: no-store` |
-| POST | `/auth/register` | email, display_name, password | 201 user role=analyst; Set-Cookie session ใหม่และเข้าสู่ระบบทันที |
+| POST | `/auth/register` | email, display_name, password | 201 user + cookie; Supabase confirmation enabled คืน 202 `email_confirmation_required` ไม่มี session |
 | POST | `/auth/login` | email, password | 200 user + csrf_token ใหม่; Set-Cookie session ใหม่ |
 | GET | `/auth/session` | cookie | 200 user, expires_at, csrf_token หรือ 401 |
 | POST | `/auth/logout` | `{}` | 204 revoke session และล้าง cookie; session ที่หมดแล้ว logout ซ้ำได้ |
 | GET | `/me` | cookie | 200 id, display_name, email, role, status |
 | GET | `/me/quota` | cookie | 200 run/AI limit, used, reserved, reset_at |
 
-Validation ปัจจุบัน: display_name 1–60 chars หลัง trim, email ไม่เกิน 254 chars และ normalize ก่อน unique check, password สมัครใหม่ 5–10 chars; login และ Google account linking รับ 5–128 chars เพื่อรองรับบัญชีเดิมที่รหัสยาวกว่า ส่วน Instructor ที่ provision ผ่าน operator ยังคง 12–128 chars. ไม่ trim หรือเก็บ plaintext password; registration/login failure ไม่บอกว่า email ใดมีบัญชีอยู่ ห้าม client ส่ง role, status หรือ quota ใน register
+Validation ปัจจุบัน (ผู้ใช้ยืนยัน 22 ต.ค. 2026): display_name 1–60 chars หลัง trim, email ไม่เกิน 254 chars และ normalize ก่อน unique check, password สมัครใหม่ 6–12 chars; login และ Google account linking เดิมรับ 5–128 chars เพื่อรองรับบัญชีเก่า ส่วน Instructor ที่ provision ผ่าน operator ยังคง 12–128 chars. ไม่ trim หรือเก็บ plaintext password; registration/login failure ไม่บอกว่า email ใดมีบัญชีอยู่ ห้าม client ส่ง role, status หรือ quota ใน register
 
 Logout ซ้ำที่ session หมดแล้วไม่มีผลแก้ข้อมูลอื่น ตรวจ Origin และล้าง cookie ได้ ส่วน logout ของ session ที่ยัง active ต้องตรวจ CSRF ตามปกติ
+
+Supabase mode ใช้ server-only Auth bridge ตาม [คู่มือ](supabase-migration.md): provider tokens ไม่ออก browser
+SOC cookie/CSRF/role/owner/quota ยังตรวจโดย FastAPI
+Google status เพิ่ม `link_available`/`provider_origin` เพื่อปิด local-password link form
+และให้ UI ตรวจ fixed authorization origin ไม่รับ arbitrary redirect
 
 ## 4. Public demo และ scenario catalog
 

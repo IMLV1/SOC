@@ -10,6 +10,34 @@
 
 ## เริ่มตรงไหนก่อน
 
+### Dify lesson tutor — 28 ต.ค. 2026 (ไม่ใช่ AI grading ทั้งระบบ)
+
+- [x] Workflow transport แบบ pinned version, Tutor API/DB/job/lesson UI, secret overlay และ fail-closed citations/hash guards
+- [x] เพิ่ม migration 0023; isolated PostgreSQL/full backend 262 tests, mocked browser 34 tests, production frontend build และ Node 16 tests ผ่าน ดู [รายงาน](dify-integration-verification.md)
+- [x] Supabase wrapper อัปเดต 0023 และ local API readiness; Tutor policy ยัง disabled ไม่มีคำตอบ/คะแนนปลอม
+- [ ] รับรอง published Workflow ที่ส่ง sources, immutable corpus/chunk hashes, no-match branch และ per-call cost bound รวม embedding ก่อนเปิด US$0.25/day
+- [ ] Live authenticated UI→API→DB→worker→Dify→validated result; Dify grading ข้อเขียน/ทบทวนเคส; quality benchmark และ public deployment acceptance
+
+### Flow/presentation follow-up — 27 ต.ค. 2026
+
+- [x] Owner-scoped level status และทางเริ่มเคสสอบถัดไปหลัง passed 1/3; ทดสอบ PostgreSQL รวม 247 tests และ UI progression
+- [x] Retry ข้อเขียนคงคำตอบระดับเดิม, ล็อก practice ระหว่าง save/submit; browser regression รวม 31 tests ผ่าน
+- [x] อัปเดต Flow/ER/use cases และคู่มือนำเสนอ พร้อมแยกสิ่งที่ยังไม่พร้อม ดู [รายงานรอบนี้](presentation-readiness.md)
+- ไม่ใช้ผลนี้ติ๊ก Dify, public deployment, GitHub CI ล่าสุด หรือการส่งคลิป
+
+งานย้าย runtime JSON เป็น DB วันที่ 22 ต.ค. 2026 อยู่ใน
+[Database training](database-training.md); ไม่ใช้ผลนี้ติ๊กข้อ AI/RAG หรือ production ทั้งแผน
+
+### Supabase follow-up — 22 ต.ค. 2026 (ไม่เปลี่ยนสถานะทุก phase)
+
+- [x] Fresh Supabase roles/schema/migration wrapper 0001–0021/seed และ API/worker/evaluator readiness
+- [x] Same-origin frontend proxy ใช้ cloud DB จริง; Auth bridge/CSRF/pending/encrypted sessions มี regression tests
+- [ ] Successful signup/confirmation/login → training run ด้วยบัญชีอีเมลจริงบน Supabase
+- [ ] เปิดและตรวจ Google OAuth จริงด้วย project credentials และ exact redirects
+- [ ] Existing-account migration, staging/production/restore และ Dify acceptance
+
+หลักฐาน/ข้อจำกัด: [Supabase verification](supabase-verification.md); ไม่ใช้ fake provider ยืนยัน cloud login
+
 เริ่ม **ข้อ 01: ตรวจ contract และวางโครงโปรเจกต์** แล้วทำข้อ 02–07 ให้ login → เริ่ม training run → เห็น event จาก PostgreSQL ผ่าน UI ได้ก่อน จากนั้นเพิ่ม detection/ticket, AI, evaluation, RAG, learning/exam และ deployment ตามลำดับ
 
 ประวัติตอนเริ่ม checklist: branch `f1` มี frontend/backend เพียง .gitkeep; ปัจจุบันระบบมี implementation มากกว่าช่วงเริ่มโครงการ ให้ตรวจสถานะรายข้อตามหลักฐานด้านล่าง `prototype/` ยังคงเป็น reference แยกจากเว็บแอป

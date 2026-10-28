@@ -25,7 +25,7 @@ class DifyConfig:
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "DifyConfig":
         values = env if env is not None else os.environ
-        base_url = values.get("DIFY_API_BASE_URL", "").strip().rstrip("/")
+        base_url = values.get("DIFY_API_BASE_URL", "https://api.dify.ai/v1").strip().rstrip("/")
         key_file = values.get("DIFY_APP_KEY_FILE", "").strip()
         parsed = urlsplit(base_url)
         local_http = parsed.hostname in {"localhost", "127.0.0.1", "::1"}

@@ -103,6 +103,29 @@ async def identity(session: AsyncSession, request: Request) -> Mapping[str, Any]
     )
     if row is None or row["status"] != "active":
         return None
+    if os.getenv("AUTH_PROVIDER", "local") == "supabase":
+        provider = getattr(request.state, "supabase_identity", None)
+        # Logout may always revoke a local session after CSRF validation, even during outage.
+        if request.url.path != "/api/v1/auth/logout":
+            if provider is None:
+                return None
+            bound = await session.scalar(
+                text("""
+                SELECT 1 FROM app.supabase_sessions p
+                JOIN app.supabase_identities i ON i.subject=p.subject
+                WHERE p.session_id=:session AND i.user_id=:user AND p.subject=:subject
+                AND p.provider_session_id=:provider
+                AND ops.supabase_session_active(p.subject,p.provider_session_id)
+            """),
+                {
+                    "session": row["session_id"],
+                    "user": row["id"],
+                    "subject": provider.subject,
+                    "provider": provider.session_id,
+                },
+            )
+            if not bound:
+                return None
     active = await session.scalar(
         text("""SELECT id FROM app.auth_sessions
         WHERE id=:id AND revoked_at IS NULL AND expires_at>now() FOR UPDATE"""),
@@ -193,5 +216,12 @@ async def rate_limit(request: Request, operation: str, email: str = "") -> None:
                 {"key": digest(key), "window": window},
             )
             counts.append(int(count or 0))
-    if any(count > (30 if operation == "csrf" else 10) for count in counts):
+    # Lesson steps are small, version-checked writes: a three-lesson level has
+    # 18 saves. Keep auth attempts at 10/min while permitting normal study flow.
+    limit = (
+        60
+        if operation in {"learning_progress", "tutor_write"}
+        else (30 if operation == "csrf" else 10)
+    )
+    if any(count > limit for count in counts):
         raise AuthError(429, "RATE_LIMITED")

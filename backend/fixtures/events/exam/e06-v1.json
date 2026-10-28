@@ -1,0 +1,5 @@
+{"schema_version":1,"purpose":"exam","scenario_id":"624f6eda-9044-48ea-8ee8-91fdf1e50006","duration_ms":75000,"events":[
+{"key":"e001","release_offset_ms":0,"event_offset_ms":0,"source":"change_management","asset_id":"CASE-WEB-16","username":"ops.user16","src_ip":"203.0.113.116","request":{"method":"POST","path":"/changes/CASE-816"},"response":{"status":201,"bytes_sent":0},"log":{"event_type":"change_approved","change_ref":"CASE-816","scope":"/public/theme"}},
+{"key":"e002","release_offset_ms":18000,"event_offset_ms":18000,"source":"web","asset_id":"CASE-WEB-16","username":"ops.user16","src_ip":"203.0.113.116","request":{"method":"POST","path":"/admin/users/role"},"response":{"status":403,"bytes_sent":0},"log":{"event_type":"authorization_denied","change_ref":"CASE-816"}},
+{"key":"e003","release_offset_ms":36000,"event_offset_ms":36000,"source":"web","asset_id":"CASE-WEB-16","username":"ops.user16","src_ip":"203.0.113.116","request":{"method":"GET","path":"/audit/role-changes"},"response":{"status":200,"bytes_sent":0},"log":{"event_type":"no_role_write_committed_for_request","change_ref":"CASE-816","records_read":0}}
+]}

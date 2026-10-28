@@ -26,7 +26,7 @@ class LoginInput(Strict):
 
 
 class RegisterInput(LoginInput):
-    password: str = Field(min_length=5, max_length=10)
+    password: str = Field(min_length=6, max_length=12)
     display_name: str = Field(min_length=1, max_length=60)
 
     @field_validator("display_name", mode="before")
@@ -58,6 +58,15 @@ class PageMeta(AuthMeta):
 
 class UserEnvelope(Strict):
     data: UserView
+    meta: AuthMeta
+
+
+class ConfirmationData(Strict):
+    status: Literal["email_confirmation_required"]
+
+
+class ConfirmationEnvelope(Strict):
+    data: ConfirmationData
     meta: AuthMeta
 
 

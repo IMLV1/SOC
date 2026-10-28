@@ -69,7 +69,7 @@ def load_bank(root: Path = ROOT) -> list[tuple[CaseSeed, EventFixture, CaseTruth
     return result
 
 
-async def seed(database: Database, root: Path = ROOT) -> int:
+async def seed(database: Database, root: Path = ROOT, *, level_id: UUID = LEVEL_ID) -> int:
     bank = load_bank(root)
     async with database.sessions() as session, session.begin():
         if await session.scalar(text("SELECT current_user")) != "migration_owner":
@@ -118,7 +118,7 @@ async def seed(database: Database, root: Path = ROOT) -> int:
                       VALUES (:id,:id,:level,:key,:version,:duration,:enabled,:seed)"""),
                     {
                         "id": case.id,
-                        "level": LEVEL_ID,
+                        "level": level_id,
                         "key": case.stable_key,
                         "version": case.version,
                         "duration": case.duration_ms,
@@ -153,6 +153,15 @@ async def seed(database: Database, root: Path = ROOT) -> int:
                     },
                 )
     return len(bank)
+
+
+async def seed_all_levels(database: Database) -> None:
+    for ordinal, folder in ((2, "exam-middle"), (3, "exam-advanced")):
+        await seed(
+            database,
+            ROOT.parent / folder,
+            level_id=UUID(f"15000000-0000-4000-8000-{ordinal:012}"),
+        )
 
 
 async def main() -> None:

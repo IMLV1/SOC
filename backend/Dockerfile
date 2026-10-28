@@ -20,6 +20,7 @@ COPY fixtures/events/exam ./fixtures/events/exam
 FROM base AS seed
 COPY knowledge ./knowledge
 COPY fixtures ./fixtures
+COPY operator_content ./operator_content
 CMD ["python", "-m", "app.db.seed_all"]
 
 FROM seed AS test

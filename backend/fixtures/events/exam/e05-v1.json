@@ -1,0 +1,5 @@
+{"schema_version":1,"purpose":"exam","scenario_id":"624f6eda-9044-48ea-8ee8-91fdf1e50005","duration_ms":75000,"events":[
+{"key":"e001","release_offset_ms":0,"event_offset_ms":0,"source":"change_management","asset_id":"CASE-WEB-15","username":"ops.user15","src_ip":"203.0.113.115","request":{"method":"POST","path":"/changes/CASE-815"},"response":{"status":201,"bytes_sent":0},"log":{"event_type":"change_approved_current_window","change_ref":"CASE-815","scope":"/assets/banner"}},
+{"key":"e002","release_offset_ms":18000,"event_offset_ms":18000,"source":"web","asset_id":"CASE-WEB-15","username":"ops.user15","src_ip":"203.0.113.115","request":{"method":"POST","path":"/assets/banner"},"response":{"status":204,"bytes_sent":0},"log":{"event_type":"configuration_written","change_ref":"CASE-815"}},
+{"key":"e003","release_offset_ms":36000,"event_offset_ms":36000,"source":"change_management","asset_id":"CASE-WEB-15","username":"ops.user15","src_ip":"203.0.113.115","request":{"method":"GET","path":"/changes/CASE-815"},"response":{"status":200,"bytes_sent":0},"log":{"event_type":"approved_manifest_verified","change_ref":"CASE-815","scope":"/assets/banner"}}
+]}

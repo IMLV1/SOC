@@ -1,5 +1,12 @@
 # SOC Platform — Database Design
 
+ส่วนเพิ่ม 28 ต.ค. 2026: migration 0023 เพิ่ม `app.tutor_policy` (disabled จนรับรอง release/budget), `app.tutor_questions` (owner, pinned workflow/corpus, immutable question/idempotency, result/status/cost hold, 30-day expiry) และใช้ `app.jobs` เดิมชนิด tutor_question ดู [Tutor contract](dify-integration-verification.md)
+
+ER ภาพรวมสำหรับนำเสนอ รวม practice/written/learning/exam: [current-system.md](current-system.md) ตารางและ constraints จริงยึด migrations ไม่ใช้แผนภาพแทน migration
+
+ส่วนขยายล่าสุดของบทเรียน/แบบฝึก/ข้อเขียน: [Database training](database-training.md)
+มีตาราง/สิทธิ์/immutable submissions ใน migration 0022 และ operator seed แยกจาก runtime
+
 เอกสารนี้อธิบายตารางและกติกาการบันทึกข้อมูลของระบบ ประวัติด้านล่างบางส่วนเขียนไว้ตอนเริ่มโครงการและไม่ใช่สถานะล่าสุด ปัจจุบันมี migrations สำหรับ auth, training, provider usage, knowledge/RAG, learning และ exam ดู migration ใน `backend/migrations/versions/` และ [checklist](implementation-checklist.md) เพื่อยืนยันสิ่งที่ทดสอบแล้ว
 
 แนวคิดหลัก: PostgreSQL เป็นแหล่งข้อมูลจริง; migration เพิ่ม schema แบบมี version; API/worker ใช้สิทธิ์แยกกัน; คะแนน/เฉลยเก็บฝั่ง server; provider call และงานเบื้องหลังบันทึกสถานะเพื่อป้องกันการนับซ้ำหรือคืน quota โดยเดา
@@ -357,6 +364,13 @@ exam_answers หนึ่งแถวต่อ attempt ป้องกันส�
 
 
 ## Google identity extension (migration 0018)
+
+Supabase extension ใหม่ `0021_supabase_auth`: subject UUID → SOC user ID แบบ unique,
+provider session FK ไป opaque auth_sessions พร้อม encrypted tokens/version/refresh lease
+และ browser-bound single-use PKCE flows ไม่แก้ users/hash local เดิมหรือ email auto-merge
+cloud operator สร้าง boolean `ops.supabase_session_active(uuid,uuid)` แยกจาก migrations ทั่วไป
+เพื่ออ่าน managed auth sessions/users แบบจำกัดโดย runtime ไม่มี schema grants
+ดู [Supabase guide](supabase-migration.md) และผลตรวจจริงก่อนอ้างว่าเชื่อมครบ
 
 `app.google_identities`: user_id PK/FK, issuer+subject UNIQUE; API SELECT/INSERT เท่านั้น ไม่ย้าย binding ด้วย email และไม่อนุญาต UPDATE/DELETE
 
