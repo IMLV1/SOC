@@ -10,7 +10,7 @@ remote `main` มี merge `afbbe02` ของ PR #20 อยู่แล้ว �
 อย่างเดียวจะไม่ลบ feature นั้นเมื่อ merge PR จึงรวมประวัติ main แล้ว revert
 `f606045` แบบเก็บ history เพื่อให้ผลสุดท้ายเป็น source tree ของ `29dace8`
 บวก CI fix/รายงานนี้เท่านั้น ไม่ reset/force-push และไม่ลบ branch งานเดิม
-ตรวจ diff กับ target แล้วอนุญาตให้ต่างได้เฉพาะ browser tests สองไฟล์,
+ตรวจ diff กับ target แล้วอนุญาตให้ต่างได้เฉพาะ browser tests สามไฟล์,
 `docs/README.md` และรายงานนี้
 
 เป็น code rollback เท่านั้น ไม่ downgrade/restore ข้อมูล Supabase, ไม่แก้ secrets,
@@ -20,13 +20,14 @@ remote `main` มี merge `afbbe02` ของ PR #20 อยู่แล้ว �
 
 CI [run 40682897127](https://github.com/IMLV1/SOC/actions/runs/40682897127)
 ของ commit `f606045` ผ่าน backend/frontend/prototype แต่ไม่ผ่าน browser suite
-tests สองไฟล์ยังอ้างข้อความก่อน UX เปลี่ยน ขณะที่ source ของหน้าเว็บใช้ข้อความใหม่แล้ว:
+tests ยังอ้างข้อความก่อน UX เปลี่ยน ขณะที่ source ของหน้าเว็บใช้ข้อความใหม่แล้ว:
 
 | Test | Selector เดิม | UI ปัจจุบัน |
 |---|---|---|
 | Magic UI mobile | สร้างบัญชีเพื่อเริ่มเรียน | สมัครเพื่อบันทึกความคืบหน้า |
 | Account responsive | ไปหน้ารอบฝึก | เปิดรอบฝึก (แยกจากข้อสอบ) |
 | Account responsive | อ่านข้อมูลตัวอย่าง | ดูตัวอย่างก่อน |
+| Guest scenarios | ข้อสอบจริงยังไม่เปิด | รายการนี้ไม่ใช่ข้อสอบเลื่อนระดับ |
 
 แก้ selectors ให้ตรง accessible names ปัจจุบัน และเพิ่ม assertions ของ `href`
 เป็น `/register`, `/runs`, `/demo` ตามหน้าที่จริง ไม่เปลี่ยน copy/product behavior
@@ -58,3 +59,10 @@ Windows, Node `24.20.0`, npm `11.19.0`, dependencies จาก `npm ci` ตา�
 ไม่รัน local PostgreSQL integration ใหม่ในรอบนี้ เพราะไม่แก้ backend/domain/DB
 ผล local ไม่แทน GitHub CI ของ SHA หลัง push, branch protection หรือ deployed acceptance
 สถานะ ณ เขียนรายงาน: **รอยืนยันบน GitHub**
+
+## Follow-up จาก GitHub run 40776334164
+
+Backend/frontend/prototype ผ่าน แต่ browser suite พบ guest scenarios อ้าง copy เก่าอีกจุด
+แก้ให้ตรงข้อความแยก training catalog จากข้อสอบ และเพิ่ม href `/learning`
+คง assertions ของ public metadata, viewport ทั้งสาม และ API ปฏิเสธ exam payload (422/404)
+ไม่เปลี่ยน application code; GitHub CI ของ commit ถัดไปยังรอยืนยัน

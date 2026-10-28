@@ -10,8 +10,11 @@ test("Guest catalog shows public metadata without exam controls", async ({
       page.getByRole("heading", { name: "สถานการณ์ฝึก" }),
     ).toBeVisible();
     await expect(
-      page.getByText("ข้อสอบจริงยังไม่เปิด", { exact: false }),
+      page.getByText("รายการนี้ไม่ใช่ข้อสอบเลื่อนระดับ", { exact: false }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "ไปเส้นทางบทเรียนและข้อสอบ", exact: true }),
+    ).toHaveAttribute("href", "/learning");
     await expect(page.locator("article")).toHaveCount(1);
     expect(
       await page.evaluate(
