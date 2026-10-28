@@ -5,6 +5,9 @@ for (const width of [320, 375, 768, 1024, 1440]) {
     page,
   }, testInfo) => {
     await page.setViewportSize({ width, height: 900 });
+    // This suite exercises layout/navigation, including auth-only destinations;
+    // every API request stays inside deterministic fixtures.
+    await page.route("**/api/**", (route) => route.abort());
     await page.route("**/api/v1/auth/session", (route) =>
       route.fulfill({
         json: {
@@ -57,9 +60,16 @@ for (const width of [320, 375, 768, 1024, 1440]) {
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+    const runs = page.getByRole("link", {
+      name: "เปิดรอบฝึก (แยกจากข้อสอบ)",
+      exact: true,
+    });
+    const demo = page.getByRole("link", { name: "ดูตัวอย่างก่อน", exact: true });
+    await expect(runs).toHaveAttribute("href", "/runs");
+    await expect(demo).toHaveAttribute("href", "/demo");
     for (const locator of [
-      page.getByRole("link", { name: "ไปหน้ารอบฝึก", exact: true }),
-      page.getByRole("link", { name: "อ่านข้อมูลตัวอย่าง", exact: true }),
+      runs,
+      demo,
       page.getByRole("button", { name: "เชื่อมบัญชี Google", exact: true }),
     ]) {
       const box = await locator.boundingBox();

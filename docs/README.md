@@ -56,6 +56,8 @@
 
 [แก้เริ่มรอบฝึกแล้ว error หาย](run-start-feedback-verification.md)
 
+[แก้ CI browser selectors ให้ตรง UX ปัจจุบัน](ci-browser-selector-verification.md)
+
 รายงานเหล่านี้เป็นบันทึกตามวันที่และ commit ที่ระบุในแต่ละไฟล์ ไม่ได้ยืนยันสภาพแวดล้อมอื่นหรือ commit ใหม่กว่า:
 
 - [คู่มือรวมข้อ 01–19 พร้อมคำอธิบายและรายงานต้นฉบับฉบับเต็ม](all-step.md)

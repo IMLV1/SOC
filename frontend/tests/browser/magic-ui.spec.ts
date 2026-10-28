@@ -34,12 +34,18 @@ test.describe("Magic UI learning lab", () => {
   });
 
   test("mobile learning layout has no horizontal overflow", async ({ page }) => {
+    await page.route("**/api/v1/auth/session", (route) =>
+      route.fulfill({ status: 401, json: { error: { code: "AUTH_REQUIRED" } } }),
+    );
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: /สร้างบัญชีเพื่อเริ่มเรียน/ }).first(),
-    ).toBeVisible();
+    const register = page.getByRole("link", {
+      name: "สมัครเพื่อบันทึกความคืบหน้า",
+      exact: true,
+    });
+    await expect(register).toBeVisible();
+    await expect(register).toHaveAttribute("href", "/register");
 
     const dimensions = await page.evaluate(() => ({
       viewport: document.documentElement.clientWidth,
