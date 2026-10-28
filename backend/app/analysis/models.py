@@ -81,10 +81,10 @@ class AnalysisResult(Strict):
 
 class ProviderUsage(Strict):
     mode: Literal["mock", "real"]
-    input_tokens: int | None = Field(default=None, ge=0)
-    output_tokens: int | None = Field(default=None, ge=0)
-    total_tokens: int | None = Field(default=None, ge=0)
-    pricing_tier: Literal["mock", "free", "verified_bound"]
+    input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+    total_tokens: int = Field(ge=0)
+    pricing_tier: Literal["mock", "free"]
 
 
 class ProviderResponseError(ValueError):

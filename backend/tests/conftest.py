@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 from pathlib import Path
 
@@ -10,33 +9,6 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from app.db.bootstrap import bootstrap
 from app.db.config import password_from_file
 from app.db.migrate import migrate
-
-
-@pytest.fixture
-def investigation_release(tmp_path, monkeypatch):
-    review = {
-        "status": "approved_for_investigation",
-        "reviewer": "synthetic test review",
-        "workflow_id": "d62e8111-fd98-481f-9cb2-233b974550fa",
-        "base_url": "https://dify.example.test/v1",
-        "model_id": "synthetic-model",
-        "contract_version": "soc-investigation-v1",
-        "max_output_tokens": 2048,
-        "call_bound_usd": "0.001000",
-        "cost_bound_verified": True,
-    }
-    path = tmp_path / "investigation-review.json"
-    path.write_text(json.dumps(review), encoding="utf8")
-    key = tmp_path / "investigation-key"
-    key.write_text("synthetic-investigation-key", encoding="utf8")
-    values = {
-        "SOC_AI_PROVIDER": "dify",
-        "DIFY_ANALYSIS_RELEASE_FILE": str(path),
-        "DIFY_ANALYSIS_APP_KEY_FILE": str(key),
-    }
-    for name, value in values.items():
-        monkeypatch.setenv(name, value)
-    return values, review, path
 
 
 @pytest.fixture
