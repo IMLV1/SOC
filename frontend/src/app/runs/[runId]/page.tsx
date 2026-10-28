@@ -37,6 +37,8 @@ export default function RunDetailPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [pollError, setPollError] = useState("");
+  const [controlPending, setControlPending] = useState<"pause" | "resume" | null>(null);
   const seq = useRef(0);
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -105,12 +107,12 @@ export default function RunDetailPage() {
             ];
           });
         }
-        setError("");
+        setPollError("");
         delay = cursor ? 0 : 2000;
         setLoading(false);
       } catch (cause) {
         if (!active) return;
-        setError(
+        setPollError(
           cause instanceof ApiError && cause.status === 401
             ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
             : cause instanceof ApiError && cause.status === 422
@@ -172,6 +174,7 @@ export default function RunDetailPage() {
   async function control(action: "pause" | "resume") {
     if (!run) return;
     setBusy(true);
+    setControlPending(action);
     setError("");
     try {
       let current = run;
@@ -198,7 +201,11 @@ export default function RunDetailPage() {
       setError(
         cause instanceof ApiError && cause.status === 409
           ? "สถานะรอบเปลี่ยนไปแล้ว กำลังโหลดข้อมูลล่าสุด"
-          : "เปลี่ยนสถานะไม่สำเร็จ",
+          : cause instanceof ApiError && cause.status === 401
+            ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
+            : cause instanceof ApiError && cause.code === "AUTH_REFRESH_PENDING"
+              ? "กำลังต่ออายุเซสชัน กรุณาลองคำสั่งอีกครั้ง"
+              : "เปลี่ยนสถานะไม่สำเร็จ กรุณาลองอีกครั้ง",
       );
       try {
         setRun(await read<Run>(`/runs/${runId}`));
@@ -207,6 +214,7 @@ export default function RunDetailPage() {
       }
     } finally {
       setBusy(false);
+      setControlPending(null);
     }
   }
   async function finish() {
@@ -299,7 +307,7 @@ export default function RunDetailPage() {
                       disabled={busy}
                       onClick={() => void control("pause")}
                     >
-                      พักรอบ
+                      {controlPending === "pause" ? "กำลังพักรอบ…" : "พักรอบ"}
                     </button>
                   )}
                   {run.status === "paused" && (
@@ -307,7 +315,7 @@ export default function RunDetailPage() {
                       disabled={busy}
                       onClick={() => void control("resume")}
                     >
-                      ทำต่อ
+                      {controlPending === "resume" ? "กำลังทำต่อ…" : "ทำต่อ"}
                     </button>
                   )}
                   {["running", "paused", "reviewing"].includes(run.status) && (
@@ -322,9 +330,9 @@ export default function RunDetailPage() {
               </section>
             )
           )}
-          {error && (
+          {(error || pollError) && (
             <p role="alert" className="run-alert">
-              {error}
+              {error || pollError}
             </p>
           )}
           <div className="evidence-layout">

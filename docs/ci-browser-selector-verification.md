@@ -66,3 +66,19 @@ Backend/frontend/prototype ผ่าน แต่ browser suite พบ guest sce
 แก้ให้ตรงข้อความแยก training catalog จากข้อสอบ และเพิ่ม href `/learning`
 คง assertions ของ public metadata, viewport ทั้งสาม และ API ปฏิเสธ exam payload (422/404)
 ไม่เปลี่ยน application code; GitHub CI ของ commit ถัดไปยังรอยืนยัน
+## Follow-up ปุ่มพักรอบ — 29 ต.ค. 2026
+
+ผู้ใช้ขอแก้ปุ่มพักหลังทดสอบ runtime จริง จึงขยายขอบเขตจาก rollback/CI เดิม
+เฉพาะ `frontend/src/app/runs/[runId]/page.tsx` และ regression ของ run controls
+รอบทำซ้ำพักบน Supabase สำเร็จที่ 23.5 วินาทีและยัง paused หลัง refresh;
+ยังไม่มีหลักฐานยืนยัน HTTP error ของความล้มเหลวรอบแรก จึงไม่อ้างว่าพบสาเหตุ backend
+
+พบและพิสูจน์ข้อบกพร่อง UI ด้วย regression: เมื่อ pause ได้ 503 AUTH_REFRESH_PENDING
+หรือ 401 AUTH_REQUIRED ข้อความ error ถูก polling สำเร็จลบทิ้ง Test ก่อนแก้ล้มทั้ง 2 กรณี
+แก้แยก polling error จาก action error, แสดงกำลังพัก/กำลังทำต่อ และข้อความ session ที่ชัดเจน
+คง CSRF, expected_version, lock และ retry policy เดิม ไม่ข้าม auth หรือเพิ่ม automatic retry
+
+Local: lint/typecheck/production build ผ่าน, browser run-controls + run-start-feedback
+9 passed, asset isolation 1 passed ไม่มี skip/retry เพิ่ม
+Next.js 16.4.0 security reminder ยังเป็นข้อจำกัดเดิม ไม่อัปเกรด dependencies ในงานนี้
+GitHub CI ของ commit follow-up: รอยืนยันบน GitHub
