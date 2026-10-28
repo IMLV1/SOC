@@ -1,4 +1,4 @@
-"""Execute frozen training analysis with fenced, quota-controlled dispatch."""
+"""Execute one frozen mock analysis with fencing and typed output validation."""
 
 import asyncio
 import json
@@ -10,13 +10,6 @@ from pydantic import ValidationError
 from sqlalchemy import text
 
 from app.analysis.budget import reserve_call, settle_call
-from app.analysis.dify_provider import (
-    DifyAnalysisFailure,
-    DifyInvestigationProvider,
-    request_inputs,
-)
-from app.analysis.investigation_budget import drifted, reserve_usd, settle_usd
-from app.analysis.investigation_config import current_release, model_pin, release_snapshot
 from app.analysis.models import AnalysisResult, ProviderOutput, ProviderResponseError, ProviderUsage
 from app.analysis.provider import (
     AnalysisInput,
@@ -26,51 +19,15 @@ from app.analysis.provider import (
     validate_citations,
 )
 from app.db.session import Database
-from app.knowledge.dify_client import DifyUnavailable
 from app.worker.fencing import lock_domain, require_lease
 
 
 def configured_provider(mode: str, model_id: str) -> AnalysisProvider:
-    # External dispatch requires the exact reviewed run pin. Never fall back to
-    # another workflow, mock output, or a direct model-provider call.
+    # Dify is the sole intended external provider, but it is not yet wired to
+    # this structured analysis contract. Never fall back to direct Gemini calls.
     if mode == "mock":
         return MockProvider()
-    if mode == "real":
-        try:
-            snapshot = release_snapshot()
-            if model_pin(snapshot) == model_id:
-                return DifyInvestigationProvider(snapshot)
-        except (ValueError, DifyUnavailable):
-            pass
     raise RuntimeError("DIFY_ANALYSIS_ADAPTER_UNAVAILABLE")
-
-
-async def fail_before_dispatch(
-    session: Any, job: dict[str, Any], identity: UUID, code: str, *, unknown: bool = False
-) -> None:
-    await session.execute(
-        text("""UPDATE app.analyses SET status=:status,
-        error_code=:error,finished_at=clock_timestamp(),version=version+1 WHERE id=:id"""),
-        {"id": identity, "status": "timed_out" if unknown else "failed", "error": code},
-    )
-    await session.execute(
-        text("""UPDATE app.quota_reservations SET status=:status,
-        settled_at=clock_timestamp() WHERE analysis_id=:id AND status='reserved'"""),
-        {"id": identity, "status": "unknown" if unknown else "released"},
-    )
-    await session.execute(
-        text("""UPDATE app.quota_components SET status='released'
-        WHERE analysis_id=:id AND status='reserved'"""),
-        {"id": identity},
-    )
-    if unknown:
-        await session.execute(
-            text("""UPDATE app.analysis_attempts SET status='timed_out',
-            error_code=:error,finished_at=clock_timestamp()
-            WHERE analysis_id=:id AND status='running'"""),
-            {"id": identity, "error": code},
-        )
-    await require_lease(session, job)
 
 
 async def analyze_job(
@@ -132,7 +89,6 @@ async def analyze_job(
         return
     analysis_id = UUID(job["payload"]["analysis_id"])
     attempt_id = uuid4()
-    selected_provider = provider
     async with database.sessions() as session, session.begin():
         if not await lock_domain(session, job):
             return
@@ -150,33 +106,26 @@ async def analyze_job(
         if row["status"] not in {"queued", "running"}:
             return
         if row["mode"] == "real" and provider is None:
-            prior = await session.scalar(
-                text("SELECT 1 FROM app.investigation_calls WHERE analysis_id=:id"),
+            # Do not reserve quota or create a provider attempt until Dify's
+            # structured analysis adapter has passed its contract tests.
+            await session.execute(
+                text("""UPDATE app.analyses SET status='failed',
+                error_code='DIFY_ANALYSIS_ADAPTER_UNAVAILABLE',finished_at=clock_timestamp(),
+                version=version+1 WHERE id=:id"""),
                 {"id": analysis_id},
             )
-            if prior:
-                await fail_before_dispatch(
-                    session, job, analysis_id, "DIFY_DISPATCH_OUTCOME_UNKNOWN", unknown=True
-                )
-                return
-            pinned = await session.scalar(
-                text(
-                    "SELECT config_snapshot->'investigation' FROM app.run_versions "
-                    "WHERE run_id=:run"
-                ),
-                {"run": row["run_id"]},
+            await session.execute(
+                text("""UPDATE app.quota_components SET status='released'
+                WHERE analysis_id=:id AND status='reserved'"""),
+                {"id": analysis_id},
             )
-            try:
-                if not current_release(pinned) or model_pin(pinned) != row["model_id"]:
-                    raise ValueError("Withdrawn")
-                if await drifted(session, pinned["release_hash"]):
-                    raise ValueError("Workflow drift")
-                selected_provider = configured_provider(row["mode"], row["model_id"])
-            except (ValueError, RuntimeError):
-                await fail_before_dispatch(
-                    session, job, analysis_id, "DIFY_ANALYSIS_ADAPTER_UNAVAILABLE"
-                )
-                return
+            await session.execute(
+                text("""UPDATE app.quota_reservations SET status='released',
+                settled_at=clock_timestamp() WHERE analysis_id=:id AND status='reserved'"""),
+                {"id": analysis_id},
+            )
+            await require_lease(session, job)
+            return
         evidence = (
             (
                 await session.execute(
@@ -200,12 +149,6 @@ async def analyze_job(
             }
         )
         if row["mode"] == "real":
-            if isinstance(selected_provider, DifyInvestigationProvider):
-                try:
-                    request_inputs(data)
-                except DifyAnalysisFailure as cause:
-                    await fail_before_dispatch(session, job, analysis_id, str(cause))
-                    return
             # Reserve a conservative input/output bound before dispatch. If this
             # admission fails, the worker records unavailable without dispatch.
             # UTF-8 bytes conservatively bound input tokens, including schema,
@@ -215,17 +158,7 @@ async def analyze_job(
                 + 4096
                 + data.max_output_tokens
             )
-            if isinstance(selected_provider, DifyInvestigationProvider):
-                token_bound = (
-                    len(request_inputs(data)["analysis_input"].encode())
-                    + 4096
-                    + data.max_output_tokens
-                )
             admitted = await reserve_call(session, analysis_id, row["model_id"], token_bound)
-            if admitted and isinstance(selected_provider, DifyInvestigationProvider):
-                admitted = await reserve_usd(session, analysis_id, selected_provider.snapshot)
-                if not admitted:
-                    await settle_call(session, analysis_id, 0, rejected=True)
             if not admitted:
                 await session.execute(
                     text("""UPDATE app.analyses SET status='quota_exceeded',
@@ -262,15 +195,15 @@ async def analyze_job(
     status = "succeeded"
     error: str | None = None
     result_json: str | None = None
-    usage: dict[str, Any] = {
+    usage = {
         "mode": row["mode"],
-        "input_tokens": 0 if row["mode"] == "mock" else None,
-        "output_tokens": 0 if row["mode"] == "mock" else None,
-        "total_tokens": 0 if row["mode"] == "mock" else None,
-        "pricing_tier": "mock" if row["mode"] == "mock" else "verified_bound",
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "pricing_tier": "mock" if row["mode"] == "mock" else "free",
     }
     try:
-        selected_provider = selected_provider or configured_provider(row["mode"], row["model_id"])
+        selected_provider = provider or configured_provider(row["mode"], row["model_id"])
         raw = await asyncio.wait_for(selected_provider.analyze(data), timeout=timeout)
         if isinstance(raw, ProviderOutput):
             output = raw
@@ -286,18 +219,6 @@ async def analyze_job(
         # Citations must point only to the frozen evidence set prepared above.
         validate_citations(result, {item.id for item in data.evidence})
         result_json = result.model_dump_json()
-    except DifyAnalysisFailure as exc:
-        status = (
-            "timed_out"
-            if str(exc) == "DIFY_TIMEOUT"
-            else "invalid_output"
-            if exc.total_tokens is not None
-            else "failed"
-        )
-        error = str(exc)
-        usage["total_tokens"] = exc.total_tokens
-    except DifyUnavailable as exc:
-        status, error = "failed", str(exc)
     except ProviderRateLimited:
         status, error = "failed", "PROVIDER_RATE_LIMITED"
     except TimeoutError:
@@ -316,20 +237,13 @@ async def analyze_job(
         if not await lock_domain(session, job):
             return
         if row["mode"] == "real":
-            if isinstance(selected_provider, DifyInvestigationProvider):
-                if not current_release(selected_provider.snapshot) or await drifted(
-                    session, selected_provider.snapshot["release_hash"]
-                ):
-                    status, error, result_json = "failed", "DIFY_RELEASE_WITHDRAWN", None
             await settle_call(
                 session,
                 analysis_id,
-                usage.get("total_tokens"),
+                int(usage.get("total_tokens", 0)),
                 rejected=error == "PROVIDER_RATE_LIMITED",
                 cooldown=60 if error == "PROVIDER_RATE_LIMITED" else 0,
             )
-            if isinstance(selected_provider, DifyInvestigationProvider):
-                await settle_usd(session, analysis_id, usage["total_tokens"], error)
         await session.execute(
             text("""UPDATE app.analyses SET status=:status,
             result_json=CAST(:result AS jsonb),error_code=:error,
@@ -355,7 +269,7 @@ async def analyze_job(
                 "id": attempt_id,
             },
         )
-        total_tokens = usage.get("total_tokens")
+        total_tokens = int(usage.get("total_tokens", 0))
         await session.execute(
             text("""SELECT l.id FROM app.quota_ledgers l
             JOIN app.quota_reservations q ON q.ledger_id=l.id
@@ -378,12 +292,22 @@ async def analyze_job(
             {
                 "status": (
                     "consumed"
-                    if (row["mode"] == "mock" and status == "succeeded") or total_tokens is not None
+                    if (row["mode"] == "mock" and status == "succeeded") or total_tokens > 0
                     else "unknown"
-                    if row["mode"] == "real" and error != "PROVIDER_RATE_LIMITED"
+                    if row["mode"] == "real"
+                    and status
+                    in {
+                        "succeeded",
+                        "timed_out",
+                        "invalid_output",
+                    }
                     else "released"
                 ),
-                "tokens": (total_tokens if total_tokens is not None else None),
+                "tokens": (
+                    total_tokens
+                    if total_tokens > 0 or (row["mode"] == "mock" and status == "succeeded")
+                    else None
+                ),
                 "id": analysis_id,
             },
         )

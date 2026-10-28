@@ -83,7 +83,7 @@ async def reserve_call(
 async def settle_call(
     session: AsyncSession,
     analysis_id: UUID,
-    tokens: int | None,
+    tokens: int,
     rejected: bool = False,
     cooldown: int = 0,
     experiment: bool = False,
@@ -107,8 +107,8 @@ async def settle_call(
         {
             "id": identity,
             "component": component,
-            "tokens": tokens,
-            "status": "released" if rejected else "consumed" if tokens is not None else "unknown",
+            "tokens": tokens if tokens else None,
+            "status": "consumed" if tokens else "released" if rejected else "unknown",
         },
     )
     if cooldown:

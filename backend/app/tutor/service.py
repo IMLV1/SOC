@@ -191,9 +191,12 @@ async def admit(
     if await release_drift(session, policy["version"]):
         raise AuthError(503, "DIFY_WORKFLOW_VERSION_MISMATCH")
     # Unknown dispatches from older days retain their hold until operator reconciliation.
-    from app.analysis.investigation_budget import committed_usd
-
-    committed = await committed_usd(session)
+    committed = await session.scalar(
+        text("""SELECT coalesce(sum(reserved_usd),0)
+        FROM app.tutor_questions WHERE usage_status IN ('reserved','unknown')
+        OR (usage_status='reconciled' AND budget_day=
+            (clock_timestamp() AT TIME ZONE 'UTC')::date)""")
+    )
     if Decimal(committed) + policy["call_bound_usd"] > policy["daily_usd"]:
         raise AuthError(429, "DIFY_DAILY_BUDGET_EXCEEDED")
     quota = await session.scalar(

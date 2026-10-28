@@ -10,14 +10,14 @@ def test_mock_is_default_and_ignores_legacy_gemini_credentials():
 
 def test_dify_cloud_default_does_not_enable_live_provider():
     assert load_config({"DIFY_API_BASE_URL": "https://api.dify.ai/v1"}).mode == "mock"
-    with pytest.raises(ValueError, match="RELEASE_UNAVAILABLE"):
-        load_config({"SOC_AI_PROVIDER": "dify"})
+    assert load_config({"SOC_AI_PROVIDER": "dify"}).mode == "dify"
 
 
-def test_dify_is_the_only_configurable_external_provider(investigation_release):
-    values, _, _ = investigation_release
-    config = load_config(values | {"DIFY_API_BASE_URL": "https://dify.example.test/v1"})
-    assert config.mode == "dify" and config.chat_model.startswith("dify-investigation:")
+def test_dify_is_the_only_configurable_external_provider():
+    config = load_config(
+        {"SOC_AI_PROVIDER": "dify", "DIFY_API_BASE_URL": "https://dify.example.test/v1"}
+    )
+    assert config.mode == "dify" and config.chat_model == "dify-app"
     with pytest.raises(ValueError, match="HTTPS"):
         load_config({"SOC_AI_PROVIDER": "dify", "DIFY_API_BASE_URL": "http://example.test"})
     with pytest.raises(ValueError, match="Unsupported provider mode"):

@@ -187,17 +187,10 @@ def test_mock_provider_is_deterministic_structured_and_cautious_about_blocked_re
 
 @pytest.mark.integration
 def test_provider_timeout_is_unknown_and_invalid_output_usage_is_consumed_with_retry_snapshot(
-    migrated, monkeypatch, investigation_release
+    migrated, monkeypatch
 ):
     monkeypatch.setenv("SOC_AI_PROVIDER", "dify")
     monkeypatch.setenv("DIFY_API_BASE_URL", "https://dify.example.test/v1")
-
-    # This test injects providers explicitly; automatic fixture jobs must not
-    # dispatch externally while preparing the timeout/retry snapshot.
-    def unavailable(*args):
-        raise RuntimeError("DIFY_ANALYSIS_ADAPTER_UNAVAILABLE")
-
-    monkeypatch.setattr("app.analysis.worker.configured_provider", unavailable)
 
     class SlowProvider:
         async def analyze(self, data):
@@ -711,24 +704,40 @@ async def release_all(api, worker, run_id):
 
 @pytest.mark.integration
 def test_dify_mode_fails_closed_before_provider_dispatch(migrated, monkeypatch):
-    # Incomplete real configuration now fails at run admission, before jobs,
-    # quota consumption, or provider dispatch instead of creating failed jobs.
     monkeypatch.setenv("SOC_AI_PROVIDER", "dify")
-    monkeypatch.delenv("DIFY_ANALYSIS_RELEASE_FILE", raising=False)
+    monkeypatch.setenv("DIFY_API_BASE_URL", "https://dify.example.test/v1")
 
     async def execute():
         user_id, selection = await prepare(migrated)
         api = Database(migrated("api_runtime"))
+        worker = Database(migrated("worker_runtime"))
         try:
-            with pytest.raises(AuthError) as error:
-                async with api.sessions() as session, session.begin():
-                    await start_run(session, user_id, selection, uuid4())
-            assert error.value.status == 503
+            async with api.sessions() as session, session.begin():
+                run, _ = await start_run(session, user_id, selection, uuid4())
+            run_id = UUID(run["id"])
+            await release_all(api, worker, run_id)
             async with api.sessions() as session:
-                assert await session.scalar(text("SELECT count(*) FROM app.runs")) == 0
-                assert await session.scalar(text("SELECT count(*) FROM app.provider_calls")) == 0
+                analyses = (
+                    await session.execute(
+                        text("SELECT status,error_code FROM app.analyses WHERE run_id=:id"),
+                        {"id": run_id},
+                    )
+                ).all()
+                assert analyses
+                assert set(analyses) == {("failed", "DIFY_ANALYSIS_ADAPTER_UNAVAILABLE")}
+                assert (
+                    await session.scalar(
+                        text(
+                            "SELECT count(*) FROM app.provider_calls WHERE analysis_id IN "
+                            "(SELECT id FROM app.analyses WHERE run_id=:id)"
+                        ),
+                        {"id": run_id},
+                    )
+                    == 0
+                )
         finally:
             await api.close()
+            await worker.close()
 
     asyncio.run(execute())
 

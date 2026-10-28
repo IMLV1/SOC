@@ -1,11 +1,5 @@
 # Dify Cloud configuration
 
-งานโค้ด investigation ล่าสุด: [worker/release pin/shared budget](investigation-dify.md)
-เพิ่ม transport และ worker integration สำหรับ structured triage พร้อม migration 0024
-แต่ยังไม่เปิดใน local friend stack, ไม่ Publish Flow และไม่เปลี่ยน Tutor policy
-การตั้ง `SOC_AI_PROVIDER=dify` ต้องมี reviewed release และ separate investigation key
-ก่อนสร้าง real run; ไม่เปิด legacy RAG/experiments C/exam grading จากการตั้งค่านี้
-
 อัปเดต 28 ต.ค. 2026: Base URL ที่ผู้ใช้ระบุคือ `https://api.dify.ai/v1`
 ค่าเริ่มต้นใน DifyConfig/provider config และ Compose ใช้ URL นี้ โดย override `DIFY_API_BASE_URL` เพื่อใช้ instance อื่นได้
 ถ้าตั้งเป็นข้อความว่างใน Python config จะถูกปฏิเสธ ไม่ถือว่าเป็น URL ที่ถูกต้อง

@@ -28,9 +28,6 @@ async def analysis_view(session: AsyncSession, row: Mapping[Any, Any]) -> dict[s
     from app.knowledge.rag import retrieval_view
 
     retrieval, withdrawn = await retrieval_view(session, row)
-    from app.analysis.investigation_config import analysis_withdrawn
-
-    withdrawn = withdrawn or await analysis_withdrawn(session, row["run_id"], row["mode"])
     return {
         key: row[key]
         for key in (

@@ -18,8 +18,6 @@
 
 งาน Dify ล่าสุด: [การตั้งค่า](dify-configuration.md) · [ขอบเขต/ผลตรวจ Tutor](dify-integration-verification.md) · [วิธีทดสอบทุก Flow](end-to-end-test-plan.md)
 
-Investigation ที่ยังไม่เปิด real dispatch: [worker integration, draft Workflow และเงื่อนไขเปิดใช้](investigation-dify.md)
-
 ให้เพื่อนทดลอง/ร่วมพัฒนา: [URL สาธารณะต่างจาก clone รันเองอย่างไร](friend-testing.md)
 
 | เอกสาร | ใช้เมื่อ |
@@ -57,6 +55,8 @@ Investigation ที่ยังไม่เปิด real dispatch: [worker int
 [คู่มือเนื้อหา seed](learning-content-seed.md) · [ผลตรวจ preview](learning-preview-verification.md)
 
 [แก้เริ่มรอบฝึกแล้ว error หาย](run-start-feedback-verification.md)
+
+[แก้ CI browser selectors ให้ตรง UX ปัจจุบัน](ci-browser-selector-verification.md)
 
 รายงานเหล่านี้เป็นบันทึกตามวันที่และ commit ที่ระบุในแต่ละไฟล์ ไม่ได้ยืนยันสภาพแวดล้อมอื่นหรือ commit ใหม่กว่า:
 
