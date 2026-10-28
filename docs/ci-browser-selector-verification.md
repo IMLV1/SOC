@@ -4,6 +4,18 @@
 เป็นการแก้ browser tests บนเวอร์ชันที่ผู้ใช้เลือก ไม่ได้นำ investigation implementation
 หรือ migration 0024 กลับเข้า branch นี้
 
+## ขอบเขต rollback ของ PR
+
+remote `main` มี merge `afbbe02` ของ PR #20 อยู่แล้ว การแตก branch จาก commit เก่า
+อย่างเดียวจะไม่ลบ feature นั้นเมื่อ merge PR จึงรวมประวัติ main แล้ว revert
+`f606045` แบบเก็บ history เพื่อให้ผลสุดท้ายเป็น source tree ของ `29dace8`
+บวก CI fix/รายงานนี้เท่านั้น ไม่ reset/force-push และไม่ลบ branch งานเดิม
+ตรวจ diff กับ target แล้วอนุญาตให้ต่างได้เฉพาะ browser tests สองไฟล์,
+`docs/README.md` และรายงานนี้
+
+เป็น code rollback เท่านั้น ไม่ downgrade/restore ข้อมูล Supabase, ไม่แก้ secrets,
+ไม่ Publish Dify และไม่ถือว่าการเปิด PR คือการ merge/deploy สำเร็จ
+
 ## สาเหตุและสิ่งที่เปลี่ยน
 
 CI [run 40682897127](https://github.com/IMLV1/SOC/actions/runs/40682897127)
