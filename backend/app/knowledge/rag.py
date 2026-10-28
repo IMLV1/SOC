@@ -232,7 +232,22 @@ async def redact_snapshot(session: AsyncSession, snapshot: dict[str, Any]) -> di
     safe: dict[str, Any] = json.loads(json.dumps(snapshot, default=str))
     for analysis in safe.get("analyses", []):
         aid = analysis.get("id")
-        if aid and await session.scalar(text("SELECT kb.analysis_revoked(:id)"), {"id": UUID(aid)}):
+        from app.analysis.investigation_config import analysis_withdrawn
+
+        run_id = (
+            await session.scalar(
+                text("SELECT run_id FROM app.analyses WHERE id=:id"), {"id": UUID(aid)}
+            )
+            if aid
+            else None
+        )
+        withdrawn = run_id is not None and await analysis_withdrawn(
+            session, run_id, analysis.get("mode", "mock")
+        )
+        if aid and (
+            withdrawn
+            or await session.scalar(text("SELECT kb.analysis_revoked(:id)"), {"id": UUID(aid)})
+        ):
             analysis["result"] = None
             analysis["question_text"] = None
             analysis["retrieval"] = None

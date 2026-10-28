@@ -156,11 +156,14 @@ async def start_run(
             raise AuthError(429, "RUN_QUOTA_EXCEEDED")
     now = await server_time(session)
     run_id = uuid4()
-    provider_config = (
-        load_config({**os.environ, "SOC_AI_PROVIDER": "mock"})
-        if mode == "exam"
-        else load_config(os.environ)
-    )
+    try:
+        provider_config = (
+            load_config({**os.environ, "SOC_AI_PROVIDER": "mock"})
+            if mode == "exam"
+            else load_config(os.environ)
+        )
+    except ValueError:
+        raise AuthError(503, "DIFY_INVESTIGATION_RELEASE_UNAVAILABLE") from None
     analysis_mode = "mock" if mode == "exam" or provider_config.mode == "mock" else "real"
     model_id = "exam-no-ai-v1" if mode == "exam" else provider_config.chat_model
     seed = body.seed if body.seed is not None else secrets.randbelow(2147483648)
@@ -232,6 +235,7 @@ async def start_run(
                     "detector_config": CONFIG,
                     "analysis_mode": analysis_mode,
                     "model_id": model_id,
+                    "investigation": provider_config.investigation_snapshot,
                 }
             ),
             "truth_versions": json.dumps(truth_versions),
