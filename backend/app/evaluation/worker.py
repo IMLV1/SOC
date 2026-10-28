@@ -272,6 +272,11 @@ async def finalize(session: AsyncSession, run_id: UUID) -> bool:
             "unmatched_candidates": len(candidates),
         }
     )
+    from app.analysis.investigation_config import analysis_withdrawn
+
+    withdraw_real = any(a["mode"] == "real" for a in analyses) and await analysis_withdrawn(
+        session, run_id, "real"
+    )
     snapshot = {
         "release_cutoff": completion["release_cutoff"],
         "assessment_cutoff": completion["assessment_cutoff"].isoformat(),
@@ -303,13 +308,17 @@ async def finalize(session: AsyncSession, run_id: UUID) -> bool:
                 "prompt_version": a["prompt_version"],
                 "status": a["status"],
                 "kind": a["kind"],
-                "question_text": a["question_text"],
+                "question_text": None
+                if withdraw_real and a["mode"] == "real"
+                else a["question_text"],
                 "knowledge_release_id": str(a["knowledge_release_id"])
                 if a["knowledge_release_id"]
                 else None,
                 "retrieval": retrieval_snapshots.get(a["id"]),
-                "response_visibility": "visible",
-                "result": a["result_json"],
+                "response_visibility": "withdrawn"
+                if withdraw_real and a["mode"] == "real"
+                else "visible",
+                "result": None if withdraw_real and a["mode"] == "real" else a["result_json"],
                 "usage": a["usage_json"],
                 "created_at": a["created_at"].isoformat(),
                 "finished_at": a["finished_at"].isoformat() if a["finished_at"] else None,
