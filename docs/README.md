@@ -18,6 +18,8 @@
 
 งาน Dify ล่าสุด: [การตั้งค่า](dify-configuration.md) · [ขอบเขต/ผลตรวจ Tutor](dify-integration-verification.md) · [วิธีทดสอบทุก Flow](end-to-end-test-plan.md)
 
+ผลแก้ UI ล่าสุด: [Learning โหลดซ้ำและร่างคำถาม AI](learning-loading-verification.md)
+
 ให้เพื่อนทดลอง/ร่วมพัฒนา: [URL สาธารณะต่างจาก clone รันเองอย่างไร](friend-testing.md)
 
 | เอกสาร | ใช้เมื่อ |
