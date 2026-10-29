@@ -21,7 +21,7 @@ URL สาธารณะนี้ไม่ใช่ API key และไม่�
 ## ขอบเขตที่เชื่อม
 
 client เดิม `app/knowledge/dify_client.py` เรียก `/chat-messages` สำหรับ Chat API
-เพิ่ม `app/knowledge/dify_workflow.py` และ `app/tutor/` สำหรับ Published-latest Workflow API พร้อม `inputs.question` และตรวจ response version แล้ว ใช้กับผู้ช่วยสอนใน `/learning` ไม่ใช่ตรวจคะแนน/triage adapter ทุกประเภท ดู [ขอบเขตและผลตรวจ](dify-integration-verification.md)
+เพิ่ม `app/knowledge/dify_workflow.py` และ `app/tutor/` สำหรับ Published-latest Workflow API พร้อม `inputs.question` และตรวจ response version แล้ว ใช้กับผู้ช่วยสอนใน `/learning` โค้ด `grade` สำหรับ feedback ข้อเขียนใช้ endpoint/key/Workflow เดียวกันโดยส่ง `inputs.mode=grade` หลัง submit เท่านั้น; ยังไม่ใช่คะแนนสอบหรือ triage ดู [ผลตรวจสองโหมด](shared-dify-workflow-verification.md)
 
 ก่อนเปิดจริงต้องกำหนด published workflow, task/input/output schema, authorized evidence snapshot, citations/revocation, quota/usage/budget และ key ฝั่ง server
 ผล Ask AI ต้องผ่าน validation ก่อนบันทึก ไม่ใช้ข้อความตอบจาก LLM ปลดล็อกระดับหรือให้คะแนนสอบโดยตรง
@@ -38,8 +38,8 @@ docker compose --env-file .local/supabase/runtime.env \
 ```
 
 ใช้หลัง migration wrapper อัปเดต 0023 และ image ทั้งสามบริการรองรับแล้ว ไม่รัน migration/seed ใน startup
-`app.tutor_policy` เริ่ม enabled=false; ต้องมี reviewed workflow/corpus/chunk hashes/cost bound ก่อน operator เปิด
-เพดานที่ผู้ใช้อนุมัติคือ US$0.25/วันรวมของระบบ ไม่ใช่ต่อคน และไม่ครอบคลุมคนกด Test Run จาก Dify console เอง
+`app.tutor_policy` เริ่ม enabled=false; ต้องมี reviewed workflow/corpus/chunk hashes/cost bound ก่อน operator เปิด โหมด `grade` เริ่ม `grade_enabled=false` แม้ Tutor เปิดอยู่
+ผู้ใช้ยกเลิกเพดานรวม US$0.25/วันเมื่อ 29 ต.ค. 2026; migration 0024 ลบคอลัมน์และ hard gate นี้ แต่ยังคงโควตา 20 logical AI requests/ผู้ใช้/วันและบันทึก reserved/usage ต่อคำขอ การใช้จริงยังขึ้นกับโควตา/เงื่อนไขของ Dify และ model provider
 
 ## การตรวจรอบนี้
 

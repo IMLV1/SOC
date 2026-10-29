@@ -2,6 +2,8 @@
 
 ## Decision เพิ่มเติม 28 ต.ค. 2026 — Dify Free lesson Tutor
 
+**อัปเดต 29 ต.ค. 2026:** ผู้ใช้ต้องการ Dify app/Workflow/API key เดียวสำหรับ `tutor` และ `grade` และยกเลิกเพดานรวม US$0.25/วัน ข้อความเพดานในบันทึก 28 ต.ค. ด้านล่างเป็นประวัติ ไม่ใช่ policy ปัจจุบัน ยังคง 20 logical AI requests/ผู้ใช้/วัน; เก็บการสำรองและข้อมูล usage ต่อคำขอเพื่อ audit โดยไม่ใช้เป็น hard daily USD limit โหมด `grade` เป็นข้อเสนอแนะสำหรับข้อเขียนที่ส่งและ freeze แล้ว ไม่ให้คะแนนผ่าน/ปลดล็อกระดับเอง ต้องตรวจและ Publish Workflow สองโหมดก่อน operator เปิด `grade_enabled` บน server
+
 ผู้ใช้อนุมัติใช้ Published-latest API ของ Dify Free และตรวจ workflow_id หลังตอบกลับ แทน pinned execution ที่ Sandbox ปฏิเสธ ยอมรับว่าการตรวจเกิดหลัง dispatch ไม่ป้องกันการเรียก Flow ใหม่ครั้งแรก แต่เมื่อพบ mismatch ต้องไม่แสดงคำตอบและหยุดรับคำขอใหม่จน operator อนุมัติรุ่นใหม่ ไม่มี automatic retry/fallback
 
 ใช้เฉพาะผู้ช่วยสอนบทเรียน: ตรวจ owner, lesson gate, CSRF/Origin และ no-active-exam; ไม่มีการเปลี่ยน rubric/retake/คะแนน/unlock งบรวมคง US$0.25/วัน UTC และ 20 logical AI requests/ผู้ใช้/วัน ไม่มีเพดาน 200 ตลอดอายุใช้งาน Release นี้ตรวจ Groq Free + Full Text/no rerank แล้ว สำรองและ account USD0.001 เต็มเพดานต่อคำขอที่ทราบผล ไม่ถือว่าเป็นราคาเงินจริงหรือเดาเป็นศูนย์ unknown dispatch คง hold ข้ามวันจน reconcile ปิด policy และตรวจใหม่ก่อนเปลี่ยน plan/Flow/credentials/retrieval ดู [ผลตรวจ](dify-integration-verification.md)

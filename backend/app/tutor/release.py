@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import json
 import re
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -15,9 +15,14 @@ from app.db.config import database_url
 from app.db.session import Database
 
 
-def reviewed_policy(review: dict[str, Any]) -> dict[str, Any]:
-    if review.get("status") != "approved_for_lesson_tutor":
+def reviewed_policy(review: dict[str, Any], *, enable_grade: bool = False) -> dict[str, Any]:
+    required_status = (
+        "approved_for_tutor_and_grade" if enable_grade else "approved_for_lesson_tutor"
+    )
+    if review.get("status") != required_status:
         raise ValueError("Review is not approved")
+    if enable_grade and review.get("grade_mode_verified") is not True:
+        raise ValueError("Grade mode has not been verified")
     workflow = str(UUID(review["workflow_id"]))
     document = str(UUID(review["document_id"]))
     hashes = review["chunk_hashes"]
@@ -34,20 +39,35 @@ def reviewed_policy(review: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("Execution policy not approved")
     if review.get("cost_basis") != "groq_free_full_text_no_rerank":
         raise ValueError("Cost basis not verified")
-    bound = Decimal(review["call_bound_usd"])
-    if not Decimal("0") < bound <= Decimal("0.25"):
+    try:
+        bound = Decimal(str(review["call_bound_usd"]))
+    except (KeyError, InvalidOperation, TypeError) as exc:
+        raise ValueError("Invalid call bound") from exc
+    if not bound.is_finite() or bound <= 0:
         raise ValueError("Invalid call bound")
+    grade_bound = None
+    if enable_grade:
+        try:
+            grade_bound = Decimal(str(review["grade_call_bound_usd"]))
+        except (KeyError, InvalidOperation, TypeError) as exc:
+            raise ValueError("Invalid grade call bound") from exc
+        if not grade_bound.is_finite() or grade_bound <= 0:
+            raise ValueError("Invalid grade call bound")
     return {
         "workflow": workflow,
         "corpus": f"sentinel-learner-knowledge-1.0.0-{review['observed_at']}",
         "documents": json.dumps([document]),
         "hashes": json.dumps(list(hashes.values())),
         "bound": bound,
+        "grade_bound": grade_bound,
+        "grade": enable_grade,
     }
 
 
-async def activate(database: Database, review: dict[str, Any], expected_version: int) -> int:
-    values = reviewed_policy(review)
+async def activate(
+    database: Database, review: dict[str, Any], expected_version: int, *, enable_grade: bool = False
+) -> int:
+    values = reviewed_policy(review, enable_grade=enable_grade)
     async with database.sessions() as session, session.begin():
         if await session.scalar(text("SELECT current_user")) != "migration_owner":
             raise ValueError("Dedicated operator role required")
@@ -63,9 +83,10 @@ async def activate(database: Database, review: dict[str, Any], expected_version:
             (
                 await session.execute(
                     text("""UPDATE app.tutor_policy SET version=version+1,
-                    enabled=true,cost_bound_verified=true,workflow_id=:workflow,
+                    enabled=true,grade_enabled=:grade,cost_bound_verified=true,workflow_id=:workflow,
                     corpus_revision=:corpus,document_ids=CAST(:documents AS jsonb),
-                    chunk_hashes=CAST(:hashes AS jsonb),daily_usd=0.25,call_bound_usd=:bound
+                    chunk_hashes=CAST(:hashes AS jsonb),call_bound_usd=:bound,
+                    grade_call_bound_usd=:grade_bound
                     WHERE id=1 RETURNING *"""),
                     values,
                 )
@@ -96,14 +117,17 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--review-file", type=Path, required=True)
     parser.add_argument("--expected-version", type=int, required=True)
+    parser.add_argument("--enable-grade", action="store_true")
     args = parser.parse_args()
     review = json.loads(args.review_file.read_text(encoding="utf8"))
     database = Database(database_url("migration_owner"))
     try:
-        version = await activate(database, review, args.expected_version)
+        version = await activate(
+            database, review, args.expected_version, enable_grade=args.enable_grade
+        )
     finally:
         await database.close()
-    print(f"Tutor policy activated: version {version}; daily ceiling USD 0.25")
+    print(f"Tutor policy activated: version {version}")
 
 
 if __name__ == "__main__":

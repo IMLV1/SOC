@@ -34,13 +34,22 @@ def test_operator_activation_is_audited_version_checked_and_not_runtime_accessib
                 await activate(owner, review(), 1)
             with pytest.raises(ValueError, match="operator role"):
                 await activate(worker, review(), 2)
+            combined = review() | {
+                "status": "approved_for_tutor_and_grade",
+                "grade_mode_verified": True,
+                "grade_call_bound_usd": "0.010000",
+            }
+            assert await activate(owner, combined, 2, enable_grade=True) == 3
         finally:
             await owner.close()
             await worker.close()
 
     asyncio.run(check())
     events = asyncio.run(sql(migrated, "SELECT action FROM app.audit_logs"))
-    assert [event["action"] for event in events] == ["tutor.release.activate"]
+    assert [event["action"] for event in events] == [
+        "tutor.release.activate",
+        "tutor.release.activate",
+    ]
 
 
 @pytest.mark.integration
@@ -147,9 +156,7 @@ def fixture(migrated, monkeypatch, tmp_path):
 
 
 @pytest.mark.integration
-def test_tutor_auth_idempotency_owner_budget_and_worker_persistence(
-    migrated, monkeypatch, tmp_path
-):
+def test_tutor_auth_idempotency_owner_and_worker_persistence(migrated, monkeypatch, tmp_path):
     users, tokens, payload = fixture(migrated, monkeypatch, tmp_path)
     calls = []
 
@@ -257,9 +264,7 @@ def test_tutor_auth_idempotency_owner_budget_and_worker_persistence(
 
 
 @pytest.mark.integration
-def test_concurrent_budget_never_over_reserves_and_unknown_dispatch_never_retries(
-    migrated, monkeypatch, tmp_path
-):
+def test_concurrent_quota_and_unknown_dispatch_never_retries(migrated, monkeypatch, tmp_path):
     users, tokens, payload = fixture(migrated, monkeypatch, tmp_path)
     headers = {"Origin": "http://testserver", "X-CSRF-Token": auth.csrf(tokens[0])}
     with TestClient(app) as client:
@@ -277,11 +282,11 @@ def test_concurrent_budget_never_over_reserves_and_unknown_dispatch_never_retrie
                     range(12),
                 )
             )
-        assert codes.count(202) == 10 and codes.count(429) == 2
+        assert codes.count(202) == 12
         totals = asyncio.run(
             sql(migrated, "SELECT sum(reserved_usd) AS usd FROM app.tutor_questions")
         )
-        assert str(totals[0]["usd"]) == "0.250000"
+        assert str(totals[0]["usd"]) == "0.300000"
         asyncio.run(
             sql(
                 migrated,
@@ -294,7 +299,7 @@ def test_concurrent_budget_never_over_reserves_and_unknown_dispatch_never_retrie
                 json=payload,
                 headers=headers | {"Idempotency-Key": str(uuid4())},
             ).status_code
-            == 429
+            == 202
         )
 
     calls = []

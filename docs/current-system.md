@@ -1,7 +1,7 @@
 # Sentinel — ระบบปัจจุบันสำหรับพัฒนาและส่งงาน
 
 อัปเดต 27 ต.ค. 2026 บน working tree หลัง `a1fc962` ไม่ใช่ production release
-ส่วน Dify Tutor อัปเดต 28 ต.ค. 2026: เปิดเฉพาะ lesson tutoring บน local Supabase stack แล้ว ดู [ผลตรวจ/ข้อจำกัด](dify-integration-verification.md) ไม่ใช่ AI grading หรือ public deployment
+ส่วน Dify Tutor เปิดเฉพาะ lesson tutoring บน local Supabase stack แล้ว; 29 ต.ค. เพิ่มโค้ด feedback ข้อเขียนผ่าน Workflow เดียวในโหมด `grade` แต่ยังไม่เปิด dispatch จนกว่าจะ Publish/ตรวจรับสองโหมดและ activate policy ดู [ผลตรวจล่าสุด](shared-dify-workflow-verification.md)
 เอกสารนี้สรุป implementation ล่าสุด; policy คะแนน/สิทธิ์ยังยึด [SRS decision register](srs.md)
 และไม่ถือว่าเอกสารเก่าที่ติ๊กผ่านเป็นหลักฐานของ environment ปัจจุบัน
 
@@ -16,13 +16,13 @@
 | `/learning` | 9 บท/45 ขั้น/3 ระดับ, ordered saves, progress, practical exam และผลตรวจ |
 | ผู้ช่วยสอนใน `/learning` | Dify + Groq จริง, Published-latest พร้อมตรวจ response version/citations, ประวัติใน DB, ปิดระหว่างสอบ; เปิด local policy v2 วันที่ 28 ต.ค. ดู dify-integration-verification.md |
 | `/practice` | 30 เคสระดับละ 10, filter หมวด, draft/version, submit/history, feedback ตามกฎ |
-| `/knowledge-check` | ข้อเขียนระดับละ 10, frozen submissions; ยังไม่ใช่ formal exam/grading |
+| `/knowledge-check` | ข้อเขียนระดับละ 10, frozen submissions; ขอ feedback จาก Dify Workflow เดียวกับ tutor ได้หลังเปิด `grade_enabled`; ไม่ใช่ formal exam/คะแนนผ่าน |
 | `/scenarios` → `/runs` | catalog 5 สถานการณ์ S01–S05, simulation worker/server clock |
 | `/runs/{id}` | released events, request/response/log, alerts, pause/resume/finish |
 | ticket/note | CRUD/soft delete/restore, evidence, expected_version และ revision history |
 | `/instructor/exams` | เฉพาะ Instructor ที่ได้รับ assignment; review หลัง submit และ audit |
 
-เป้าหมายข้อเขียน 10 ข้อที่ใช้สอบและ AI/RAG ตรวจทั้งชุดยังเป็น requirement ค้าง
+เป้าหมายข้อเขียน 10 ข้อที่ใช้สอบและ AI/RAG ตรวจเพื่อให้ผลผ่านยังเป็น requirement ค้าง; feedback ที่เพิ่มไม่เปลี่ยนผลสอบ
 ชื่อ “ทบทวนข้อเขียน” ระบุความสามารถปัจจุบัน ไม่ใช่การอนุมัติยกเลิก requirement เดิม
 
 ## System flow

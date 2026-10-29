@@ -21,7 +21,7 @@ test("tutor preserves unsent question, polls durable result, escapes content and
   let submitted = false;
   let polls = 0;
   const keys: string[] = [];
-  await page.route("**/api/v1/tutor/availability", (route) => route.fulfill({ json: { data: { available: true, reason: null, daily_budget_usd: "0.250000" } } }));
+  await page.route("**/api/v1/tutor/availability", (route) => route.fulfill({ json: { data: { available: true, reason: null } } }));
   const record = { id: level, lesson_id: lesson, question: "HTTP 403 <sample> คืออะไร", status: "queued", result: null };
   await page.route("**/api/v1/tutor/questions", (route) => {
     if (route.request().method() === "POST") {
@@ -59,7 +59,7 @@ test("tutor preserves unsent question, polls durable result, escapes content and
 for (const reason of ["DIFY_RELEASE_NOT_APPROVED", "EXAM_ATTEMPT_ACTIVE"]) {
   test(`unavailable tutor is truthful and cannot dispatch: ${reason}`, async ({ page }) => {
     let posts = 0;
-    await page.route("**/api/v1/tutor/availability", (route) => route.fulfill({ json: { data: { available: false, reason, daily_budget_usd: "0.250000" } } }));
+    await page.route("**/api/v1/tutor/availability", (route) => route.fulfill({ json: { data: { available: false, reason } } }));
     await page.route("**/api/v1/tutor/questions", (route) => { if (route.request().method() === "POST") posts++; return route.fulfill({ json: { data: [] } }); });
     await page.goto("/learning");
     const tutor = page.getByRole("region", { name: "ถามผู้ช่วยสอน AI" });

@@ -15,7 +15,7 @@
 - [x] Workflow transport แบบ pinned version, Tutor API/DB/job/lesson UI, secret overlay และ fail-closed citations/hash guards
 - [x] เพิ่ม migration 0023; isolated PostgreSQL/full backend 262 tests, mocked browser 34 tests, production frontend build และ Node 16 tests ผ่าน ดู [รายงาน](dify-integration-verification.md)
 - [x] Supabase wrapper อัปเดต 0023 และ local API readiness; Tutor policy ยัง disabled ไม่มีคำตอบ/คะแนนปลอม
-- [ ] รับรอง published Workflow ที่ส่ง sources, immutable corpus/chunk hashes, no-match branch และ per-call cost bound รวม embedding ก่อนเปิด US$0.25/day
+- [ ] รับรอง published Workflow สองโหมด `tutor`/`grade` ที่ส่ง sources, immutable corpus/chunk hashes, no-match branch และ per-call usage/cost accounting; เพดาน US$0.25/day ถูกยกเลิกตามคำขอ 29 ต.ค. ดู [ผลตรวจ](shared-dify-workflow-verification.md)
 - [ ] Live authenticated UI→API→DB→worker→Dify→validated result; Dify grading ข้อเขียน/ทบทวนเคส; quality benchmark และ public deployment acceptance
 
 ### Flow/presentation follow-up — 27 ต.ค. 2026

@@ -22,6 +22,8 @@
 
 ผลตรวจความปลอดภัยของข้อมูล: [Data validation และ regression coverage](data-validation-verification.md)
 
+ผลเชื่อม Workflow เดียวสองโหมด: [Tutor + feedback ข้อเขียน](shared-dify-workflow-verification.md)
+
 ให้เพื่อนทดลอง/ร่วมพัฒนา: [URL สาธารณะต่างจาก clone รันเองอย่างไร](friend-testing.md)
 
 | เอกสาร | ใช้เมื่อ |

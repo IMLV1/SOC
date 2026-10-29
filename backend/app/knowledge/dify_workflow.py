@@ -32,7 +32,9 @@ def parse_workflow(body: Any, *, expected_workflow_id: str | None = None) -> Wor
     return WorkflowReply(data["outputs"], tokens, data["id"])
 
 
-def _request(config: DifyConfig, workflow_id: str, question: str, user: str) -> WorkflowReply:
+def _request(
+    config: DifyConfig, workflow_id: str, question: str, user: str, mode: str | None = None
+) -> WorkflowReply:
     key = config.read_api_key()
     try:
         response = requests.post(
@@ -40,7 +42,11 @@ def _request(config: DifyConfig, workflow_id: str, question: str, user: str) -> 
             # the approved version; this detects drift after, not before, dispatch.
             f"{config.base_url}/workflows/run",
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"inputs": {"question": question}, "response_mode": "blocking", "user": user},
+            json={
+                "inputs": {"question": question} | ({"mode": mode} if mode else {}),
+                "response_mode": "blocking",
+                "user": user,
+            },
             timeout=(3.0, config.timeout_seconds),
             allow_redirects=False,
         )
@@ -68,10 +74,17 @@ def _request(config: DifyConfig, workflow_id: str, question: str, user: str) -> 
 
 
 async def run_workflow(
-    config: DifyConfig, workflow_id: str, question: str, user: str
+    config: DifyConfig, workflow_id: str, question: str, user: str, mode: str | None = None
 ) -> WorkflowReply:
     if not workflow_id or len(workflow_id) > 128:
         raise DifyUnavailable("DIFY_WORKFLOW_INVALID")
-    if not question.strip() or len(question) > 2000 or not user or len(user) > 128:
+    if (
+        not question.strip()
+        or len(question) > (24000 if mode == "grade" else 2000)
+        or not user
+        or len(user) > 128
+    ):
         raise DifyUnavailable("DIFY_QUERY_INVALID")
-    return await asyncio.to_thread(_request, config, workflow_id, question, user)
+    if mode not in (None, "tutor", "grade"):
+        raise DifyUnavailable("DIFY_QUERY_INVALID")
+    return await asyncio.to_thread(_request, config, workflow_id, question, user, mode)

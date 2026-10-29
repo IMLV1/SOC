@@ -56,7 +56,6 @@ class TutorAvailability(StrictModel):
     available: bool
     reason: str | None
     mode: Literal["dify"] = "dify"
-    daily_budget_usd: str
 
 
 class AvailabilityEnvelope(StrictModel):

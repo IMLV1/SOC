@@ -162,6 +162,53 @@ def test_published_workflow_checks_approved_version_and_keeps_secret_server_side
     assert "test-key-not-real" not in repr(result)
 
 
+def test_grade_mode_uses_the_same_workflow_endpoint_and_key(tmp_path: Path, monkeypatch):
+    secret = tmp_path / "key"
+    secret.write_text("test-key-not-real", encoding="utf8")
+    captured = {}
+
+    class Response:
+        status_code = 200
+
+        def json(self):
+            return {
+                "data": {
+                    "workflow_id": "same-version",
+                    "status": "succeeded",
+                    "id": "run",
+                    "outputs": {"answer": "{}", "sources": []},
+                }
+            }
+
+    def post(url, **kwargs):
+        captured.update(kwargs)
+        captured["url"] = url
+        return Response()
+
+    monkeypatch.setattr(requests, "post", post)
+    asyncio.run(
+        run_workflow(
+            DifyConfig("https://dify.example.test/v1", secret),
+            "same-version",
+            "x" * 2001,
+            "grade-1",
+            mode="grade",
+        )
+    )
+    assert captured["url"] == "https://dify.example.test/v1/workflows/run"
+    assert captured["json"]["inputs"] == {"question": "x" * 2001, "mode": "grade"}
+    with pytest.raises(DifyUnavailable, match="DIFY_QUERY_INVALID"):
+        asyncio.run(
+            run_workflow(
+                DifyConfig("https://dify.example.test/v1", secret),
+                "same-version",
+                "question",
+                "grade-1",
+                mode="admin",
+            )
+        )
+
+
 @pytest.mark.parametrize("exception", [requests.Timeout, requests.ConnectionError])
 def test_workflow_never_retries_unknown_dispatch(tmp_path: Path, monkeypatch, exception):
     secret = tmp_path / "key"

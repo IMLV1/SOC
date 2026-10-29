@@ -3,6 +3,8 @@
 Tutor endpoints ฝั่ง FastAPI และข้อจำกัด release/budget/citations เพิ่มวันที่ 28 ต.ค. 2026 อยู่ใน [Dify Tutor contract](dify-integration-verification.md) ยังไม่เลื่อนเป็น approved OpenAPI อัตโนมัติ
 
 API บทเรียนจาก DB, practice draft/submit/history และข้อเขียน: [Database training](database-training.md)
+
+อัปเดต 29 ต.ค. 2026: เพิ่ม `POST`/`GET /learning/levels/{level_id}/written-submissions/{submission_id}/feedback` สำหรับ owner หลังส่งข้อเขียนเท่านั้น ใช้ Dify Workflow เดียวกับ Tutor ใน `mode=grade`; `POST` คืน 202 เมื่อเข้าคิวและ idempotent ตาม submission ID, `GET` อ่านสถานะ/feedback ที่ผ่าน source validation และ 404 เมื่อนอก scope ผลไม่ใช่ score/pass/unlock โหมด grade ยังปิดจน operator ตรวจรับและเปิด policy ดู [ผลตรวจ](shared-dify-workflow-verification.md)
 ใช้ Pydantic allowlists/typed frontend โดยยังไม่เลื่อน draft เป็น approved OpenAPI อัตโนมัติ
 
 ส่วนเพิ่ม 27 ต.ค. 2026: `GET /api/v1/me/learning-path` ส่ง `level_statuses[]` พร้อม `level_id`, `unlocked`, `all_lessons_completed`, `exam_case_count`, `passed_case_count` ของผู้ใช้ที่ login เท่านั้น นับเคส enabled และผล revision ล่าสุดต่อ attempt ไม่ส่ง private labels/เฉลย ค่า `next_action` เดิมคงไว้เพื่อ compatibility; UI ใช้สถานะระดับกับ result/active attempt ไม่ตีความข้อความ legacy ว่าไม่มีระบบสอบ

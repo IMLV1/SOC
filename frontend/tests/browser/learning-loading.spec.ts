@@ -30,7 +30,7 @@ async function mockLearning(page: Page, options: { exam?: Promise<void>; examFai
       data = { id, level_id: level, version: 1, title: `บทเรียน ${lessons.indexOf(id) + 1}`, steps: [{ id: "intro", title: "หลักฐาน", target: "GET /training", explanation: "อ่านหลักฐาน", limitation: "ยังไม่รู้ผลกระทบ" }] };
     } else if (path.endsWith("/tutor/availability")) {
       calls.tutor++;
-      data = { available: true, reason: null, daily_budget_usd: "0.250000" };
+      data = { available: true, reason: null };
     } else if (path.endsWith("/tutor/questions")) {
       const record = { id: level, lesson_id: lessons[0], question: "HTTP 403 คืออะไร", error_code: null,
         status: calls.questionPending ? "queued" : "succeeded",

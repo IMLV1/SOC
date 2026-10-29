@@ -15,6 +15,7 @@ from app.auth.google_routes import GoogleStartInput
 from app.auth.models import LoginInput, RegisterInput, Strict
 from app.evaluation.routes import CommentInput
 from app.exams.models import ReviewInput, StartAttemptInput, SubmitInput
+from app.grading.written_ai import FeedbackRequest
 from app.input_validation import InputModel
 from app.investigation.models import (
     DeleteInput,
@@ -70,6 +71,7 @@ INPUTS = [
     (RetryInput, {"expected_version": 1}),
     (CommentInput, {"body": "คำแนะนำ"}),
     (TutorInput, {"lesson_id": IDENTITY, "question": "HTTP 403 หมายถึงอะไร"}),
+    (FeedbackRequest, {}),
     (ProgressInput, {"expected_version": 0}),
     (StartAttemptInput, {"expected_progress_version": 1}),
     (SubmitInput, ANSWER),

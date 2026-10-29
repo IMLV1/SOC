@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, read, write } from "../../lib/api";
 import { useSession } from "../session-provider";
+import { WrittenFeedback } from "../../features/written-feedback";
 
 type Question = { id: string; ordinal: number; version: number; prompt: string; category: string };
 type Submission = { id: string; level_id: string; status: "needs_review"; created_at: string; questions: Question[]; answers: { question_id: string; answer: string }[] };
@@ -52,12 +53,12 @@ export default function KnowledgeCheckPage() {
     } catch { setError("ส่งคำตอบไม่สำเร็จ คำตอบของคุณยังอยู่ ลองส่งอีกครั้งได้"); }
     finally { setBusy(false); }
   }
-  return <main className="account-page learning-page"><h1>ทบทวนข้อเขียน</h1><p>10 คำถามต่อระดับ ต้องเรียนครบก่อนเปิด คำตอบทั้งชุดบันทึกในฐานข้อมูลและแก้ชุดที่ส่งแล้วไม่ได้ ส่วนข้อความที่ยังไม่ส่งยังไม่บันทึก</p><p>ยังไม่ใช่ข้อสอบเลื่อนระดับ ไม่มีคะแนนผ่านอัตโนมัติ การประเมินเหตุผลรอ Dify และเกณฑ์ข้อเขียนที่ยืนยันแล้ว</p><div className="demo-actions"><Link href="/learning">เรียนและสอบภาคปฏิบัติ</Link><Link href="/practice">ฝึกอ่านหลักฐาน</Link></div>
+  return <main className="account-page learning-page"><h1>ทบทวนข้อเขียน</h1><p>10 คำถามต่อระดับ ต้องเรียนครบก่อนเปิด คำตอบทั้งชุดบันทึกในฐานข้อมูลและแก้ชุดที่ส่งแล้วไม่ได้ ส่วนข้อความที่ยังไม่ส่งยังไม่บันทึก</p><p>หลังส่งแล้วขอข้อเสนอแนะจาก Dify ได้เมื่อผู้ดูแลเปิดโหมด grade ผลยังไม่ใช่คะแนนสอบหรือการปลดล็อกระดับ</p><div className="demo-actions"><Link href="/learning">เรียนและสอบภาคปฏิบัติ</Link><Link href="/practice">ฝึกอ่านหลักฐาน</Link></div>
     {sessionLoading ? <p role="status">กำลังตรวจบัญชี…</p> : !session ? <Link href="/login">เข้าสู่ระบบเพื่อทำข้อเขียน</Link> : <>
       <label>ระดับ<select value={levelId} disabled={busy} onChange={(event) => { if (!Object.values(answers).some(Boolean) || window.confirm("คำตอบยังไม่ส่ง ต้องการเปลี่ยนระดับหรือไม่?")) setLevelId(event.target.value); }}>{levels.map((level) => <option key={level.id} value={level.id}>{level.ordinal} · {level.title}</option>)}</select></label>
       {loading && <p role="status">กำลังโหลดคำถาม…</p>}{error && <p role="alert">{error} <button disabled={busy} onClick={() => setRetry((value) => value + 1)}>โหลดใหม่</button></p>}
       {!loading && questions.length > 0 && <form className="learning-card" onSubmit={submit}>{questions.map((item) => <label key={item.id}>{item.ordinal}. {item.prompt}<textarea rows={4} required disabled={busy} maxLength={2000} value={answers[item.id] ?? ""} onChange={(event) => setAnswers((current) => ({ ...current, [item.id]: event.target.value }))} /></label>)}<button disabled={busy || questions.some((item) => !answers[item.id]?.trim())}>ส่งคำตอบครบ 10 ข้อ</button></form>}
-      <section className="learning-card"><h2>ประวัติที่ส่งแล้ว</h2>{history.length === 0 ? <p>ยังไม่มีคำตอบที่ส่งในระดับนี้</p> : history.map((item) => <details key={item.id}><summary>{new Date(item.created_at).toLocaleString("th-TH")} · needs_review — รอประเมิน ไม่ใช่สอบผ่าน</summary>{item.questions.map((question) => <section key={question.id}><h3>{question.ordinal}. {question.prompt}</h3><p>{item.answers.find((answer) => answer.question_id === question.id)?.answer}</p></section>)}</details>)}</section>
+      <section className="learning-card"><h2>ประวัติที่ส่งแล้ว</h2>{history.length === 0 ? <p>ยังไม่มีคำตอบที่ส่งในระดับนี้</p> : history.map((item) => <WrittenFeedback key={item.id} levelId={levelId} submission={item} />)}</section>
     </>}
   </main>;
 }

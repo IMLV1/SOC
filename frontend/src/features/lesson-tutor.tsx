@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError, read, write } from "../lib/api";
 
-type Availability = { available: boolean; reason: string | null; daily_budget_usd: string };
+type Availability = { available: boolean; reason: string | null };
 type Question = {
   id: string; lesson_id: string; question: string; status: string; error_code: string | null;
   result: { answer: string; sources: { title: string; excerpt: string; section_ids: string[] }[] } | null;
@@ -12,7 +12,6 @@ const reasons: Record<string, string> = {
   DIFY_RELEASE_NOT_APPROVED: "รอรับรอง Workflow, แหล่งอ้างอิง และขอบเขตค่าใช้จ่ายก่อนเปิดใช้จริง",
   DIFY_CREDENTIAL_UNAVAILABLE: "ยังตั้งค่า secret ฝั่ง server ไม่ครบ",
   EXAM_ATTEMPT_ACTIVE: "ผู้ช่วย AI ปิดระหว่างมีข้อสอบที่ยังไม่สิ้นสุด",
-  DIFY_DAILY_BUDGET_EXCEEDED: "งบ AI รวมของระบบเต็มแล้ว หรือมียอดที่ยังรอตรวจสอบ",
   AI_QUOTA_EXCEEDED: "ใช้โควตา AI ของบัญชีวันนี้ครบแล้ว",
   DIFY_CITATION_OR_OUTPUT_INVALID: "คำตอบหรือแหล่งอ้างอิงไม่ผ่านการตรวจ จึงยังไม่แสดงคำตอบ",
   DIFY_NO_MATCH: "ไม่พบข้อมูลในคู่มือที่รองรับ กรุณาระบุหัวข้อหรือรายละเอียดคำถามเพิ่มเติม",
@@ -81,7 +80,7 @@ export default function LessonTutor({ lessonId, examActive, accessPending = fals
   }
   return <section className="learning-card" aria-labelledby="tutor-title">
     <h2 id="tutor-title">ถามผู้ช่วยสอน AI</h2>
-    <p>ถามความหมายและวิธีอ่านหลักฐาน ไม่ใช่ผู้ตรวจคะแนน · ใช้ Dify จริงเมื่อ server เปิดให้ใช้งาน · งบรวมไม่เกิน US$0.25/วันตาม policy</p>
+    <p>ถามความหมายและวิธีอ่านหลักฐาน ไม่ใช่ผู้ตรวจคะแนน · ใช้ Dify เมื่อ server เปิดให้ใช้งาน</p>
     {examActive ? <p role="status">ผู้ช่วย AI ปิดระหว่างสอบ</p> : accessPending ? <p role="status">กำลังตรวจสิทธิ์ผู้ช่วย AI กรุณารอผลตรวจสถานะสอบ</p> : <>
       {!lessonReady && <p role="status">กำลังโหลดบทเรียนที่เลือก ยังส่งคำถามไม่ได้</p>}
       {!availability && !error && !loadError && <p role="status">กำลังตรวจสถานะผู้ช่วย…</p>}

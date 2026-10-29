@@ -43,9 +43,7 @@ async def availability(request: Request) -> AvailabilityEnvelope:
         ):
             reason = "EXAM_ATTEMPT_ACTIVE"
     return AvailabilityEnvelope(
-        data=TutorAvailability(
-            available=reason is None, reason=reason, daily_budget_usd=str(policy["daily_usd"])
-        ),
+        data=TutorAvailability(available=reason is None, reason=reason),
         meta=Meta(request_id=request.state.request_id),
     )
 

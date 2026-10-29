@@ -84,6 +84,7 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "practice_answers",
             "written_questions",
             "written_submissions",
+            "written_feedback",
             "tutor_policy",
             "tutor_questions",
             "user_quotas",

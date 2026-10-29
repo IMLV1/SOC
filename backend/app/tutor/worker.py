@@ -108,8 +108,11 @@ async def process_question(database: Database, job: dict[str, Any]) -> None:
     error = None
     accounted = False
     try:
-        reply = await run_workflow(
-            config, row["workflow_id"], redact(row["question"]), f"tutor-{row['id']}"
+        args = (config, row["workflow_id"], redact(row["question"]), f"tutor-{row['id']}")
+        reply = (
+            await run_workflow(*args, mode="tutor")
+            if policy["grade_enabled"]
+            else await run_workflow(*args)
         )
         tokens = reply.total_tokens
         # Account the entire verified per-call ceiling, not an invented $0 bill.

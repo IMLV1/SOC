@@ -20,6 +20,7 @@ from app.demo import router as demo_router
 from app.evaluation.routes import admin_router as instructor_evaluation_router
 from app.evaluation.routes import router as evaluation_router
 from app.exams.routes import router as exam_router
+from app.grading.written_ai import router as written_ai_router
 from app.http_models import (
     ErrorDetail,
     ErrorEnvelope,
@@ -67,6 +68,7 @@ app.include_router(analysis_router)
 app.include_router(rag_router)
 app.include_router(learning_router)
 app.include_router(practice_router)
+app.include_router(written_ai_router)
 app.include_router(tutor_router)
 app.include_router(exam_router)
 app.include_router(evaluation_router)
