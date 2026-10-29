@@ -2,13 +2,14 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field, field_validator
+from pydantic import Field, StrictInt, field_validator
 
 from app.http_models import Meta, StrictModel
+from app.input_validation import InputModel
 from app.investigation.models import Disposition, Severity
 
 
-class PracticeAnswer(StrictModel):
+class PracticeAnswer(InputModel):
     evidence_ids: list[UUID] = Field(min_length=1, max_length=50)
     severity: Severity
     disposition: Disposition
@@ -29,15 +30,15 @@ class PracticeAnswer(StrictModel):
         return value
 
 
-class PracticeDraft(StrictModel):
+class PracticeDraft(InputModel):
     evidence_ids: list[UUID] = Field(default_factory=list, max_length=50)
     severity: Severity = "medium"
     disposition: Disposition = "undetermined"
     reason: str = Field(default="", max_length=2000)
 
 
-class DraftInput(StrictModel):
-    expected_version: int = Field(ge=0)
+class DraftInput(InputModel):
+    expected_version: StrictInt = Field(ge=0)
     answer: PracticeDraft
 
 
@@ -114,7 +115,7 @@ class HistoryEnvelope(StrictModel):
     meta: Meta
 
 
-class WrittenAnswer(StrictModel):
+class WrittenAnswer(InputModel):
     question_id: UUID
     answer: str = Field(min_length=1, max_length=2000)
 
@@ -126,7 +127,7 @@ class WrittenAnswer(StrictModel):
         return value.strip()
 
 
-class WrittenInput(StrictModel):
+class WrittenInput(InputModel):
     answers: list[WrittenAnswer] = Field(min_length=10, max_length=10)
 
 

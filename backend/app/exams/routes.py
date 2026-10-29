@@ -593,9 +593,12 @@ async def submit_attempt(
         )
         # Submission freezes evidence only through the run's committed release
         # cursor; queued/future events cannot appear in the learner's answer.
-        evidence = validate_submission_evidence(
-            body.evidence_event_ids, (row["id"] for row in snapshot)
-        )
+        try:
+            evidence = validate_submission_evidence(
+                body.evidence_event_ids, (row["id"] for row in snapshot)
+            )
+        except ValueError:
+            raise auth.AuthError(422, "VALIDATION_ERROR") from None
         dataset_hash = hashlib.sha256(
             ":".join(str(row["content_hash"]) for row in snapshot).encode()
         ).hexdigest()

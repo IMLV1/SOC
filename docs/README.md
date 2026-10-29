@@ -20,6 +20,8 @@
 
 ผลแก้ UI ล่าสุด: [Learning โหลดซ้ำและร่างคำถาม AI](learning-loading-verification.md)
 
+ผลตรวจความปลอดภัยของข้อมูล: [Data validation และ regression coverage](data-validation-verification.md)
+
 ให้เพื่อนทดลอง/ร่วมพัฒนา: [URL สาธารณะต่างจาก clone รันเองอย่างไร](friend-testing.md)
 
 | เอกสาร | ใช้เมื่อ |

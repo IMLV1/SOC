@@ -34,6 +34,7 @@ from app.investigation.routes import router as ticket_router
 from app.knowledge.routes import router as rag_router
 from app.learning.practice_routes import router as practice_router
 from app.learning.routes import router as learning_router
+from app.request_limits import ApiBodyLimit
 from app.runs.routes import router as run_router
 from app.scenarios.routes import router as scenario_router
 from app.tutor.routes import router as tutor_router
@@ -109,6 +110,10 @@ async def request_context(
     response.headers["X-Request-ID"] = request.state.request_id
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+# Last registered middleware is outermost: reject before session/DB/provider work.
+app.add_middleware(ApiBodyLimit)
 
 
 def error_response(request: Request, status: int, code: str, message: str) -> JSONResponse:

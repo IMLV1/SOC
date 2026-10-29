@@ -29,6 +29,9 @@ Implementation ที่เลือกคือ FastAPI + Pydantic สำหร
 - Client ใช้ cookie session (`credentials: include`) ไม่ส่ง user_id เพื่อเลือกเจ้าของข้อมูล และไม่เก็บ session token ใน localStorage
 - ทุก mutation รวม register/login ใช้ `X-CSRF-Token` จาก `/auth/csrf` และ Origin ที่ยอมรับ
 - ทุก POST/PATCH/DELETE ที่มี JSON ส่ง `Content-Type: application/json`; ไม่รับ unknown fields
+- ทุก `/api/v1/*` จำกัด body สูงสุด 1 MiB (1,048,576 bytes) ก่อน authentication/JSON parsing; เกินคืน `413 PAYLOAD_TOO_LARGE` ตรวจจำนวน bytes จริงรวม chunked body ไม่เชื่อ `Content-Length` อย่างเดียว; header ซ้ำ/ผิดรูปแบบหรือความยาวไม่ตรงคืน `400 BAD_REQUEST`
+- JSON integer สำหรับ version และ seed ต้องเป็น integer จริง ไม่แปลง boolean/string/float; UUID ยังส่งเป็น JSON string ตามเดิม ข้อความเหตุผล/ชื่อ/คำถามที่ต้องมีเนื้อหาจะ trim และปฏิเสธข้อความว่าง ร่างที่ยังไม่ส่งยอมรับ reason ว่างได้ และไม่ trim รหัสผ่าน
+- ปฏิเสธ U+0000 และ unpaired Unicode surrogate ใน client JSON ด้วย `422 VALIDATION_ERROR` ก่อนเข้า PostgreSQL; path/query ที่มี U+0000 คืน 422 ข้อความที่เป็น HTML/SQL เก็บเป็นข้อความตามเดิม ใช้ bound SQL parameters และ escaped rendering ไม่ตีความเป็นคำสั่ง
 - `expected_version` บังคับสำหรับแก้ resource หรือเปลี่ยนสถานะที่มี version; server update แบบ compare-and-swap และเพิ่ม version ใน transaction เดียวกับ audit
 - POST สร้าง run/ticket/note, retry analysis และ experiment ต้องมี `Idempotency-Key` (UUID); key เดิมกับ body เดิมคืนผลเดิม, body ต่างคืน 409 ผูก key กับบัญชี+method+path เก็บอย่างน้อย 24 ชั่วโมง รวมช่วงงานยังไม่เสร็จ
 - ตรวจสิทธิ์ก่อนดู idempotency cache เสมอ และ reserve key, domain data, audit/jobs แบบ atomic

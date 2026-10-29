@@ -5,12 +5,14 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.input_validation import InputModel
+
 
 class Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class LoginInput(Strict):
+class LoginInput(InputModel):
     email: str = Field(max_length=254)
     password: str = Field(min_length=5, max_length=128)
 

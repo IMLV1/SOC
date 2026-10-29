@@ -205,6 +205,52 @@ def test_exam_start_freeze_replay_owner_boundary_and_assigned_review(migrated, m
             "reason": "Evidence linked to a protected resource request.",
         }
 
+        invalid_keys = []
+        for change in (
+            {"reason": " \t\n "},
+            {"reason": "invalid\x00text"},
+            {"expected_version": True},
+            {"expected_version": "1"},
+            {"evidence_event_ids": [evidence[0], evidence[0]]},
+            {"evidence_event_ids": [str(uuid4())]},
+        ):
+            invalid_key = uuid4()
+            invalid_keys.append(invalid_key)
+            invalid = learner.post(
+                submit_path,
+                json=submit_payload | change,
+                headers={"X-CSRF-Token": csrf, "Idempotency-Key": str(invalid_key)},
+            )
+            assert invalid.status_code == 422, invalid.text
+            assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+        unchanged = learner.get(f"/api/v1/exam/attempts/{attempt_id}").json()["data"]
+        assert unchanged["status"] == "in_progress"
+        assert unchanged["version"] == attempt["version"]
+        assert unchanged["answer"] is None
+
+        async def assert_no_partial_submission():
+            database = Database(migrated("migration_owner"))
+            try:
+                async with database.sessions() as session:
+                    assert (
+                        await session.scalar(
+                            text("SELECT count(*) FROM app.exam_answers WHERE attempt_id=:id"),
+                            {"id": attempt_id},
+                        )
+                        == 0
+                    )
+                    assert (
+                        await session.scalar(
+                            text("SELECT count(*) FROM app.idempotency_keys WHERE key=ANY(:keys)"),
+                            {"keys": invalid_keys},
+                        )
+                        == 0
+                    )
+            finally:
+                await database.close()
+
+        asyncio.run(assert_no_partial_submission())
+
         def post_submit():
             return learner.post(
                 submit_path,

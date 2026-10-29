@@ -6,22 +6,22 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Request
 from fastapi.responses import Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 from sqlalchemy import text
 
 from app.auth import service as auth
 from app.auth.service import authorize_assignment, authorize_owner
 from app.evaluation.experiments import compare
 from app.http_models import Meta
+from app.input_validation import InputModel, NonBlankText
 from app.knowledge.rag import redact_snapshot
 
 router = APIRouter(prefix="/api/v1", tags=["Evaluation"])
 admin_router = APIRouter(prefix="/api/v1/admin/runs", tags=["Instructor review"])
 
 
-class CommentInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    body: str = Field(min_length=1, max_length=2000)
+class CommentInput(InputModel):
+    body: NonBlankText = Field(min_length=1, max_length=2000)
 
 
 async def evaluation_row(session: Any, run_id: UUID) -> Any:

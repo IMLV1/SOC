@@ -5,26 +5,23 @@ from uuid import UUID
 from pydantic import Field, StrictInt
 
 from app.auth.models import Strict
+from app.grading.exam_policy import ExamSubmission
 from app.http_models import Meta
-from app.investigation.models import Disposition, Severity
+from app.input_validation import InputModel, NonBlankText
 
 
-class StartAttemptInput(Strict):
-    expected_progress_version: int = Field(ge=1)
+class StartAttemptInput(InputModel):
+    expected_progress_version: StrictInt = Field(ge=1)
 
 
-class SubmitInput(Strict):
-    expected_version: int = Field(ge=1)
-    evidence_event_ids: list[UUID] = Field(min_length=1, max_length=50)
-    severity: Severity
-    disposition: Disposition
-    reason: str = Field(min_length=1, max_length=2000)
+class SubmitInput(ExamSubmission):
+    pass
 
 
-class ReviewInput(Strict):
-    expected_version: int = Field(ge=1)
+class ReviewInput(InputModel):
+    expected_version: StrictInt = Field(ge=1)
     criterion_scores: dict[str, StrictInt | None]
-    reason: str = Field(min_length=1, max_length=2000)
+    reason: NonBlankText = Field(min_length=1, max_length=2000)
 
 
 class ExamEvent(Strict):

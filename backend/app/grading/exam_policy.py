@@ -5,9 +5,9 @@ from datetime import UTC, datetime, timedelta
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field, field_validator
+from pydantic import Field, StrictInt, field_validator
 
-from app.auth.models import Strict
+from app.input_validation import InputModel, NonBlankText
 from app.investigation.models import Disposition, Severity
 
 AttemptStatus = Literal["in_progress", "submitted", "needs_review", "passed", "failed", "expired"]
@@ -19,12 +19,12 @@ FAILED_COOLDOWN = timedelta(hours=1)
 MAX_EVIDENCE = 50
 
 
-class ExamSubmission(Strict):
-    expected_version: int = Field(ge=1)
+class ExamSubmission(InputModel):
+    expected_version: StrictInt = Field(ge=1)
     evidence_event_ids: list[UUID] = Field(min_length=1, max_length=MAX_EVIDENCE)
     severity: Severity
     disposition: Disposition
-    reason: str = Field(min_length=1, max_length=2000)
+    reason: NonBlankText = Field(min_length=1, max_length=2000)
 
     @field_validator("evidence_event_ids")
     @classmethod

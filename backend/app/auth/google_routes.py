@@ -21,11 +21,12 @@ from app.auth.models import AuthMeta, Strict
 from app.auth.routes import DUMMY_HASH, json_only
 from app.db.provision import PASSWORDS
 from app.http_models import ErrorEnvelope
+from app.input_validation import InputModel
 
 BINDING = "soc_google_flow"
 
 
-class GoogleStartInput(Strict):
+class GoogleStartInput(InputModel):
     purpose: Literal["login", "link"] = "login"
     password: str | None = Field(default=None, min_length=5, max_length=128)
 

@@ -1,9 +1,10 @@
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field, field_validator
+from pydantic import Field, StrictInt, field_validator
 
 from app.auth.models import AuthMeta, Strict
+from app.input_validation import InputModel
 
 
 class ScenarioView(Strict):
@@ -24,11 +25,11 @@ class ScenarioCatalog(Strict):
     meta: CatalogMeta
 
 
-class TrainingSelection(Strict):
+class TrainingSelection(InputModel):
     """Admission input for the future training service, never exam creation."""
 
     scenario_ids: list[UUID] = Field(min_length=1, max_length=5)
-    seed: int | None = Field(default=None, ge=0, le=2147483647)
+    seed: StrictInt | None = Field(default=None, ge=0, le=2147483647)
 
     @field_validator("scenario_ids")
     @classmethod

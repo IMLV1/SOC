@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, StrictInt
 
 from app.auth.models import AuthMeta, PageMeta, Strict
+from app.input_validation import InputModel, NonBlankText
 
 
 class Hypothesis(Strict):
@@ -59,9 +60,9 @@ class RetrievalView(Strict):
     citations: list[SourceView]
 
 
-class QuestionInput(Strict):
-    question: str = Field(min_length=1, max_length=2000)
-    expected_version: int = Field(ge=1)
+class QuestionInput(InputModel):
+    question: NonBlankText = Field(min_length=1, max_length=2000)
+    expected_version: StrictInt = Field(ge=1)
 
 
 class AnalysisResult(Strict):
@@ -140,5 +141,5 @@ class AnalysisList(Strict):
     meta: PageMeta
 
 
-class RetryInput(Strict):
-    expected_version: int = Field(ge=1)
+class RetryInput(InputModel):
+    expected_version: StrictInt = Field(ge=1)

@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field, field_validator
+from pydantic import Field, StrictInt, field_validator
 
 from app.auth.models import AuthMeta, PageMeta, Strict
+from app.input_validation import InputModel, NonBlankText
 
 Severity = Literal["low", "medium", "high", "critical"]
 TicketStatus = Literal["open", "investigating", "resolved", "closed"]
@@ -17,11 +18,11 @@ def unique_ids(value: list[UUID]) -> list[UUID]:
     return value
 
 
-class TicketCreate(Strict):
-    title: str = Field(min_length=1, max_length=120)
+class TicketCreate(InputModel):
+    title: NonBlankText = Field(min_length=1, max_length=120)
     severity: Severity
     evidence_ids: list[UUID] = Field(min_length=1, max_length=50)
-    reason: str = Field(min_length=1, max_length=2000)
+    reason: NonBlankText = Field(min_length=1, max_length=2000)
 
     @field_validator("evidence_ids")
     @classmethod
@@ -29,25 +30,25 @@ class TicketCreate(Strict):
         return unique_ids(value)
 
 
-class TicketPatch(Strict):
-    expected_version: int = Field(ge=1)
-    reason: str = Field(min_length=1, max_length=2000)
-    title: str | None = Field(default=None, min_length=1, max_length=120)
+class TicketPatch(InputModel):
+    expected_version: StrictInt = Field(ge=1)
+    reason: NonBlankText = Field(min_length=1, max_length=2000)
+    title: NonBlankText | None = Field(default=None, min_length=1, max_length=120)
     severity: Severity | None = None
     status: TicketStatus | None = None
     disposition: Disposition | None = None
 
 
-class InstructorTicketPatch(Strict):
-    expected_version: int = Field(ge=1)
-    reason: str = Field(min_length=1, max_length=2000)
+class InstructorTicketPatch(InputModel):
+    expected_version: StrictInt = Field(ge=1)
+    reason: NonBlankText = Field(min_length=1, max_length=2000)
     severity: Severity | None = None
     status: TicketStatus | None = None
 
 
-class DeleteInput(Strict):
-    expected_version: int = Field(ge=1)
-    reason: str = Field(min_length=1, max_length=2000)
+class DeleteInput(InputModel):
+    expected_version: StrictInt = Field(ge=1)
+    reason: NonBlankText = Field(min_length=1, max_length=2000)
 
 
 class AssessmentView(Strict):
@@ -99,8 +100,8 @@ class TicketTimelineList(Strict):
     meta: PageMeta
 
 
-class NoteCreate(Strict):
-    body: str = Field(min_length=1, max_length=2000)
+class NoteCreate(InputModel):
+    body: NonBlankText = Field(min_length=1, max_length=2000)
     evidence_ids: list[UUID] = Field(default_factory=list, max_length=50)
 
     @field_validator("evidence_ids")
@@ -110,8 +111,8 @@ class NoteCreate(Strict):
 
 
 class NotePatch(NoteCreate):
-    expected_version: int = Field(ge=1)
-    reason: str = Field(min_length=1, max_length=2000)
+    expected_version: StrictInt = Field(ge=1)
+    reason: NonBlankText = Field(min_length=1, max_length=2000)
 
 
 class NoteView(Strict):

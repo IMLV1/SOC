@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, StrictInt
 
 from app.auth.models import AuthMeta, PageMeta, Strict
+from app.input_validation import InputModel
 
 
 class RunView(Strict):
@@ -40,8 +41,8 @@ class RunList(Strict):
     meta: PageMeta
 
 
-class VersionInput(Strict):
-    expected_version: int = Field(ge=1)
+class VersionInput(InputModel):
+    expected_version: StrictInt = Field(ge=1)
 
 
 class EventView(Strict):

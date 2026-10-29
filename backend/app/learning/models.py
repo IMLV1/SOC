@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, StrictInt
 
 from app.http_models import Meta, StrictModel
+from app.input_validation import InputModel
 
 
 class StepView(StrictModel):
@@ -82,5 +83,5 @@ class ProgressEnvelope(StrictModel):
     meta: Meta
 
 
-class ProgressInput(StrictModel):
-    expected_version: int = Field(ge=0)
+class ProgressInput(InputModel):
+    expected_version: StrictInt = Field(ge=0)

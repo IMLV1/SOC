@@ -5,9 +5,10 @@ from uuid import UUID
 from pydantic import Field, field_validator
 
 from app.http_models import Meta, StrictModel
+from app.input_validation import InputModel
 
 
-class TutorInput(StrictModel):
+class TutorInput(InputModel):
     lesson_id: UUID
     question: str = Field(min_length=1, max_length=2000)
 
