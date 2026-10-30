@@ -28,6 +28,7 @@ from app.investigation.models import (
 from app.learning.models import ProgressInput
 from app.learning.practice_models import (
     DraftInput,
+    PracticeAIInput,
     PracticeAnswer,
     PracticeDraft,
     WrittenAnswer,
@@ -90,6 +91,7 @@ INPUTS = [
     ),
     (PracticeDraft, {"reason": ""}),
     (DraftInput, {"expected_version": 0, "answer": {"reason": ""}}),
+    (PracticeAIInput, {"answer_id": IDENTITY, "question": "HTTP 403 หมายถึงอะไร"}),
     (WrittenAnswer, {"question_id": IDENTITY, "answer": "คำตอบ"}),
     (
         WrittenInput,

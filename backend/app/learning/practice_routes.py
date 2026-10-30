@@ -149,13 +149,15 @@ async def practice_ai_availability(request: Request) -> AvailabilityEnvelope:
     from app.tutor.service import readiness, release_drift
 
     async with auth.database(request).sessions() as session, session.begin():
-        user = await learner(session, request)
+        await learner(session, request)
         policy = (
             (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1")))
             .mappings()
             .one()
         )
-        reason = "DIFY_PRACTICE_NOT_APPROVED" if not policy["practice_enabled"] else readiness(policy)
+        reason = (
+            "DIFY_PRACTICE_NOT_APPROVED" if not policy["practice_enabled"] else readiness(policy)
+        )
         if reason is None and await release_drift(session, policy["version"]):
             reason = "DIFY_WORKFLOW_VERSION_MISMATCH"
     return AvailabilityEnvelope(

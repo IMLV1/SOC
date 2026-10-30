@@ -1,6 +1,6 @@
 # คู่มือของโครงการ SOC
 
-> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง ปัจจุบัน local Supabase stack เปิด Dify Workflow เดียวสำหรับผู้ช่วยสอนและ feedback ข้อเขียนแล้ว (ตรวจ 30 ต.ค. 2026) ดู [ผลตรวจ](shared-dify-workflow-verification.md) ส่วน AI วิเคราะห์รอบฝึกยังเป็น mock และยังไม่มี public deployment
+> **สถานะ 30 ต.ค. 2026:** local Supabase stack เปิด Dify Workflow เดียวสี่โหมด (`tutor`, `grade`, `practice`, `analyze`) แล้ว ดู [ผลตรวจล่าสุด](dify-practice-analysis-verification.md) การกล่าวถึง Gemini และ mock analysis ในรายงานเก่าเป็นประวัติ ยังไม่มี public deployment
 
 หน้านี้ช่วยเลือกเอกสารตามสิ่งที่ต้องการอ่าน เอกสารอธิบายทั้งเป้าหมาย วิธีพัฒนา และผลตรวจจริง จึงควรดูวันที่กับสถานะในแต่ละไฟล์เสมอ เพราะแผนที่เขียนไว้ไม่ได้แปลว่าระบบทำเสร็จแล้ว
 
@@ -23,6 +23,8 @@
 ผลตรวจความปลอดภัยของข้อมูล: [Data validation และ regression coverage](data-validation-verification.md)
 
 ผลเชื่อม Workflow เดียวสองโหมด: [Tutor + feedback ข้อเขียน](shared-dify-workflow-verification.md)
+
+ผลเชื่อมสี่โหมดล่าสุด: [Tutor, grade, practice และ training analysis](dify-practice-analysis-verification.md)
 
 ให้เพื่อนทดลอง/ร่วมพัฒนา: [URL สาธารณะต่างจาก clone รันเองอย่างไร](friend-testing.md)
 
@@ -80,8 +82,8 @@
 - ระบบใช้ข้อมูลฝึกจำลอง ไม่เชื่อม SIEM/EDR ขององค์กร
 - บทเรียนและข้อสอบจริงต้อง login; การทำบทเรียนจบไม่เท่ากับสอบผ่าน
 - AI ไม่ให้คะแนนผ่านหรือปลดล็อกระดับเอง
-- ผู้ช่วยสอนและ feedback ข้อเขียนเรียก Dify ผ่าน API/worker จริงใน local Supabase stack; ส่วน RAG ภายในเก่ายังอยู่ใน source และ AI วิเคราะห์รอบฝึกยังเป็น mock
-- Gemini adapter เก่ายังเก็บใน source/รายงานเพื่ออ้างอิง แต่ provider config ปัจจุบันปฏิเสธ `gemini_free`; Tutor และ feedback ข้อเขียนใช้ Dify ใน local Supabase stack ส่วน AI วิเคราะห์รอบฝึกยังใช้ mock
+- local Supabase stack ใช้ Dify ผ่าน API/worker สำหรับ Tutor, feedback ข้อเขียน, คำถามหลังส่งเคสฝึก และการวิเคราะห์รอบฝึก; CI ยังคงใช้ fake/mock เพื่อทดสอบแบบกำหนดผลได้
+- Gemini adapter เก่ายังเก็บใน source/รายงานเพื่ออ้างอิง แต่ provider config ปัจจุบันปฏิเสธ `gemini_free`
 - RAG quality acceptance, staging และ production ยังมีงานค้าง ดู checklist ก่อนอ้างว่าพร้อมใช้
 - [Prototype](../prototype/README.md) เป็นงานอ้างอิงแยกจากเว็บแอป และเก็บข้อมูลไว้ใน browser
 

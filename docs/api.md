@@ -1,15 +1,17 @@
 # SOC Platform — API Contract (Draft)
 
+อัปเดต 30 ต.ค. 2026: local Supabase stack เปิด Dify Workflow เดียวสี่โหมดแล้วตาม [ผลตรวจล่าสุด](dify-practice-analysis-verification.md). `GET /api/v1/practice/ai-availability` คืน `available` และเหตุผลที่ปิด; `POST /api/v1/practice/cases/{case_id}/ai-questions` รับ `answer_id` ของเคสที่ผู้ใช้ส่งแล้วและ `question` 1–2000 ตัวอักษร พร้อม session/CSRF/Origin/`Idempotency-Key` แล้วคืน 202; `GET` path เดียวกันคืนประวัติของเจ้าของเคสสูงสุด 20 รายการ. Worker ตอบแบบ advisory พร้อม approved sources; ไม่แก้ deterministic feedback หรือผลสอบ. โหมด `analyze` ใช้ endpoint วิเคราะห์รอบฝึกเดิมหลังหลักฐานถูกปล่อย. Route เพิ่มเหล่านี้ยังเป็น implementation contract ไม่ได้เลื่อนเป็น approved ใน `openapi.yaml` อัตโนมัติ
+
 Tutor endpoints ฝั่ง FastAPI และข้อจำกัด release/budget/citations เพิ่มวันที่ 28 ต.ค. 2026 อยู่ใน [Dify Tutor contract](dify-integration-verification.md) ยังไม่เลื่อนเป็น approved OpenAPI อัตโนมัติ
 
 API บทเรียนจาก DB, practice draft/submit/history และข้อเขียน: [Database training](database-training.md)
 
-อัปเดต 29 ต.ค. 2026: เพิ่ม `POST`/`GET /learning/levels/{level_id}/written-submissions/{submission_id}/feedback` สำหรับ owner หลังส่งข้อเขียนเท่านั้น ใช้ Dify Workflow เดียวกับ Tutor ใน `mode=grade`; `POST` คืน 202 เมื่อเข้าคิวและ idempotent ตาม submission ID, `GET` อ่านสถานะ/feedback ที่ผ่าน source validation และ 404 เมื่อนอก scope ผลไม่ใช่ score/pass/unlock โหมด grade ยังปิดจน operator ตรวจรับและเปิด policy ดู [ผลตรวจ](shared-dify-workflow-verification.md)
+อัปเดต 29 ต.ค. 2026: เพิ่ม `POST`/`GET /learning/levels/{level_id}/written-submissions/{submission_id}/feedback` สำหรับ owner หลังส่งข้อเขียนเท่านั้น ใช้ Dify Workflow เดียวกับ Tutor ใน `mode=grade`; `POST` คืน 202 เมื่อเข้าคิวและ idempotent ตาม submission ID, `GET` อ่านสถานะ/feedback ที่ผ่าน source validation และ 404 เมื่อนอก scope ผลไม่ใช่ score/pass/unlock ประวัติการเปิดใช้สองโหมดอยู่ใน [ผลตรวจเดิม](shared-dify-workflow-verification.md)
 ใช้ Pydantic allowlists/typed frontend โดยยังไม่เลื่อน draft เป็น approved OpenAPI อัตโนมัติ
 
 ส่วนเพิ่ม 27 ต.ค. 2026: `GET /api/v1/me/learning-path` ส่ง `level_statuses[]` พร้อม `level_id`, `unlocked`, `all_lessons_completed`, `exam_case_count`, `passed_case_count` ของผู้ใช้ที่ login เท่านั้น นับเคส enabled และผล revision ล่าสุดต่อ attempt ไม่ส่ง private labels/เฉลย ค่า `next_action` เดิมคงไว้เพื่อ compatibility; UI ใช้สถานะระดับกับ result/active attempt ไม่ตีความข้อความ legacy ว่าไม่มีระบบสอบ
 
-เอกสารนี้อธิบายสัญญา API; บางส่วนยังเป็น draft. ใน repo มี API สำหรับ auth, training, investigation, analysis, learning และ exam/review แต่บาง route ยังไม่อยู่ใน OpenAPI ที่อนุมัติ. RAG API ที่อ้างในโค้ดปัจจุบันรองรับ pipeline ภายใน; ทิศทางที่ผู้ใช้ยืนยันคือเรียกบริการภายนอก (Dify) ผ่าน API และยังต้องปรับ contract ให้ตรง. ดูป้าย `approved`/`draft` ใน [OpenAPI](openapi.yaml) และ [checklist](implementation-checklist.md)
+เอกสารนี้อธิบายสัญญา API; บางส่วนยังเป็น draft. ใน repo มี API สำหรับ auth, training, investigation, analysis, learning และ exam/review แต่บาง route ยังไม่อยู่ใน OpenAPI ที่อนุมัติ. RAG ภายในเก่ายังอยู่ใน source แต่ AI ที่เปิดใน local stack ใช้ Dify ภายนอกผ่าน API ตามผลตรวจล่าสุด ดูป้าย `approved`/`draft` ใน [OpenAPI](openapi.yaml) และ [checklist](implementation-checklist.md)
 กติกา exam ใน SRS §3–5 มีผลเหนือ generic training projection: Instructor อ่านเฉลยสอบได้หลัง
 submit เท่านั้น; ผู้เรียนได้รับเฉพาะ feedback ตาม rubric ไม่เปิดเฉลยเต็ม (ผู้ใช้ยืนยันแล้ว)
 

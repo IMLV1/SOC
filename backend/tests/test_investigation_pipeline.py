@@ -216,8 +216,10 @@ def test_provider_timeout_is_unknown_and_invalid_output_usage_is_consumed_with_r
         owner = Database(migrated("migration_owner"))
         try:
             async with owner.sessions() as session, session.begin():
-                await session.execute(text("""UPDATE app.tutor_policy
-                SET analysis_enabled=true,analysis_call_bound_usd=0.01 WHERE id=1"""))
+                await session.execute(
+                    text("""UPDATE app.tutor_policy
+                SET analysis_enabled=true,analysis_call_bound_usd=0.01 WHERE id=1""")
+                )
         finally:
             await owner.close()
         api = Database(migrated("api_runtime"))

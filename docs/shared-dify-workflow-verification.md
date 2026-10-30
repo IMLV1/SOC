@@ -1,5 +1,7 @@
 # Dify Workflow เดียวสำหรับ tutor และ feedback ข้อเขียน
 
+> รายงานนี้เป็นผล ณ Published version #6 และ policy version 3 เท่านั้น สถานะล่าสุดของ Workflow สี่โหมดอยู่ใน [ผลตรวจ 30 ต.ค. 2026](dify-practice-analysis-verification.md)
+
 ## ผลตรวจใช้งานจริง — 30 ต.ค. 2026
 
 - Dify app `SOC` Publish version `#6` แล้ว; Published Workflow ID `46df88b0-576d-49b7-872d-8b5bcda60aac` ใช้ Groq `gpt-oss-20b` และ approved guide เดิม ไฟล์ [DSL ที่ใช้](../knowledge/dify/SOC-groq-import.yml) ส่ง Output `mode`, `answer`, `sources` ตรง ๆ โดย backend ตรวจ `mode` และ version ก่อนใช้ผล

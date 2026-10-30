@@ -1,4 +1,4 @@
-"""Provider configuration. Real dispatch currently fails closed in the worker."""
+"""Provider configuration for deterministic mock or approved Dify dispatch."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -26,9 +26,8 @@ class ProviderConfig:
 
 
 def load_config(env: Mapping[str, str]) -> ProviderConfig:
-    # Local and CI stay deterministic. Direct model-provider calls are disabled;
-    # Dify is the sole intended external AI boundary. The worker currently
-    # rejects real dispatch until its structured/citation adapter is integrated.
+    # Local and CI stay deterministic. Dify is the sole external AI boundary;
+    # release policy and output validation gate real worker dispatch.
     mode = env.get("SOC_AI_PROVIDER", "mock")
     if mode == "mock":
         return ProviderConfig(mode, "mock-v1", "fake-hash-16-v1", None)

@@ -17,6 +17,8 @@ test("practice uses API drafts/history across refresh, escapes logs and keeps dr
   let version = 0;
   let conflict = false;
   const history: unknown[] = [];
+  await page.route("**/api/v1/practice/ai-availability", (route) => route.fulfill({ json: { data: { available: false } } }));
+  await page.route(`**/api/v1/practice/cases/${caseId}/ai-questions`, (route) => route.fulfill({ json: { data: [] } }));
   await page.route("**/api/v1/practice/cases", (route) => route.fulfill({ json: { data: [summary] } }));
   await page.route(`**/api/v1/practice/cases/${caseId}`, (route) => route.fulfill({ json: { data: {
     ...summary, prompt: "อ่านข้อมูลก่อนสรุป", draft, draft_version: version, draft_saved_at: "2026-01-01T00:00:00Z",
@@ -72,6 +74,47 @@ test("practice requires a real session and never falls back to JSON", async ({ p
   await page.goto("/practice");
   await expect(page.getByRole("link", { name: "เข้าสู่ระบบเพื่อฝึกและบันทึกคำตอบ" })).toBeVisible();
   await expect(page.getByRole("checkbox")).toHaveCount(0);
+});
+
+test("practice Ask AI unlocks after submission and restores the queued question", async ({ page }) => {
+  const answerId = "22000000-0000-4000-8000-000000000004";
+  const questionId = "22000000-0000-4000-8000-000000000005";
+  const questions: unknown[] = [];
+  let answers: unknown[] = [];
+  await page.route("**/api/v1/practice/cases", (route) => route.fulfill({ json: { data: [summary] } }));
+  await page.route(`**/api/v1/practice/cases/${caseId}`, (route) => route.fulfill({ json: { data: {
+    ...summary, prompt: "อ่านหลักฐาน", draft: null, draft_version: 0, draft_saved_at: null,
+    events: [{ id: eventId, time: "2026-01-01T00:00:00Z", source: "web", asset: "TRAIN", username: "learner", src_ip: "192.0.2.1", request: { path: "/admin" }, response: { status: 403 }, log: {} }],
+  } } }));
+  await page.route("**/api/v1/practice/ai-availability", (route) => route.fulfill({ json: { data: { available: true } } }));
+  await page.route(`**/api/v1/practice/cases/${caseId}/answers`, (route) => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { data: answers } });
+    const answer = { id: answerId, case_id: caseId, case_version: 1, created_at: "2026-10-30T01:00:00Z", answer: route.request().postDataJSON(), feedback: {
+      mode: "deterministic", classification_correct: true, evidence_correct: true,
+      expected_severity: "low", expected_disposition: "undetermined", explanation: "ต้องตรวจเพิ่ม",
+      limitation: "ยังไม่ทราบผลกระทบ", reason_review_message: "AI ไม่เปลี่ยนผลตรวจ", is_exam_result: false,
+    } };
+    answers = [answer];
+    return route.fulfill({ status: 201, json: { data: answer } });
+  });
+  await page.route(`**/api/v1/practice/cases/${caseId}/ai-questions`, (route) => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { data: questions } });
+    expect(route.request().headers()["idempotency-key"]).toBeTruthy();
+    expect(route.request().postDataJSON().answer_id).toBe(answerId);
+    const question = { id: questionId, case_id: caseId, answer_id: answerId, question: "403 ยืนยันข้อมูลรั่วไหม", status: "queued", result: null, error_code: null, created_at: "2026-10-30T01:01:00Z" };
+    questions.push(question);
+    return route.fulfill({ status: 202, json: { data: question } });
+  });
+  await page.goto("/practice");
+  await expect(page.getByRole("button", { name: "ถาม AI", exact: true })).toBeDisabled();
+  await page.getByRole("checkbox").check();
+  await page.getByLabel("เหตุผล หลักฐานที่รองรับ และสิ่งที่ยังไม่ทราบ").fill("403 ยังไม่ยืนยันข้อมูลรั่ว");
+  await page.getByRole("button", { name: "ส่งคำตอบและตรวจข้อสรุป" }).click();
+  await page.getByLabel("คำถามของคุณ").fill("403 ยืนยันข้อมูลรั่วไหม");
+  await page.getByRole("button", { name: "ถาม AI", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "403 ยืนยันข้อมูลรั่วไหม" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "403 ยืนยันข้อมูลรั่วไหม" })).toBeVisible();
 });
 
 test("written knowledge check sends all ten answers once and restores immutable history", async ({ page }) => {

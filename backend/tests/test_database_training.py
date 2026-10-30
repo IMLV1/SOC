@@ -266,7 +266,8 @@ def test_practice_ai_requires_submitted_owned_answer_and_persists_validated_repl
             async with db.sessions() as session, session.begin():
                 for user_id in users:
                     await session.execute(
-                        text("INSERT INTO app.user_quotas(user_id,daily_runs,daily_ai_requests) VALUES(:user,10,20)"),
+                        text("""INSERT INTO app.user_quotas
+                        (user_id,daily_runs,daily_ai_requests) VALUES(:user,10,20)"""),
                         {"user": user_id},
                     )
                 await session.execute(
@@ -295,9 +296,12 @@ def test_practice_ai_requires_submitted_owned_answer_and_persists_validated_repl
     async def fake_workflow(config, workflow, question, user, mode):
         assert mode == "practice" and "response" in question
         return WorkflowReply(
-            {"answer": "พบคำขอถูกปฏิเสธ ยังสรุปการอ่านข้อมูลไม่ได้ SOC-003", "sources": [
-                {"title": "คู่มือ", "content": context, "metadata": {"document_id": document}}
-            ]},
+            {
+                "answer": "พบคำขอถูกปฏิเสธ ยังสรุปการอ่านข้อมูลไม่ได้ SOC-003",
+                "sources": [
+                    {"title": "คู่มือ", "content": context, "metadata": {"document_id": document}}
+                ],
+            },
             42,
             "synthetic-run",
         )
@@ -309,13 +313,23 @@ def test_practice_ai_requires_submitted_owned_answer_and_persists_validated_repl
     with TestClient(app, headers={"Origin": "http://testserver"}) as client:
         client.cookies.set(auth.SESSION, tokens[0])
         headers = {"X-CSRF-Token": auth.csrf(tokens[0]), "Idempotency-Key": str(uuid4())}
-        rejected = client.post(path + "/ai-questions", json={"answer_id": str(uuid4()), "question": "403 คืออะไร"}, headers=headers)
+        rejected = client.post(
+            path + "/ai-questions",
+            json={"answer_id": str(uuid4()), "question": "403 คืออะไร"},
+            headers=headers,
+        )
         assert rejected.status_code == 404
         assert client.get("/api/v1/practice/ai-availability").json()["data"]["available"]
-        answer = client.post(path + "/answers", json={
-            "evidence_ids": truth["evidence_ids"], "severity": truth["severity"],
-            "disposition": truth["disposition"], "reason": "ตรวจหลักฐานก่อนสรุป",
-        }, headers=headers | {"Idempotency-Key": str(uuid4())})
+        answer = client.post(
+            path + "/answers",
+            json={
+                "evidence_ids": truth["evidence_ids"],
+                "severity": truth["severity"],
+                "disposition": truth["disposition"],
+                "reason": "ตรวจหลักฐานก่อนสรุป",
+            },
+            headers=headers | {"Idempotency-Key": str(uuid4())},
+        )
         assert answer.status_code == 201, answer.text
         body = {"answer_id": answer.json()["data"]["id"], "question": "403 คืออะไร"}
         queued = client.post(path + "/ai-questions", json=body, headers=headers)
@@ -325,9 +339,17 @@ def test_practice_ai_requires_submitted_owned_answer_and_persists_validated_repl
         assert repeat.json()["data"]["id"] == queued.json()["data"]["id"]
         client.cookies.set(auth.SESSION, tokens[1])
         assert client.get(path + "/ai-questions").json()["data"] == []
-        assert client.post(path + "/ai-questions", json=body, headers={
-            "X-CSRF-Token": auth.csrf(tokens[1]), "Idempotency-Key": str(uuid4()),
-        }).status_code == 404
+        assert (
+            client.post(
+                path + "/ai-questions",
+                json=body,
+                headers={
+                    "X-CSRF-Token": auth.csrf(tokens[1]),
+                    "Idempotency-Key": str(uuid4()),
+                },
+            ).status_code
+            == 404
+        )
 
     worker = Database(migrated("worker_runtime"))
     try:

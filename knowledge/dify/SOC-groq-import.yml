@@ -663,8 +663,9 @@ workflow:
           - result
         model:
           completion_params:
-            max_tokens: 4096
+            max_tokens: 8192
             reasoning_effort: low
+            response_format: json_object
             temperature: 0
           mode: chat
           name: openai/gpt-oss-20b

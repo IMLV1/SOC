@@ -5,10 +5,11 @@ info:
   description: 'Contract status is per operation and does not mean the full product is
     released. The source includes auth, training, investigation, learning, exam and
     internal RAG operations; some operations remain draft. Product direction confirmed
-    by the user is to call an external RAG service (Dify) through its API,
-    but the current source still contains an internal retrieval pipeline. This contract
-    must be reconciled before claiming the external service is connected. Provider calls
-    are opt-in and synthetic-training-only; exam and evaluation data stay server-side.'
+    by the user is to call external Dify through its API. The local Supabase stack
+    has a reviewed Dify workflow, while legacy internal retrieval code remains in source.
+    New tutor, grade and practice routes are implementation contracts not yet promoted
+    to approved OpenAPI. Provider calls are opt-in and synthetic-training-only;
+    exam and evaluation data stay server-side.'
 paths:
   /health/live:
     get:
