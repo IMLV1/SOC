@@ -176,7 +176,7 @@ def test_grade_mode_uses_the_same_workflow_endpoint_and_key(tmp_path: Path, monk
                     "workflow_id": "same-version",
                     "status": "succeeded",
                     "id": "run",
-                    "outputs": {"answer": "{}", "sources": []},
+                    "outputs": {"mode": "grade", "answer": "{}", "sources": []},
                 }
             }
 
@@ -207,6 +207,28 @@ def test_grade_mode_uses_the_same_workflow_endpoint_and_key(tmp_path: Path, monk
                 mode="admin",
             )
         )
+
+
+def test_mode_envelope_rejects_wrong_mode_and_extra_outputs():
+    base = {"workflow_id": "v1", "status": "succeeded", "id": "run"}
+    for candidate in (
+        {"mode": "tutor", "answer": "x", "sources": []},
+        {"mode": "grade", "payload": "not json"},
+        {"mode": "grade", "answer": "x", "sources": [], "extra": 1},
+        {"answer": "x", "sources": []},
+    ):
+        with pytest.raises(DifyUnavailable):
+            parse_workflow(
+                {"data": base | {"outputs": candidate}},
+                expected_workflow_id="v1",
+                expected_mode="grade",
+            )
+    reply = parse_workflow(
+        {"data": base | {"outputs": {"mode": "grade"} | outputs()}},
+        expected_workflow_id="v1",
+        expected_mode="grade",
+    )
+    assert reply.outputs == outputs()
 
 
 @pytest.mark.parametrize("exception", [requests.Timeout, requests.ConnectionError])

@@ -1,7 +1,7 @@
 # Sentinel — ระบบปัจจุบันสำหรับพัฒนาและส่งงาน
 
 อัปเดต 27 ต.ค. 2026 บน working tree หลัง `a1fc962` ไม่ใช่ production release
-ส่วน Dify Tutor เปิดเฉพาะ lesson tutoring บน local Supabase stack แล้ว; 29 ต.ค. เพิ่มโค้ด feedback ข้อเขียนผ่าน Workflow เดียวในโหมด `grade` แต่ยังไม่เปิด dispatch จนกว่าจะ Publish/ตรวจรับสองโหมดและ activate policy ดู [ผลตรวจล่าสุด](shared-dify-workflow-verification.md)
+อัปเดตการเชื่อม AI 30 ต.ค. 2026: local Supabase stack เปิด Dify Workflow เดียวในโหมด `tutor` และ `grade` สำหรับ feedback ข้อเขียนหลังส่งแล้ว policy version 3 / migration 0024 ดู [ผลตรวจล่าสุด](shared-dify-workflow-verification.md) สถานะส่วนอื่นด้านล่างยังอ้างอิงการตรวจเดิมตามวันที่ ไม่ใช่ผลตรวจ deployment สาธารณะ
 เอกสารนี้สรุป implementation ล่าสุด; policy คะแนน/สิทธิ์ยังยึด [SRS decision register](srs.md)
 และไม่ถือว่าเอกสารเก่าที่ติ๊กผ่านเป็นหลักฐานของ environment ปัจจุบัน
 
@@ -14,9 +14,9 @@
 |---|---|
 | `/demo` | ตัวอย่างสาธารณะอ่านจาก DB ไม่บันทึกผลเรียน |
 | `/learning` | 9 บท/45 ขั้น/3 ระดับ, ordered saves, progress, practical exam และผลตรวจ |
-| ผู้ช่วยสอนใน `/learning` | Dify + Groq จริง, Published-latest พร้อมตรวจ response version/citations, ประวัติใน DB, ปิดระหว่างสอบ; เปิด local policy v2 วันที่ 28 ต.ค. ดู dify-integration-verification.md |
+| ผู้ช่วยสอนใน `/learning` | Dify + Groq จริง, Published-latest พร้อมตรวจ response version/citations, ประวัติใน DB, ปิดระหว่างสอบ; เปิด local policy v3 วันที่ 30 ต.ค. ดู shared-dify-workflow-verification.md |
 | `/practice` | 30 เคสระดับละ 10, filter หมวด, draft/version, submit/history, feedback ตามกฎ |
-| `/knowledge-check` | ข้อเขียนระดับละ 10, frozen submissions; ขอ feedback จาก Dify Workflow เดียวกับ tutor ได้หลังเปิด `grade_enabled`; ไม่ใช่ formal exam/คะแนนผ่าน |
+| `/knowledge-check` | ข้อเขียนระดับละ 10, frozen submissions; ขอ feedback จาก Dify Workflow เดียวกับ tutor ได้บน local Supabase stack; ไม่ใช่ formal exam/คะแนนผ่าน |
 | `/scenarios` → `/runs` | catalog 5 สถานการณ์ S01–S05, simulation worker/server clock |
 | `/runs/{id}` | released events, request/response/log, alerts, pause/resume/finish |
 | ticket/note | CRUD/soft delete/restore, evidence, expected_version และ revision history |
@@ -60,7 +60,7 @@ flowchart LR
     WORKER[Python worker / leased durable jobs] <--> DB
     EVAL[Evaluator role / frozen results] <--> DB
     OP[Operator: migrate / seed / provision] --> DB
-    API --> DIFY[Dify Workflow / lesson tutor / approved knowledge]
+    API --> DIFY[Dify Workflow / tutor and written feedback / approved knowledge]
 ```
 
 - FastAPI เป็นเจ้าของ domain/authorization ใช้ opaque HttpOnly SOC session cookie

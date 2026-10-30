@@ -1,5 +1,7 @@
 # Dify Cloud configuration
 
+**อัปเดต 30 ต.ค. 2026:** Publish Workflow รุ่นเดียวที่รับ `mode=tutor|grade` แล้ว; local Supabase stack ใช้ migration 0024 และ policy version 3 เปิดทั้งสองโหมดผ่าน API/worker ดู [ผลตรวจจริงและข้อจำกัด](shared-dify-workflow-verification.md) ข้อความสถานะวันที่ 28 ต.ค. ด้านล่างเป็นประวัติ
+
 อัปเดต 28 ต.ค. 2026: Base URL ที่ผู้ใช้ระบุคือ `https://api.dify.ai/v1`
 ค่าเริ่มต้นใน DifyConfig/provider config และ Compose ใช้ URL นี้ โดย override `DIFY_API_BASE_URL` เพื่อใช้ instance อื่นได้
 ถ้าตั้งเป็นข้อความว่างใน Python config จะถูกปฏิเสธ ไม่ถือว่าเป็น URL ที่ถูกต้อง

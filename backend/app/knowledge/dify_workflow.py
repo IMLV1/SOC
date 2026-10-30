@@ -16,7 +16,9 @@ class WorkflowReply:
     run_id: str
 
 
-def parse_workflow(body: Any, *, expected_workflow_id: str | None = None) -> WorkflowReply:
+def parse_workflow(
+    body: Any, *, expected_workflow_id: str | None = None, expected_mode: str | None = None
+) -> WorkflowReply:
     if not isinstance(body, dict) or not isinstance(body.get("data"), dict):
         raise DifyUnavailable("DIFY_INVALID_RESPONSE")
     data = body["data"]
@@ -29,7 +31,14 @@ def parse_workflow(body: Any, *, expected_workflow_id: str | None = None) -> Wor
     tokens = data.get("total_tokens")
     if tokens is not None and (type(tokens) is not int or tokens < 0):
         raise DifyUnavailable("DIFY_INVALID_RESPONSE")
-    return WorkflowReply(data["outputs"], tokens, data["id"])
+    outputs = data["outputs"]
+    if expected_mode is not None:
+        if outputs.get("mode") != expected_mode:
+            raise DifyUnavailable("DIFY_MODE_MISMATCH")
+        if set(outputs) != {"mode", "answer", "sources"}:
+            raise DifyUnavailable("DIFY_INVALID_RESPONSE")
+        outputs = {"answer": outputs["answer"], "sources": outputs["sources"]}
+    return WorkflowReply(outputs, tokens, data["id"])
 
 
 def _request(
@@ -68,7 +77,7 @@ def _request(
     if not 200 <= response.status_code < 300:
         raise DifyUnavailable("DIFY_REQUEST_FAILED")
     try:
-        return parse_workflow(response.json(), expected_workflow_id=workflow_id)
+        return parse_workflow(response.json(), expected_workflow_id=workflow_id, expected_mode=mode)
     except ValueError:
         raise DifyUnavailable("DIFY_INVALID_RESPONSE") from None
 

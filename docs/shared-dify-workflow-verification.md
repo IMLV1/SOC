@@ -1,5 +1,18 @@
 # Dify Workflow เดียวสำหรับ tutor และ feedback ข้อเขียน
 
+## ผลตรวจใช้งานจริง — 30 ต.ค. 2026
+
+- Dify app `SOC` Publish version `#6` แล้ว; Published Workflow ID `46df88b0-576d-49b7-872d-8b5bcda60aac` ใช้ Groq `gpt-oss-20b` และ approved guide เดิม ไฟล์ [DSL ที่ใช้](../knowledge/dify/SOC-groq-import.yml) ส่ง Output `mode`, `answer`, `sources` ตรง ๆ โดย backend ตรวจ `mode` และ version ก่อนใช้ผล
+- ทดสอบผ่าน Dify API จริงด้วยคำถาม Tutor 1 ครั้ง และคำตอบข้อเขียนจำลอง 10 ข้อใน Grade 1 ครั้ง: HTTP 200 ทั้งคู่, Workflow ID ตรงกัน, sources 4 ชิ้นต่อโหมดและ hash ตรงกับ approved review ทั้ง 4, `validate_outputs` ผ่าน, `validate_feedback` ผ่าน 10 รายการ ไม่พิมพ์ key/คำตอบลงรายงาน
+- Supabase PostgreSQL อัปเกรดจาก `0023_dify_tutor` เป็น `0024_remove_tutor_daily_budget` ผ่าน migration wrapper; activate policy version `3` โดย operator พร้อม `enabled=true`, `grade_enabled=true`, Workflow ID ข้างต้น API และ worker rebuild/restart และ healthy; evaluator healthy; `GET /health/ready` และหน้า `/learning` คืน 200
+- ชุดทดสอบฐานทิ้งได้ `scripts/ci-compose.sh`: integration **104 passed, 1 skipped** (real provider opt-in), HTTP smoke **3 passed**, Playwright **71 passed, 1 skipped** (preview-only); backend unit/contract **319 passed**, Ruff lint/format และ mypy ผ่าน แยกจากการทดสอบ Dify live
+- หน้าเว็บ IAB ที่ตรวจยังเป็น guest จึงยังไม่ได้กด flow Tutor/Grade ด้วยบัญชีจริงบน Supabase ผ่าน browser; ผล 2 real calls เป็น direct Dify API + backend validators และ flow API/worker/browser มี regression tests แยกกัน
+- AI วิเคราะห์รอบฝึก `/runs` ยังคง `mode=mock`; ปุ่มถาม AI ใน `/practice` ยังปิดตามหน้าเว็บจริง และไม่มี public deployment การตรวจนี้ไม่ใช่การรับรองทุก feature หรือคุณภาพคำตอบ AI ในทุกเคส
+
+Review สำหรับ activate เก็บใน ignored `.local/dify-grade-review-20261030.json` เท่านั้น; original review ของ corpus ที่ commit ใช้ยืนยัน source hash ไม่เพิ่ม secret ใน repository การเปลี่ยน Dify Workflow/corpus ในอนาคตต้อง review/activate release ใหม่ เพราะ API ตรวจ published version หลัง dispatch
+
+## บันทึกก่อนเปิด Grade (เก็บเป็นประวัติ)
+
 ตรวจ 30 ต.ค. 2026 จาก base `b598c17` บน `main` ผลด้านล่างเป็น local tests ไม่ใช่ผล Dify live หรือ public deployment
 
 ## สถานะและเส้นทางข้อมูล

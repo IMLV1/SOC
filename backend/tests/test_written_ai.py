@@ -37,8 +37,32 @@ def test_grade_feedback_requires_frozen_ids_and_approved_sources():
     payload = {"answer": json.dumps(result_for(snapshot)), "sources": outputs()["sources"]}
     valid = validate_feedback(payload, submission, policy)
     assert len(valid.items) == 10 and valid.sources[0].section_ids == ["SOC-003"]
+    no_citation = result_for(snapshot)
+    no_citation["items"][0]["section_ids"] = []
+    no_citation["items"][0]["explanation"] = "คู่มือที่ได้รับยังไม่รองรับข้อสรุปนี้"
+    assert (
+        validate_feedback(payload | {"answer": json.dumps(no_citation)}, submission, policy)
+        .items[0]
+        .section_ids
+        == []
+    )
+    all_insufficient = result_for(snapshot)
+    for item in all_insufficient["items"]:
+        item.update(explanation="คู่มือที่ได้รับยังไม่เพียงพอ", section_ids=[])
+    assert (
+        validate_feedback(
+            {"answer": json.dumps(all_insufficient), "sources": []}, submission, policy
+        ).sources
+        == []
+    )
+    unsupported_without_citation = result_for(snapshot)
+    unsupported_without_citation["items"][0].update(verdict="unsupported", section_ids=[])
+    invented_typographic_citation = result_for(snapshot)
+    invented_typographic_citation["items"][0]["explanation"] = "อ้าง SOC\u2011999 ที่ไม่อยู่ในบริบท"
     for invalid in (
         payload | {"sources": []},
+        payload | {"answer": json.dumps(unsupported_without_citation)},
+        payload | {"answer": json.dumps(invented_typographic_citation)},
         payload | {"answer": json.dumps({"items": result_for(snapshot)["items"][:-1]})},
         payload | {"answer": json.dumps({"items": result_for(snapshot)["items"], "score": 10})},
         payload
@@ -79,6 +103,7 @@ async def setup(migrated, users):
             answers = [
                 {"question_id": item["id"], "answer": "ควรตรวจหลักฐานเพิ่มเติม"} for item in snapshot
             ]
+            answers[0]["answer"] = "token: private-example"
             await session.execute(
                 text("""INSERT INTO app.written_submissions
                 (id,owner_user_id,level_id,idempotency_key,request_hash,answers_json,question_snapshot)
@@ -128,7 +153,9 @@ def test_written_grade_uses_same_dify_workflow_after_submit_and_never_unlocks(
     async def fake(config, workflow_id, question, user, *, mode):
         calls.append((workflow_id, mode, question))
         assert mode == "grade" and workflow_id == "grade-test"
-        assert len(json.loads(question)["questions"]) == 10
+        parsed = json.loads(question)["questions"]
+        assert len(parsed) == 10
+        assert "private-example" not in parsed[0]["answer"]
         return WorkflowReply(
             {"answer": json.dumps(result_for(snapshot)), "sources": outputs()["sources"]},
             100,

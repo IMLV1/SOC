@@ -45,7 +45,7 @@ class FeedbackItem(StrictModel):
 
 class FeedbackResult(StrictModel):
     items: list[FeedbackItem] = Field(min_length=10, max_length=10)
-    sources: list[TutorSource] = Field(min_length=1, max_length=5)
+    sources: list[TutorSource] = Field(max_length=5)
 
 
 class FeedbackView(StrictModel):
@@ -98,10 +98,16 @@ def validate_feedback(outputs: dict[str, Any], submission: Any, policy: Any) -> 
     parsed = json.loads(raw)
     if not isinstance(parsed, dict) or set(parsed) != {"items"}:
         raise ValueError("Invalid grade schema")
+    if isinstance(parsed["items"], list):
+        for entry in parsed["items"]:
+            if isinstance(entry, dict) and isinstance(entry.get("explanation"), str):
+                entry["explanation"] = re.sub(
+                    r"\bSOC[\u2010\u2011](\d{3})\b", r"SOC-\1", entry["explanation"]
+                )
     allowed_sections: set[str] = set()
     approved_sources: list[TutorSource] = []
-    if not 1 <= len(sources) <= 5:
-        raise ValueError("Feedback sources required")
+    if len(sources) > 5:
+        raise ValueError("Too many feedback sources")
     for source in sources:
         if not isinstance(source, dict) or not isinstance(source.get("metadata"), dict):
             raise ValueError("Invalid source")
@@ -130,7 +136,11 @@ def validate_feedback(outputs: dict[str, Any], submission: Any, policy: Any) -> 
     if len(set(actual)) != 10 or set(actual) != expected:
         raise ValueError("Feedback question mismatch")
     for item in result.items:
-        if not item.section_ids or not set(item.section_ids).issubset(allowed_sections):
+        if not sources and item.verdict != "insufficient":
+            raise ValueError("Feedback without sources must be insufficient")
+        if (not item.section_ids and item.verdict != "insufficient") or not set(
+            item.section_ids
+        ).issubset(allowed_sections):
             raise ValueError("Unsupported citation")
         if set(re.findall(r"\bSOC-\d{3}\b", item.explanation)) - set(item.section_ids):
             raise ValueError("Unlisted citation")
@@ -333,11 +343,13 @@ async def process_feedback(database: Database, job: dict[str, Any]) -> None:
             "questions": [
                 {
                     "id": item["id"],
-                    "prompt": item["prompt"],
-                    "answer": next(
-                        answer["answer"]
-                        for answer in submission["answers_json"]
-                        if answer["question_id"] == item["id"]
+                    "prompt": redact_question(item["prompt"]),
+                    "answer": redact_question(
+                        next(
+                            answer["answer"]
+                            for answer in submission["answers_json"]
+                            if answer["question_id"] == item["id"]
+                        )
                     ),
                 }
                 for item in submission["question_snapshot"]
@@ -351,7 +363,7 @@ async def process_feedback(database: Database, job: dict[str, Any]) -> None:
         reply = await run_workflow(
             config,
             row["workflow_id"],
-            redact_question(question),
+            question,
             f"grade-{submission_id}",
             mode="grade",
         )

@@ -1,6 +1,6 @@
 # คู่มือของโครงการ SOC
 
-> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง/หลักฐานของ implementation ก่อนเลือก Dify ไม่ใช่คำสั่งให้เปิดใช้หรือสถานะ provider ปัจจุบัน; repository ต้องใช้ Dify API เท่านั้น และ runtime ยังปิดจน integration ผ่านการตรวจรับ
+> **หมายเหตุสถานะปัจจุบัน:** การกล่าวถึง Gemini ในเอกสารนี้เป็นข้อมูลย้อนหลัง ปัจจุบัน local Supabase stack เปิด Dify Workflow เดียวสำหรับผู้ช่วยสอนและ feedback ข้อเขียนแล้ว (ตรวจ 30 ต.ค. 2026) ดู [ผลตรวจ](shared-dify-workflow-verification.md) ส่วน AI วิเคราะห์รอบฝึกยังเป็น mock และยังไม่มี public deployment
 
 หน้านี้ช่วยเลือกเอกสารตามสิ่งที่ต้องการอ่าน เอกสารอธิบายทั้งเป้าหมาย วิธีพัฒนา และผลตรวจจริง จึงควรดูวันที่กับสถานะในแต่ละไฟล์เสมอ เพราะแผนที่เขียนไว้ไม่ได้แปลว่าระบบทำเสร็จแล้ว
 
@@ -80,8 +80,8 @@
 - ระบบใช้ข้อมูลฝึกจำลอง ไม่เชื่อม SIEM/EDR ขององค์กร
 - บทเรียนและข้อสอบจริงต้อง login; การทำบทเรียนจบไม่เท่ากับสอบผ่าน
 - AI ไม่ให้คะแนนผ่านหรือปลดล็อกระดับเอง
-- ทิศทาง RAG ที่ผู้ใช้ยืนยันคือเรียก Dify ผ่าน API; มี backend client เบื้องต้นแล้ว แต่ยังไม่ต่อเข้ากับ worker หรือทดสอบกับบริการจริง และใน source ยังมี implementation ภายในเดิม
-- Gemini adapter เก่ายังเก็บใน source/รายงานเพื่ออ้างอิง แต่ provider config ปัจจุบันปฏิเสธ `gemini_free`; runtime ใช้ mock หรือ Dify ที่ยังปิดไว้
+- ผู้ช่วยสอนและ feedback ข้อเขียนเรียก Dify ผ่าน API/worker จริงใน local Supabase stack; ส่วน RAG ภายในเก่ายังอยู่ใน source และ AI วิเคราะห์รอบฝึกยังเป็น mock
+- Gemini adapter เก่ายังเก็บใน source/รายงานเพื่ออ้างอิง แต่ provider config ปัจจุบันปฏิเสธ `gemini_free`; Tutor และ feedback ข้อเขียนใช้ Dify ใน local Supabase stack ส่วน AI วิเคราะห์รอบฝึกยังใช้ mock
 - RAG quality acceptance, staging และ production ยังมีงานค้าง ดู checklist ก่อนอ้างว่าพร้อมใช้
 - [Prototype](../prototype/README.md) เป็นงานอ้างอิงแยกจากเว็บแอป และเก็บข้อมูลไว้ใน browser
 
