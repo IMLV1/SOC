@@ -82,3 +82,19 @@ def test_practice_and_analysis_require_separate_review_and_cost_bounds():
                 enable_practice=True,
                 enable_analysis=True,
             )
+
+
+def test_exam_grade_needs_its_own_verified_mode_and_cost_bound():
+    candidate = review() | {
+        "status": "approved_for_tutor_grade_practice_analysis_exam",
+        "exam_grade_mode_verified": True,
+        "exam_grade_call_bound_usd": "0.010000",
+    }
+    assert reviewed_policy(candidate, enable_exam_grade=True)["exam_grade"] is True
+    for field, value in (
+        ("exam_grade_mode_verified", False),
+        ("exam_grade_call_bound_usd", "0"),
+        ("status", "approved_for_tutor_grade_practice_analysis"),
+    ):
+        with pytest.raises(ValueError):
+            reviewed_policy(candidate | {field: value}, enable_exam_grade=True)

@@ -1,5 +1,9 @@
 # SOC Learning Lab — SRS ฉบับเริ่มต้น
 
+## Decision 30 ต.ค. 2026 — ตรวจข้อสอบหลังส่งด้วย Dify
+
+ผู้ใช้ยืนยันให้ข้อสอบที่ส่งและ freeze แล้วเข้าคิวตรวจอัตโนมัติด้วย Dify Workflow เดียวกับ `tutor`, `grade`, `practice` และ `analyze` โดยใช้ `mode=exam_grade` ไม่บังคับให้มี Instructor ตรวจทุกฉบับก่อนทราบผล ระบบตรวจหลักฐานที่เลือกและ severity/disposition กับ private truth ฝั่ง evaluator เท่านั้น; Dify ประเมินเฉพาะคุณภาพการวิเคราะห์และเหตุผลจากหลักฐานที่ปล่อยแล้ว คะแนน rubric รวมและการปลดล็อกคำนวณฝั่ง server ตามเกณฑ์ D-01 เดิม คำตอบผู้เรียนและ log ไม่ใช่คำสั่งให้โมเดลทำตาม เมื่อ provider ล้มเหลว, ผลลัพธ์ผิด schema, citation ไม่ผ่าน หรือข้อมูลกำกวม ให้ `needs_review` โดยไม่ auto-pass และไม่เปิดเผยเฉลย ผู้ใช้ต้องได้รับสถานะ `submitted` ระหว่างรอผลและ `passed`/`failed` เมื่อประเมินสำเร็จ การเปิดจริงต้องผ่าน migration, publish workflow, ตรวจโหมดและ activation policy แยกจากการ deploy โค้ด
+
 ## Decision เพิ่มเติม 28 ต.ค. 2026 — Dify Free lesson Tutor
 
 **อัปเดต 29 ต.ค. 2026:** ผู้ใช้ต้องการ Dify app/Workflow/API key เดียวสำหรับ `tutor` และ `grade` และยกเลิกเพดานรวม US$0.25/วัน ข้อความเพดานในบันทึก 28 ต.ค. ด้านล่างเป็นประวัติ ไม่ใช่ policy ปัจจุบัน ยังคง 20 logical AI requests/ผู้ใช้/วัน; เก็บการสำรองและข้อมูล usage ต่อคำขอเพื่อ audit โดยไม่ใช้เป็น hard daily USD limit โหมด `grade` เป็นข้อเสนอแนะสำหรับข้อเขียนที่ส่งและ freeze แล้ว ไม่ให้คะแนนผ่าน/ปลดล็อกระดับเอง ต้องตรวจและ Publish Workflow สองโหมดก่อน operator เปิด `grade_enabled` บน server

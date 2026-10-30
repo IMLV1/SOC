@@ -21,9 +21,12 @@ def reviewed_policy(
     enable_grade: bool = False,
     enable_practice: bool = False,
     enable_analysis: bool = False,
+    enable_exam_grade: bool = False,
 ) -> dict[str, Any]:
     required_status = (
-        "approved_for_tutor_grade_practice_analysis"
+        "approved_for_tutor_grade_practice_analysis_exam"
+        if enable_exam_grade
+        else "approved_for_tutor_grade_practice_analysis"
         if enable_practice or enable_analysis
         else "approved_for_tutor_and_grade"
         if enable_grade
@@ -37,6 +40,8 @@ def reviewed_policy(
         raise ValueError("Practice mode has not been verified")
     if enable_analysis and review.get("analysis_mode_verified") is not True:
         raise ValueError("Analysis mode has not been verified")
+    if enable_exam_grade and review.get("exam_grade_mode_verified") is not True:
+        raise ValueError("Exam grade mode has not been verified")
     workflow = str(UUID(review["workflow_id"]))
     document = str(UUID(review["document_id"]))
     hashes = review["chunk_hashes"]
@@ -68,7 +73,11 @@ def reviewed_policy(
         if not grade_bound.is_finite() or grade_bound <= 0:
             raise ValueError("Invalid grade call bound")
     extra_bounds: dict[str, Decimal | None] = {}
-    for name, enabled in (("practice", enable_practice), ("analysis", enable_analysis)):
+    for name, enabled in (
+        ("practice", enable_practice),
+        ("analysis", enable_analysis),
+        ("exam_grade", enable_exam_grade),
+    ):
         if not enabled:
             extra_bounds[name] = None
             continue
@@ -89,8 +98,10 @@ def reviewed_policy(
         "grade": enable_grade,
         "practice": enable_practice,
         "analysis": enable_analysis,
+        "exam_grade": enable_exam_grade,
         "practice_bound": extra_bounds["practice"],
         "analysis_bound": extra_bounds["analysis"],
+        "exam_grade_bound": extra_bounds["exam_grade"],
     }
 
 
@@ -102,12 +113,14 @@ async def activate(
     enable_grade: bool = False,
     enable_practice: bool = False,
     enable_analysis: bool = False,
+    enable_exam_grade: bool = False,
 ) -> int:
     values = reviewed_policy(
         review,
         enable_grade=enable_grade,
         enable_practice=enable_practice,
         enable_analysis=enable_analysis,
+        enable_exam_grade=enable_exam_grade,
     )
     async with database.sessions() as session, session.begin():
         if await session.scalar(text("SELECT current_user")) != "migration_owner":
@@ -125,12 +138,14 @@ async def activate(
                 await session.execute(
                     text("""UPDATE app.tutor_policy SET version=version+1,
                     enabled=true,grade_enabled=:grade,practice_enabled=:practice,
-                    analysis_enabled=:analysis,cost_bound_verified=true,workflow_id=:workflow,
+                    analysis_enabled=:analysis,exam_grade_enabled=:exam_grade,
+                    cost_bound_verified=true,workflow_id=:workflow,
                     corpus_revision=:corpus,document_ids=CAST(:documents AS jsonb),
                     chunk_hashes=CAST(:hashes AS jsonb),call_bound_usd=:bound,
                     grade_call_bound_usd=:grade_bound,
                     practice_call_bound_usd=:practice_bound,
                     analysis_call_bound_usd=:analysis_bound
+                    ,exam_grade_call_bound_usd=:exam_grade_bound
                     WHERE id=1 RETURNING *"""),
                     values,
                 )
@@ -164,6 +179,7 @@ async def main() -> None:
     parser.add_argument("--enable-grade", action="store_true")
     parser.add_argument("--enable-practice", action="store_true")
     parser.add_argument("--enable-analysis", action="store_true")
+    parser.add_argument("--enable-exam-grade", action="store_true")
     args = parser.parse_args()
     review = json.loads(args.review_file.read_text(encoding="utf8"))
     database = Database(database_url("migration_owner"))
@@ -175,6 +191,7 @@ async def main() -> None:
             enable_grade=args.enable_grade,
             enable_practice=args.enable_practice,
             enable_analysis=args.enable_analysis,
+            enable_exam_grade=args.enable_exam_grade,
         )
     finally:
         await database.close()

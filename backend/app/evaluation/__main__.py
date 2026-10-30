@@ -12,6 +12,7 @@ from app.db.config import database_url
 from app.db.health import check_database
 from app.db.session import Database
 from app.evaluation.worker import finalize
+from app.grading.exam_ai import process_exam_grade
 from app.worker.fencing import lock_domain, require_lease
 
 
@@ -20,7 +21,7 @@ async def process_one(database: Database, worker_id: str) -> bool:
         row = (
             (
                 await session.execute(
-                    text("""SELECT id FROM app.jobs WHERE type='finalize_run'
+                    text("""SELECT id FROM app.jobs WHERE type IN ('finalize_run','exam_grade')
             AND attempts<3 AND ((status='queued' AND available_at<=clock_timestamp()) OR
             (status='running' AND lease_expires_at<=clock_timestamp()))
             ORDER BY available_at,id FOR UPDATE SKIP LOCKED LIMIT 1""")
@@ -46,6 +47,18 @@ async def process_one(database: Database, worker_id: str) -> bool:
             .one()
         )
         claimed = dict(job)
+
+    if claimed["type"] == "exam_grade":
+        await process_exam_grade(database, claimed)
+        async with database.sessions() as session, session.begin():
+            await require_lease(session, claimed)
+            await session.execute(
+                text("""UPDATE app.jobs SET status='succeeded',locked_by=NULL,
+                lease_token=NULL,lease_expires_at=NULL,finished_at=clock_timestamp()
+                WHERE id=:id AND lease_token=:token"""),
+                {"id": claimed["id"], "token": claimed["lease_token"]},
+            )
+        return True
 
     async with database.sessions() as session, session.begin():
         # Domain lock precedes job-row lock to preserve run -> job lock ordering.

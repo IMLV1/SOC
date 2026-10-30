@@ -36,6 +36,7 @@ from app.http_models import ErrorEnvelope, Meta
 from app.learning.catalog import LEVEL_ID
 from app.runs.service import effective_ms, server_time, start_run
 from app.scenarios.models import ScenarioView, TrainingSelection
+from app.tutor.quota import reserve_logical_request
 
 router = APIRouter(
     prefix="/api/v1",
@@ -193,12 +194,17 @@ async def _result(session: AsyncSession, attempt: Mapping[str, Any]) -> ResultDa
         score = grade["score"]
         criteria = [ResultCriterion.model_validate(item) for item in grade["criteria_json"]]
     return ResultData(
-        attempt_id=attempt["id"], status=attempt["status"], score=score, criteria=criteria
+        attempt_id=attempt["id"],
+        status=attempt["status"],
+        score=score,
+        criteria=criteria,
     )
 
 
 @router.post(
-    "/learning/levels/{level_id}/attempts", response_model=AttemptEnvelope, status_code=201
+    "/learning/levels/{level_id}/attempts",
+    response_model=AttemptEnvelope,
+    status_code=201,
 )
 async def start_attempt(
     level_id: UUID,
@@ -312,7 +318,11 @@ async def start_attempt(
                        FROM app.exam_attempts
                        WHERE owner_user_id=:owner AND level_id=:level
                          AND started_at>:cutoff ORDER BY started_at"""),
-                    {"owner": owner, "level": level_id, "cutoff": now - timedelta(hours=24)},
+                    {
+                        "owner": owner,
+                        "level": level_id,
+                        "cutoff": now - timedelta(hours=24),
+                    },
                 )
             )
             .mappings()
@@ -538,7 +548,8 @@ async def submit_attempt(
             if previous["request_hash"] != digest:
                 raise auth.AuthError(409, "IDEMPOTENCY_CONFLICT")
             return ResultEnvelope(
-                data=ResultData.model_validate(previous["response_json"]), meta=meta(request)
+                data=ResultData.model_validate(previous["response_json"]),
+                meta=meta(request),
             )
         run = (
             (
@@ -576,7 +587,8 @@ async def submit_attempt(
                 {"run": attempt["run_id"]},
             )
             return ResultEnvelope(
-                data=ResultData(attempt_id=attempt_id, status="expired"), meta=meta(request)
+                data=ResultData(attempt_id=attempt_id, status="expired"),
+                meta=meta(request),
             )
         if run["status"] not in {"running", "reviewing"}:
             raise auth.AuthError(409, "EXAM_EXPIRED")
@@ -633,12 +645,55 @@ async def submit_attempt(
                completed_at=:now,version=version+1 WHERE id=:run AND mode='exam'"""),
             {"elapsed": elapsed, "now": now, "run": attempt["run_id"]},
         )
-        await session.execute(
-            text("""UPDATE app.exam_attempts SET status='needs_review',submitted_at=:now,
-               version=version+1 WHERE id=:attempt"""),
-            {"now": now, "attempt": attempt_id},
+        policy = (
+            (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1")))
+            .mappings()
+            .one()
         )
-        result_data = ResultData(attempt_id=attempt_id, status="needs_review")
+        auto_grade = bool(
+            policy["enabled"]
+            and policy["exam_grade_enabled"]
+            and policy["cost_bound_verified"]
+            and policy["workflow_id"]
+        )
+        if auto_grade:
+            await reserve_logical_request(session, owner)
+        await session.execute(
+            text("""UPDATE app.exam_attempts SET status=:status,submitted_at=:now,
+               version=version+1 WHERE id=:attempt"""),
+            {
+                "now": now,
+                "attempt": attempt_id,
+                "status": "submitted" if auto_grade else "needs_review",
+            },
+        )
+        if auto_grade:
+            await session.execute(
+                text("""INSERT INTO app.exam_ai_grades
+                  (attempt_id,owner_user_id,policy_version,workflow_id,corpus_revision,reserved_usd)
+                  VALUES (:attempt,:owner,:version,:workflow,:corpus,:cost)"""),
+                {
+                    "attempt": attempt_id,
+                    "owner": owner,
+                    "version": policy["version"],
+                    "workflow": policy["workflow_id"],
+                    "corpus": policy["corpus_revision"],
+                    "cost": policy["exam_grade_call_bound_usd"],
+                },
+            )
+            await session.execute(
+                text("""INSERT INTO app.jobs(id,run_id,type,dedupe_key,payload)
+                  VALUES (:id,:run,'exam_grade',:dedupe,CAST(:payload AS jsonb))"""),
+                {
+                    "id": uuid4(),
+                    "run": attempt["run_id"],
+                    "dedupe": f"exam-grade:{attempt_id}",
+                    "payload": json.dumps({"attempt_id": str(attempt_id)}),
+                },
+            )
+        result_data = ResultData(
+            attempt_id=attempt_id, status="submitted" if auto_grade else "needs_review"
+        )
         response_json = result_data.model_dump(mode="json")
         await session.execute(
             text("""INSERT INTO app.idempotency_keys

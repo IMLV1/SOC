@@ -174,7 +174,8 @@ async def ask_practice_ai(
     request: Request,
     idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> PracticeAIEnvelope:
-    from app.tutor.service import readiness, redact_question, release_drift, reserve_logical_request
+    from app.tutor.quota import reserve_logical_request
+    from app.tutor.service import readiness, redact_question, release_drift
 
     key = key_from_header(idempotency_key)
     await auth.rate_limit(request, "tutor_write")

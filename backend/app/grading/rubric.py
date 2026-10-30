@@ -48,7 +48,8 @@ def score_rubric(scores: dict[str, int | None], rubric: Rubric = FOUNDATIONS_RUB
 
     This function does not inspect private case truth or learner prose. Its caller
     must validate evidence references and obtain authorized criterion results.
-    AI suggestions are never a trusted input to this deterministic policy.
+    Provider scores must be schema checked and tied to frozen evidence before
+    the caller supplies them to this deterministic policy.
     """
     expected = {criterion.key for criterion in rubric.criteria}
     maximum = len(rubric.criteria) * MAX_SCORE_PER_CRITERION

@@ -1,5 +1,7 @@
 # Learning path และการทดสอบเลื่อนระดับ (ข้อกำหนด)
 
+**อัปเดต 30 ต.ค. 2026:** หลัง `submit` ระบบใช้ Dify โหมด `exam_grade` ตรวจเหตุผล และ evaluator ฝั่ง server รวมคะแนน rubric กับการตรวจหลักฐานและ classification จาก private truth โดยอัตโนมัติ ผู้เรียนเห็น `submitted` ระหว่างเข้าคิวและผล `passed`/`failed` เมื่อเสร็จ ไม่ต้องรอ Instructor เป็นขั้นตอนปกติ กรณี Dify/ผลลัพธ์/citation ผิดพลาดหรือกำกวมคง `needs_review` แบบไม่ปลดล็อก บันทึกนี้ supersede ข้อความเดิมด้านล่างที่ให้ Instructor ตรวจทุกฉบับ
+
 เอกสารนี้อธิบายการสอนผู้เริ่มต้นให้ตรวจหลักฐาน SOC ทีละขั้น โดยไม่เปลี่ยนขอบเขต detection, ticket หรือ A/B/C เดิม ปัจจุบันมีบทเรียน ความคืบหน้าฝั่ง server ข้อสอบ และ Instructor review แล้ว; สถานะการตรวจดูที่ [รายงานข้อ 15–17](step-15-verification.md) และ [checklist](implementation-checklist.md)
 
 ## ลำดับผู้เรียน

@@ -126,7 +126,9 @@ services:
     environment:
       <<: *db-env
       DB_PASSWORD_FILE: /run/secrets/evaluator_runtime
-    secrets: [evaluator_runtime]
+      DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
+      DIFY_APP_KEY_FILE: /run/secrets/dify_app_key
+    secrets: [evaluator_runtime, dify_app_key]
     depends_on:
       seed: {condition: service_completed_successfully}
     healthcheck:

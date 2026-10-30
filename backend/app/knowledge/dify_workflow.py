@@ -89,11 +89,12 @@ async def run_workflow(
         raise DifyUnavailable("DIFY_WORKFLOW_INVALID")
     if (
         not question.strip()
-        or len(question) > (24000 if mode in {"grade", "analyze", "practice"} else 2000)
+        or len(question)
+        > (24000 if mode in {"grade", "analyze", "practice", "exam_grade"} else 2000)
         or not user
         or len(user) > 128
     ):
         raise DifyUnavailable("DIFY_QUERY_INVALID")
-    if mode not in (None, "tutor", "grade", "analyze", "practice"):
+    if mode not in (None, "tutor", "grade", "analyze", "practice", "exam_grade"):
         raise DifyUnavailable("DIFY_QUERY_INVALID")
     return await asyncio.to_thread(_request, config, workflow_id, question, user, mode)

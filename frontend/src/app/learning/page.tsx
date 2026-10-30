@@ -125,12 +125,12 @@ function LearningWorkspace() {
     };
     void Promise.resolve().then(refresh);
     window.addEventListener("focus", refresh);
-    const timer = window.setInterval(refresh, 60000);
+    const timer = window.setInterval(refresh, examResult?.status === "submitted" ? 5000 : 60000);
     return () => {
       active = false; ++generation.current;
       window.removeEventListener("focus", refresh); window.clearInterval(timer);
     };
-  }, [refreshExam, sessionLoading]);
+  }, [refreshExam, sessionLoading, examResult?.status]);
 
   const attemptId = attempt?.id;
   const attemptStatus = attempt?.status;
@@ -246,7 +246,7 @@ function LearningWorkspace() {
       <li>เรียน: กดดูหลักฐาน อ่านข้อจำกัด แล้วบันทึกขั้นเรียนให้ครบทุกบทของระดับ</li>
       <li>ฝึก: เลือกเคส ส่งข้อสรุป และอ่าน feedback สีเขียว/แดงจากกฎอ้างอิง ไม่ใช่ผล AI</li>
       <li>Simulation: ไปสถานการณ์ฝึกเพื่ออ่าน event และฝึกสร้าง ticket/note ก่อนจบรอบ</li>
-      <li>สอบ: เริ่มเป็นลำดับสุดท้าย ไม่มีผู้ช่วย AI ระหว่างสอบ ผลรอตรวจจน Instructor ประเมิน</li>
+      <li>สอบ: เริ่มเป็นลำดับสุดท้าย ไม่มีผู้ช่วย AI ระหว่างสอบ หลังส่งแล้ว AI ตรวจตาม rubric ของระบบ</li>
     </ol><p>ข้อเขียน 10 ข้อเป็นการทบทวนแยก ยังไม่ใช้แทนข้อสอบเลื่อนระดับ ดูสถานะการเปิดใช้ Dify ในส่วนผู้ช่วยสอนด้านล่าง</p></section>
     <section className="learning-card" id="practical-exam" aria-labelledby="practical-exam-title"><h2 id="practical-exam-title">สอบภาคปฏิบัติและการเลื่อนระดับ</h2>
       {session && !examReady && !examError && <p role="status">กำลังตรวจสถานะสอบ…</p>}
@@ -257,7 +257,7 @@ function LearningWorkspace() {
         <p>ต้องจบบทเรียนทุกบทของระดับก่อนเริ่ม ผลข้อเขียนและแบบฝึกไม่ใช่การสอบผ่าน ระหว่างสอบไม่มีผู้ช่วย AI</p>
         {levelExamComplete ? <p>ผ่านเคสสอบครบระดับนี้แล้ว</p> : <><button disabled={!canStartExam} onClick={() => void startExam()}>{saving ? "กำลังเตรียมข้อสอบ…" : examResult?.status === "passed" ? "เริ่มเคสสอบถัดไป" : examResult ? "เริ่ม attempt ถัดไป" : "เริ่มข้อสอบระดับนี้"}</button>
           {!allLessonsCompleted && <p>ยังเริ่มไม่ได้: ต้องจบบทเรียนทุกบทของระดับนี้ก่อน</p>}
-          {waitingForReview && <p>ส่งข้อสอบแล้ว รอ Instructor ตรวจ ก่อนเริ่มเคสถัดไป</p>}
+          {waitingForReview && <p>{examResult?.status === "submitted" ? "ส่งข้อสอบแล้ว AI กำลังตรวจผล" : "AI ตรวจไม่สำเร็จหรือผลยังไม่ชัดเจน ต้องตรวจสอบก่อนเริ่มเคสถัดไป"}</p>}
           {attempt && <p>มีข้อสอบที่กำลังทำอยู่ อ่านหลักฐานและส่งคำตอบด้านล่างก่อน</p>}
         </>}
         <button className="button-secondary" disabled={saving || loading || examRefreshing} onClick={() => void Promise.all([load(), refreshExam()])}>ตรวจผลและสิทธิ์ล่าสุด</button>
@@ -304,7 +304,7 @@ function LearningWorkspace() {
         <label>เหตุผลและการวิเคราะห์<textarea value={reason} maxLength={2000} onChange={(event) => setReason(event.target.value)} rows={5} /></label>
         <button disabled={saving || !reason.trim() || evidence.length === 0} onClick={() => void submitExam()}>{saving ? "กำลังส่ง…" : "ส่งข้อสอบ"}</button>
       </section>}
-      {examResult && <section className="learning-card" aria-live="polite"><h2>ผลข้อสอบ: {examResult.status}</h2>{examResult.score !== null && <p>คะแนน {examResult.score}/{examResult.maximum}</p>}{examResult.status === "needs_review" && <p>ส่งคำตอบแล้ว รอ Instructor ตรวจ ไม่มีการประเมินผ่านอัตโนมัติ</p>}{examResult.criteria.map((item) => <p key={item.key}><strong>{item.key}:</strong> {item.feedback}</p>)}</section>}
+      {examResult && <section className="learning-card" aria-live="polite"><h2>ผลข้อสอบ: {examResult.status}</h2>{examResult.score !== null && <p>คะแนน {examResult.score}/{examResult.maximum}</p>}{examResult.status === "submitted" && <p>ส่งคำตอบแล้ว AI กำลังตรวจผล ข้อมูลจะอัปเดตอัตโนมัติ</p>}{examResult.status === "needs_review" && <p>AI ตรวจไม่สำเร็จหรือผลไม่ชัดเจน ระบบยังไม่ตัดสินผ่าน โปรดแจ้งผู้ดูแลระบบ</p>}{examResult.criteria.map((item) => <p key={item.key}><strong>{item.key}:</strong> {item.feedback}</p>)}</section>}
     </>}
     {session && levels.length > 0 && <LessonTutor lessonId={lessonId}
       examActive={Boolean(attempt) || waitingForReview}

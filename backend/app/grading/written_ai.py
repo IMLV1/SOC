@@ -20,12 +20,12 @@ from app.knowledge.dify_client import DifyConfig, DifyUnavailable
 from app.knowledge.dify_workflow import run_workflow
 from app.learning.practice_routes import encoded, learner
 from app.tutor.models import TutorSource
+from app.tutor.quota import reserve_logical_request
 from app.tutor.service import (
     answer_without_reasoning,
     readiness,
     redact_question,
     release_drift,
-    reserve_logical_request,
 )
 from app.worker.fencing import require_lease
 
