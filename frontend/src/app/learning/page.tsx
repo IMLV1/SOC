@@ -154,15 +154,17 @@ function LearningWorkspace() {
   }, [attemptId, attemptStatus]);
 
   async function completeStep() {
-    if (!lesson || !progress || active >= lesson.steps.length || saving || loading || revealedStep !== lesson.steps[active].id) return;
+    if (!lesson || !progress || missingPrerequisite || active >= lesson.steps.length || saving || loading || revealedStep !== lesson.steps[active].id) return;
     setSaving(true); setError("");
     try {
       const step = lesson.steps[active];
       const saved = await write<Progress>(`/lessons/${lessonId}/steps/${step.id}/complete`, { expected_version: progress.version });
       setProgress(saved); setActive(saved.completed_steps.length); setRevealedStep(null);
     } catch (cause) {
-      const message = cause instanceof ApiError && cause.status === 409
-        ? "ความคืบหน้ามีการเปลี่ยนจากอีกหน้าต่าง โหลดข้อมูลล่าสุดแล้ว"
+      const message = cause instanceof ApiError && cause.code === "PREVIOUS_LESSON_REQUIRED"
+        ? "ต้องจบบทเรียนก่อนหน้าให้สมบูรณ์ก่อน จึงจะบันทึกขั้นของบทนี้ได้"
+        : cause instanceof ApiError && cause.status === 409
+          ? "ความคืบหน้ามีการเปลี่ยนจากอีกหน้าต่าง โหลดข้อมูลล่าสุดแล้ว"
         : "บันทึกขั้นเรียนไม่สำเร็จ กรุณาลองใหม่";
       await load();
       setError(message);
@@ -170,7 +172,7 @@ function LearningWorkspace() {
   }
 
   async function completeLesson() {
-    if (!progress || saving || loading) return;
+    if (!progress || missingPrerequisite || saving || loading) return;
     setSaving(true); setError("");
     try {
       const saved = await write<Progress>(`/lessons/${lessonId}/complete`, { expected_version: progress.version });
@@ -178,8 +180,10 @@ function LearningWorkspace() {
       const path = await read<LearningPath>("/me/learning-path");
       setAllProgress(path.lessons); setLevelStatuses(path.level_statuses ?? []);
     } catch (cause) {
-      const message = cause instanceof ApiError && cause.status === 409
-        ? "ความคืบหน้ามีการเปลี่ยนจากอีกหน้าต่าง โหลดข้อมูลล่าสุดแล้ว"
+      const message = cause instanceof ApiError && cause.code === "PREVIOUS_LESSON_REQUIRED"
+        ? "ต้องจบบทเรียนก่อนหน้าให้สมบูรณ์ก่อน จึงจะจบบทนี้ได้"
+        : cause instanceof ApiError && cause.status === 409
+          ? "ความคืบหน้ามีการเปลี่ยนจากอีกหน้าต่าง โหลดข้อมูลล่าสุดแล้ว"
         : "ยืนยันการจบบทเรียนไม่สำเร็จ กรุณาลองใหม่";
       await load();
       setError(message);
@@ -220,6 +224,10 @@ function LearningWorkspace() {
   }
 
   const currentLevel = levels.find((item) => item.id === lesson?.level_id);
+  const lessonIndex = currentLevel?.lessons.findIndex((item) => item.id === lessonId) ?? -1;
+  const missingPrerequisite = lessonIndex > 0 ? currentLevel?.lessons.slice(0, lessonIndex).find((item) =>
+    !allProgress.some((saved) => saved.lesson_id === item.id && saved.lesson_version === item.version && saved.completed_at)
+  ) : undefined;
   const currentLevelStatus = levelStatuses.find((item) => item.level_id === lesson?.level_id);
   const allLessonsCompleted = currentLevelStatus?.all_lessons_completed ?? (
     !!currentLevel?.lessons.length && currentLevel.lessons.every((item) => allProgress.some((p) => p.lesson_id === item.id && p.lesson_version === item.version && p.completed_at))
@@ -262,6 +270,11 @@ function LearningWorkspace() {
     {session && loading && <p role="status">{lesson ? "กำลังอัปเดตความคืบหน้า…" : "กำลังโหลดบทเรียนและความคืบหน้า…"}</p>}
     {session && error && <p role="alert">{error} <button className="button-secondary" onClick={() => void load()}>โหลดใหม่</button></p>}
     {session && lesson && progress && <>
+      {missingPrerequisite && <section className="learning-card" role="status">
+        <h2>ต้องจบบทเรียนก่อนหน้า</h2>
+        <p>จบ “{missingPrerequisite.title}” ให้สมบูรณ์ก่อน จึงจะบันทึกขั้นของบทนี้ได้ การบันทึกครบทุกขั้นยังต้องกด “จบบทเรียนและบันทึก” อีกครั้ง</p>
+        <button type="button" onClick={() => { setLesson(null); setProgress(null); setRevealedStep(null); setLessonId(missingPrerequisite.id); }}>กลับไปจบบทเรียนก่อนหน้า</button>
+      </section>}
       <section className="learning-card">
         <p className="eyebrow">บทเรียน · เวอร์ชัน {lesson.version}</p>
         <h2>{lesson.title}</h2>
@@ -277,10 +290,10 @@ function LearningWorkspace() {
           <span>กดดู: {lesson.steps[active].title}</span><code>{lesson.steps[active].target}</code>
         </button>
         {revealedStep === lesson.steps[active].id && <div className="lesson-explanation"><p>{lesson.steps[active].explanation}</p><p><strong>สิ่งที่ยังสรุปไม่ได้:</strong> {lesson.steps[active].limitation}</p></div>}
-        <button disabled={saving || loading || revealedStep !== lesson.steps[active].id} onClick={() => void completeStep()}>{saving ? "กำลังบันทึก…" : "เข้าใจแล้ว บันทึกขั้นนี้"}</button>
+        <button disabled={saving || loading || Boolean(missingPrerequisite) || revealedStep !== lesson.steps[active].id} onClick={() => void completeStep()}>{saving ? "กำลังบันทึก…" : "เข้าใจแล้ว บันทึกขั้นนี้"}</button>
       </section> : <section className="learning-card" aria-live="polite">
         <h2>{progress.completed_at ? "จบบทเรียนแล้ว" : "ครบทุกขั้นแล้ว"}</h2>
-        {progress.completed_at ? <p>ความคืบหน้าถูกบันทึกแล้ว กลับมาทบทวนได้ทุกเมื่อ</p> : <><p>ยืนยันการจบบทเรียนเพื่อบันทึก lesson completion</p><button disabled={saving || loading} onClick={() => void completeLesson()}>{saving ? "กำลังบันทึก…" : "จบบทเรียนและบันทึก"}</button></>}
+        {progress.completed_at ? <p>ความคืบหน้าถูกบันทึกแล้ว กลับมาทบทวนได้ทุกเมื่อ</p> : <><p>ยืนยันการจบบทเรียนเพื่อบันทึก lesson completion</p><button disabled={saving || loading || Boolean(missingPrerequisite)} onClick={() => void completeLesson()}>{saving ? "กำลังบันทึก…" : "จบบทเรียนและบันทึก"}</button></>}
       </section>}
       {attempt && <section className="learning-card" aria-labelledby="exam-title">
         <p className="eyebrow">ข้อสอบ · หมดเวลา {new Date(attempt.expires_at).toLocaleString("th-TH")}</p><h2 id="exam-title">Investigation case</h2>

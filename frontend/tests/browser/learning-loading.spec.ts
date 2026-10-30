@@ -9,7 +9,7 @@ function gate() {
   return { promise, release };
 }
 
-async function mockLearning(page: Page, options: { exam?: Promise<void>; examFailure?: boolean; firstLesson?: Promise<void>; secondLesson?: Promise<void> } = {}) {
+async function mockLearning(page: Page, options: { exam?: Promise<void>; examFailure?: boolean; firstLesson?: Promise<void>; secondLesson?: Promise<void>; firstLessonProgress?: { lesson_id: string; lesson_version: number; completed_steps: string[]; completed_at: string | null; version: number } } = {}) {
   const calls = { session: 0, lesson: 0, catalog: 0, tutor: 0, user: level, questionPending: true };
   let submitted = false;
   await page.route("**/api/v1/**", async (route) => {
@@ -18,7 +18,7 @@ async function mockLearning(page: Page, options: { exam?: Promise<void>; examFai
     if (path.endsWith("/auth/session")) {
       calls.session++;
       data = { csrf_token: "test-only", user: { id: calls.user, role: "analyst", display_name: `Learner ${calls.session}`, status: "active" }, expires_at: "2099-01-01T00:00:00Z" };
-    } else if (path.endsWith("/me/learning-path")) data = { lessons: [], next_action: "continue_lesson" };
+    } else if (path.endsWith("/me/learning-path")) data = { lessons: options.firstLessonProgress ? [options.firstLessonProgress] : [], next_action: "continue_lesson" };
     else if (path.endsWith("/learning-path")) {
       calls.catalog++;
       data = { levels: [{ id: level, ordinal: 1, title: "เริ่มต้น", lessons: lessons.map((id, index) => ({ id, version: 1, title: `บทเรียน ${index + 1}` })) }] };
@@ -52,6 +52,19 @@ async function mockLearning(page: Page, options: { exam?: Promise<void>; examFai
   });
   return calls;
 }
+
+test("lesson directs learner back to unfinished prerequisite instead of failing on step save", async ({ page }) => {
+  await mockLearning(page, { firstLessonProgress: {
+    lesson_id: lessons[0], lesson_version: 1, completed_steps: ["intro"], completed_at: null, version: 1,
+  } });
+  await page.goto("/learning");
+  await page.getByLabel("บทเรียนในฐานข้อมูล").selectOption(lessons[1]);
+  await expect(page.getByRole("heading", { name: "ต้องจบบทเรียนก่อนหน้า" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "เข้าใจแล้ว บันทึกขั้นนี้" })).toBeDisabled();
+  await page.getByRole("button", { name: "กลับไปจบบทเรียนก่อนหน้า" }).click();
+  await expect(page.getByRole("heading", { name: "ครบทุกขั้นแล้ว" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "จบบทเรียนและบันทึก" })).toBeEnabled();
+});
 
 test("same-account focus and minute timer preserve lesson and unsent AI draft without refetch", async ({ page }) => {
   await page.addInitScript(() => {
