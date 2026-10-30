@@ -162,6 +162,26 @@ async def start_run(
         else load_config(os.environ)
     )
     analysis_mode = "mock" if mode == "exam" or provider_config.mode == "mock" else "real"
+    analysis_release: dict[str, Any] | None = None
+    if analysis_mode == "real":
+        from app.tutor.service import readiness, release_drift
+
+        policy = (
+            (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1")))
+            .mappings()
+            .one()
+        )
+        if (
+            not policy["analysis_enabled"]
+            or readiness(policy)
+            or await release_drift(session, policy["version"])
+        ):
+            raise AuthError(503, "DIFY_ANALYSIS_NOT_APPROVED")
+        analysis_release = {
+            "policy_version": policy["version"],
+            "workflow_id": policy["workflow_id"],
+            "corpus_revision": policy["corpus_revision"],
+        }
     model_id = "exam-no-ai-v1" if mode == "exam" else provider_config.chat_model
     seed = body.seed if body.seed is not None else secrets.randbelow(2147483648)
     duration = max(item.duration_ms for item in selected)
@@ -232,6 +252,7 @@ async def start_run(
                     "detector_config": CONFIG,
                     "analysis_mode": analysis_mode,
                     "model_id": model_id,
+                    "analysis_release": analysis_release,
                 }
             ),
             "truth_versions": json.dumps(truth_versions),

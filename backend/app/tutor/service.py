@@ -65,6 +65,8 @@ async def release_drift(session: AsyncSession, version: int) -> bool:
             text("""SELECT EXISTS(SELECT 1 FROM app.tutor_questions
             WHERE policy_version=:version AND error_code='DIFY_WORKFLOW_VERSION_MISMATCH')
             OR EXISTS(SELECT 1 FROM app.written_feedback
+            WHERE policy_version=:version AND error_code='DIFY_WORKFLOW_VERSION_MISMATCH')
+            OR EXISTS(SELECT 1 FROM app.practice_ai_questions
             WHERE policy_version=:version AND error_code='DIFY_WORKFLOW_VERSION_MISMATCH')"""),
             {"version": version},
         )

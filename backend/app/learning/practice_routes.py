@@ -20,6 +20,10 @@ from app.learning.practice_models import (
     CaseEnvelope,
     DraftInput,
     HistoryEnvelope,
+    PracticeAIEnvelope,
+    PracticeAIHistory,
+    PracticeAIInput,
+    PracticeAIView,
     PracticeAnswer,
     PracticeCase,
     PracticeCatalog,
@@ -31,6 +35,7 @@ from app.learning.practice_models import (
     WrittenQuestion,
     WrittenView,
 )
+from app.tutor.models import AvailabilityEnvelope, TutorAvailability
 
 router = APIRouter(
     prefix="/api/v1",
@@ -110,6 +115,168 @@ def answer_view(row: Any) -> AnswerView:
         answer=row["answer_json"],
         feedback=row["feedback_json"],
         created_at=row["created_at"],
+    )
+
+
+def practice_ai_view(row: Any, policy: Any) -> PracticeAIView:
+    withdrawn = (
+        not policy["enabled"]
+        or policy["version"] != row["policy_version"]
+        or policy["corpus_revision"] != row["corpus_revision"]
+    )
+    if row["result_json"] is not None:
+        for source in row["result_json"]["sources"]:
+            if (
+                source["document_id"] not in policy["document_ids"]
+                or hashlib.sha256(source["excerpt"].encode()).hexdigest()
+                not in policy["chunk_hashes"]
+            ):
+                withdrawn = True
+    return PracticeAIView(
+        id=row["id"],
+        case_id=row["case_id"],
+        answer_id=row["answer_id"],
+        question=row["question"],
+        status="withdrawn" if withdrawn else row["status"],
+        result=None if withdrawn else row["result_json"],
+        error_code="KNOWLEDGE_WITHDRAWN" if withdrawn else row["error_code"],
+        created_at=row["created_at"],
+    )
+
+
+@router.get("/practice/ai-availability", response_model=AvailabilityEnvelope)
+async def practice_ai_availability(request: Request) -> AvailabilityEnvelope:
+    from app.tutor.service import readiness, release_drift
+
+    async with auth.database(request).sessions() as session, session.begin():
+        user = await learner(session, request)
+        policy = (
+            (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1")))
+            .mappings()
+            .one()
+        )
+        reason = "DIFY_PRACTICE_NOT_APPROVED" if not policy["practice_enabled"] else readiness(policy)
+        if reason is None and await release_drift(session, policy["version"]):
+            reason = "DIFY_WORKFLOW_VERSION_MISMATCH"
+    return AvailabilityEnvelope(
+        data=TutorAvailability(available=reason is None, reason=reason), meta=meta(request)
+    )
+
+
+@router.post(
+    "/practice/cases/{case_id}/ai-questions", response_model=PracticeAIEnvelope, status_code=202
+)
+async def ask_practice_ai(
+    case_id: UUID,
+    body: PracticeAIInput,
+    request: Request,
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
+) -> PracticeAIEnvelope:
+    from app.tutor.service import readiness, redact_question, release_drift, reserve_logical_request
+
+    key = key_from_header(idempotency_key)
+    await auth.rate_limit(request, "tutor_write")
+    async with auth.database(request).sessions() as session, session.begin():
+        user = await learner(session, request, write=True)
+        await case_row(session, case_id, user["id"])
+        answer = await session.scalar(
+            text("""SELECT id FROM app.practice_answers
+            WHERE id=:id AND case_id=:case AND owner_user_id=:owner"""),
+            {"id": body.answer_id, "case": case_id, "owner": user["id"]},
+        )
+        if answer is None:
+            raise auth.AuthError(404, "NOT_FOUND")
+        policy = (
+            (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1")))
+            .mappings()
+            .one()
+        )
+        fingerprint = digest(body.model_dump(mode="json"))
+        previous = (
+            (
+                await session.execute(
+                    text("""SELECT * FROM app.practice_ai_questions
+            WHERE owner_user_id=:owner AND idempotency_key=:key"""),
+                    {"owner": user["id"], "key": key},
+                )
+            )
+            .mappings()
+            .first()
+        )
+        if previous:
+            if previous["request_hash"] != fingerprint or previous["case_id"] != case_id:
+                raise auth.AuthError(409, "IDEMPOTENCY_CONFLICT")
+            return PracticeAIEnvelope(data=practice_ai_view(previous, policy), meta=meta(request))
+        if not policy["practice_enabled"]:
+            raise auth.AuthError(503, "DIFY_PRACTICE_NOT_APPROVED")
+        reason = readiness(policy)
+        if reason or await release_drift(session, policy["version"]):
+            raise auth.AuthError(503, reason or "DIFY_WORKFLOW_VERSION_MISMATCH")
+        await reserve_logical_request(session, user["id"])
+        question_id = uuid4()
+        row = (
+            (
+                await session.execute(
+                    text("""INSERT INTO app.practice_ai_questions
+            (id,owner_user_id,case_id,answer_id,question,idempotency_key,request_hash,
+             policy_version,workflow_id,corpus_revision,reserved_usd)
+            VALUES(:id,:owner,:case,:answer,:question,:key,:hash,:version,:workflow,:corpus,:cost)
+            RETURNING *"""),
+                    {
+                        "id": question_id,
+                        "owner": user["id"],
+                        "case": case_id,
+                        "answer": body.answer_id,
+                        "question": redact_question(body.question),
+                        "key": key,
+                        "hash": fingerprint,
+                        "version": policy["version"],
+                        "workflow": policy["workflow_id"],
+                        "corpus": policy["corpus_revision"],
+                        "cost": policy["practice_call_bound_usd"],
+                    },
+                )
+            )
+            .mappings()
+            .one()
+        )
+        await session.execute(
+            text("""INSERT INTO app.jobs(id,type,dedupe_key,payload)
+            VALUES(:id,'practice_ai_question',:dedupe,CAST(:payload AS jsonb))"""),
+            {
+                "id": uuid4(),
+                "dedupe": f"practice-ai:{question_id}",
+                "payload": encoded({"question_id": str(question_id)}),
+            },
+        )
+        await auth.audit(session, "practice.ai_question", user["id"], request)
+    return PracticeAIEnvelope(data=practice_ai_view(row, policy), meta=meta(request))
+
+
+@router.get("/practice/cases/{case_id}/ai-questions", response_model=PracticeAIHistory)
+async def practice_ai_history(case_id: UUID, request: Request) -> PracticeAIHistory:
+    async with auth.database(request).sessions() as session, session.begin():
+        user = await learner(session, request)
+        await case_row(session, case_id, user["id"])
+        policy = (
+            (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1")))
+            .mappings()
+            .one()
+        )
+        rows = (
+            (
+                await session.execute(
+                    text("""SELECT * FROM app.practice_ai_questions
+            WHERE owner_user_id=:owner AND case_id=:case AND expires_at>now()
+            ORDER BY created_at DESC,id DESC LIMIT 20"""),
+                    {"owner": user["id"], "case": case_id},
+                )
+            )
+            .mappings()
+            .all()
+        )
+    return PracticeAIHistory(
+        data=[practice_ai_view(row, policy) for row in rows], meta=meta(request)
     )
 
 

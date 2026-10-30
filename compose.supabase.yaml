@@ -63,7 +63,7 @@ services:
       SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:?Set publishable key}
       SUPABASE_TOKEN_KEY_FILE: /run/secrets/token_key
       SUPABASE_AUTH_CALLBACK_URL: ${SUPABASE_AUTH_CALLBACK_URL:?Set callback URL}
-      SOC_AI_PROVIDER: mock
+      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
       DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
       SOC_KB_ENABLED: "false"
     volumes:
@@ -84,7 +84,7 @@ services:
     environment:
       <<: *db
       DB_PASSWORD_FILE: /run/secrets/database
-      SOC_AI_PROVIDER: mock
+      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
       DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
       SOC_KB_ENABLED: "false"
     volumes:

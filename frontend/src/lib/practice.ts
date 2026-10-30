@@ -19,6 +19,14 @@ export type PracticeResult = {
     expected_severity: string; expected_disposition: string; explanation: string; limitation: string;
     reason_review_status: "unavailable"; reason_review_message: string; is_exam_result: false };
 };
+export type PracticeAIQuestion = {
+  id: string; case_id: string; answer_id: string; question: string;
+  status: "queued" | "running" | "succeeded" | "needs_review" | "unavailable" | "withdrawn";
+  result: { answer: string; sources: {
+    document_id: string; title: string; excerpt: string; section_ids: string[];
+  }[] } | null;
+  error_code: string | null; created_at: string;
+};
 export const categories: Record<string, string> = {
   authentication: "บัญชีและการเข้าสู่ระบบ", web: "Web request", access: "สิทธิ์การเข้าถึง",
   evidence: "หลักฐานและข้อจำกัด", change: "Change และ scope", data: "การเข้าถึงข้อมูล",

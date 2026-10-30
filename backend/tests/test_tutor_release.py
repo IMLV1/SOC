@@ -53,3 +53,32 @@ def test_grade_requires_separate_approval_for_the_same_workflow():
         reviewed_policy(without_grade_bound, enable_grade=True)
     with pytest.raises(ValueError):
         reviewed_policy(combined | {"grade_call_bound_usd": "NaN"}, enable_grade=True)
+
+
+def test_practice_and_analysis_require_separate_review_and_cost_bounds():
+    combined = review() | {
+        "status": "approved_for_tutor_grade_practice_analysis",
+        "grade_mode_verified": True,
+        "grade_call_bound_usd": "0.010000",
+        "practice_mode_verified": True,
+        "analysis_mode_verified": True,
+        "practice_call_bound_usd": "0.020000",
+        "analysis_call_bound_usd": "0.030000",
+    }
+    values = reviewed_policy(
+        combined, enable_grade=True, enable_practice=True, enable_analysis=True
+    )
+    assert values["practice"] and values["analysis"]
+    for field, value in (
+        ("practice_mode_verified", False),
+        ("analysis_mode_verified", False),
+        ("practice_call_bound_usd", "0"),
+        ("analysis_call_bound_usd", "NaN"),
+    ):
+        with pytest.raises(ValueError):
+            reviewed_policy(
+                combined | {field: value},
+                enable_grade=True,
+                enable_practice=True,
+                enable_analysis=True,
+            )

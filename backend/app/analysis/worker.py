@@ -1,4 +1,4 @@
-"""Execute one frozen mock analysis with fencing and typed output validation."""
+"""Execute a frozen training analysis with fencing and typed output validation."""
 
 import asyncio
 import json
@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from sqlalchemy import text
 
 from app.analysis.budget import reserve_call, settle_call
+from app.analysis.dify_provider import DifyAnalysisProvider
 from app.analysis.models import AnalysisResult, ProviderOutput, ProviderResponseError, ProviderUsage
 from app.analysis.provider import (
     AnalysisInput,
@@ -22,11 +23,13 @@ from app.db.session import Database
 from app.worker.fencing import lock_domain, require_lease
 
 
-def configured_provider(mode: str, model_id: str) -> AnalysisProvider:
-    # Dify is the sole intended external provider, but it is not yet wired to
-    # this structured analysis contract. Never fall back to direct Gemini calls.
+def configured_provider(
+    mode: str, model_id: str, policy: dict[str, Any] | None = None
+) -> AnalysisProvider:
     if mode == "mock":
         return MockProvider()
+    if mode == "real" and policy is not None:
+        return DifyAnalysisProvider(policy)
     raise RuntimeError("DIFY_ANALYSIS_ADAPTER_UNAVAILABLE")
 
 
@@ -38,6 +41,7 @@ async def analyze_job(
 ) -> None:
     # Domain preparation and finalization use short DB transactions; provider IO
     # happens between them so network latency never holds row locks open.
+    analysis_policy: dict[str, Any] | None = None
     async with database.sessions() as session, session.begin():
         if not await session.scalar(
             text("SELECT app.is_training_run(:run)"), {"run": job["run_id"]}
@@ -106,8 +110,38 @@ async def analyze_job(
         if row["status"] not in {"queued", "running"}:
             return
         if row["mode"] == "real" and provider is None:
-            # Do not reserve quota or create a provider attempt until Dify's
-            # structured analysis adapter has passed its contract tests.
+            from app.tutor.service import readiness, release_drift
+
+            policy_row = (
+                (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1")))
+                .mappings()
+                .one()
+            )
+            pinned = (
+                (
+                    await session.execute(
+                        text("""SELECT config_snapshot
+                FROM app.run_versions WHERE run_id=:run"""),
+                        {"run": row["run_id"]},
+                    )
+                )
+                .mappings()
+                .one()["config_snapshot"]
+                .get("analysis_release")
+            )
+            if (
+                not policy_row["analysis_enabled"]
+                or readiness(policy_row)
+                or await release_drift(session, policy_row["version"])
+                or not isinstance(pinned, dict)
+                or pinned.get("policy_version") != policy_row["version"]
+                or pinned.get("workflow_id") != policy_row["workflow_id"]
+                or pinned.get("corpus_revision") != policy_row["corpus_revision"]
+            ):
+                analysis_policy = None
+            else:
+                analysis_policy = dict(policy_row)
+        if row["mode"] == "real" and provider is None and analysis_policy is None:
             await session.execute(
                 text("""UPDATE app.analyses SET status='failed',
                 error_code='DIFY_ANALYSIS_ADAPTER_UNAVAILABLE',finished_at=clock_timestamp(),
@@ -203,7 +237,9 @@ async def analyze_job(
         "pricing_tier": "mock" if row["mode"] == "mock" else "free",
     }
     try:
-        selected_provider = provider or configured_provider(row["mode"], row["model_id"])
+        selected_provider = provider or configured_provider(
+            row["mode"], row["model_id"], analysis_policy
+        )
         raw = await asyncio.wait_for(selected_provider.analyze(data), timeout=timeout)
         if isinstance(raw, ProviderOutput):
             output = raw

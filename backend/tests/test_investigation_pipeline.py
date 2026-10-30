@@ -191,6 +191,7 @@ def test_provider_timeout_is_unknown_and_invalid_output_usage_is_consumed_with_r
 ):
     monkeypatch.setenv("SOC_AI_PROVIDER", "dify")
     monkeypatch.setenv("DIFY_API_BASE_URL", "https://dify.example.test/v1")
+    monkeypatch.setattr("app.tutor.service.readiness", lambda policy: None)
 
     class SlowProvider:
         async def analyze(self, data):
@@ -212,6 +213,13 @@ def test_provider_timeout_is_unknown_and_invalid_output_usage_is_consumed_with_r
 
     async def execute():
         user_id, selection = await prepare(migrated)
+        owner = Database(migrated("migration_owner"))
+        try:
+            async with owner.sessions() as session, session.begin():
+                await session.execute(text("""UPDATE app.tutor_policy
+                SET analysis_enabled=true,analysis_call_bound_usd=0.01 WHERE id=1"""))
+        finally:
+            await owner.close()
         api = Database(migrated("api_runtime"))
         worker = Database(migrated("worker_runtime"))
         try:
@@ -703,7 +711,7 @@ async def release_all(api, worker, run_id):
 
 
 @pytest.mark.integration
-def test_dify_mode_fails_closed_before_provider_dispatch(migrated, monkeypatch):
+def test_dify_mode_requires_approved_analysis_release_before_run_creation(migrated, monkeypatch):
     monkeypatch.setenv("SOC_AI_PROVIDER", "dify")
     monkeypatch.setenv("DIFY_API_BASE_URL", "https://dify.example.test/v1")
 
@@ -713,28 +721,12 @@ def test_dify_mode_fails_closed_before_provider_dispatch(migrated, monkeypatch):
         worker = Database(migrated("worker_runtime"))
         try:
             async with api.sessions() as session, session.begin():
-                run, _ = await start_run(session, user_id, selection, uuid4())
-            run_id = UUID(run["id"])
-            await release_all(api, worker, run_id)
+                with pytest.raises(AuthError) as failure:
+                    await start_run(session, user_id, selection, uuid4())
+            assert failure.value.status == 503
             async with api.sessions() as session:
-                analyses = (
-                    await session.execute(
-                        text("SELECT status,error_code FROM app.analyses WHERE run_id=:id"),
-                        {"id": run_id},
-                    )
-                ).all()
-                assert analyses
-                assert set(analyses) == {("failed", "DIFY_ANALYSIS_ADAPTER_UNAVAILABLE")}
-                assert (
-                    await session.scalar(
-                        text(
-                            "SELECT count(*) FROM app.provider_calls WHERE analysis_id IN "
-                            "(SELECT id FROM app.analyses WHERE run_id=:id)"
-                        ),
-                        {"id": run_id},
-                    )
-                    == 0
-                )
+                assert await session.scalar(text("SELECT count(*) FROM app.runs")) == 0
+                assert await session.scalar(text("SELECT count(*) FROM app.provider_calls")) == 0
         finally:
             await api.close()
             await worker.close()

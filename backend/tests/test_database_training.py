@@ -1,6 +1,7 @@
 """Real PostgreSQL/runtimes; never reset the managed Supabase database."""
 
 import asyncio
+import hashlib
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
@@ -244,6 +245,102 @@ def test_practice_persistence_feedback_replay_races_and_permissions(migrated, mo
     asyncio.run(grants())
     # Re-running the wrapper after application use does not change the ledger or answers.
     asyncio.run(migrate(migrated("migration_owner"), "training-test-repeat"))
+
+
+@pytest.mark.integration
+def test_practice_ai_requires_submitted_owned_answer_and_persists_validated_reply(
+    migrated, monkeypatch
+):
+    from app.knowledge.dify_workflow import WorkflowReply
+    from app.worker.jobs import process_one
+
+    users, tokens, case_id, truth = asyncio.run(prepare(migrated))
+    configure(monkeypatch, migrated)
+    monkeypatch.setattr("app.tutor.service.readiness", lambda policy: None)
+    context = "## SOC-003\n403 หมายถึงเซิร์ฟเวอร์ปฏิเสธคำขอ"
+    document = "00000000-0000-4000-8000-000000000003"
+
+    async def prepare_policy():
+        db = Database(migrated("migration_owner"))
+        try:
+            async with db.sessions() as session, session.begin():
+                for user_id in users:
+                    await session.execute(
+                        text("INSERT INTO app.user_quotas(user_id,daily_runs,daily_ai_requests) VALUES(:user,10,20)"),
+                        {"user": user_id},
+                    )
+                await session.execute(
+                    text("""UPDATE app.tutor_policy SET enabled=true,
+                    cost_bound_verified=true,practice_enabled=true,
+                    practice_call_bound_usd=0.01,workflow_id=:workflow,
+                    corpus_revision='practice-test',document_ids=CAST(:documents AS jsonb),
+                    chunk_hashes=CAST(:hashes AS jsonb) WHERE id=1"""),
+                    {
+                        "workflow": str(uuid4()),
+                        "documents": f'["{document}"]',
+                        "hashes": f'["{hashlib.sha256(context.encode()).hexdigest()}"]',
+                    },
+                )
+        finally:
+            await db.close()
+
+    class FakeConfig:
+        @classmethod
+        def from_env(cls):
+            return cls()
+
+        def read_api_key(self):
+            return "test-only"
+
+    async def fake_workflow(config, workflow, question, user, mode):
+        assert mode == "practice" and "response" in question
+        return WorkflowReply(
+            {"answer": "พบคำขอถูกปฏิเสธ ยังสรุปการอ่านข้อมูลไม่ได้ SOC-003", "sources": [
+                {"title": "คู่มือ", "content": context, "metadata": {"document_id": document}}
+            ]},
+            42,
+            "synthetic-run",
+        )
+
+    asyncio.run(prepare_policy())
+    monkeypatch.setattr("app.learning.practice_ai_worker.DifyConfig", FakeConfig)
+    monkeypatch.setattr("app.learning.practice_ai_worker.run_workflow", fake_workflow)
+    path = f"/api/v1/practice/cases/{case_id}"
+    with TestClient(app, headers={"Origin": "http://testserver"}) as client:
+        client.cookies.set(auth.SESSION, tokens[0])
+        headers = {"X-CSRF-Token": auth.csrf(tokens[0]), "Idempotency-Key": str(uuid4())}
+        rejected = client.post(path + "/ai-questions", json={"answer_id": str(uuid4()), "question": "403 คืออะไร"}, headers=headers)
+        assert rejected.status_code == 404
+        assert client.get("/api/v1/practice/ai-availability").json()["data"]["available"]
+        answer = client.post(path + "/answers", json={
+            "evidence_ids": truth["evidence_ids"], "severity": truth["severity"],
+            "disposition": truth["disposition"], "reason": "ตรวจหลักฐานก่อนสรุป",
+        }, headers=headers | {"Idempotency-Key": str(uuid4())})
+        assert answer.status_code == 201, answer.text
+        body = {"answer_id": answer.json()["data"]["id"], "question": "403 คืออะไร"}
+        queued = client.post(path + "/ai-questions", json=body, headers=headers)
+        assert queued.status_code == 202, queued.text
+        repeat = client.post(path + "/ai-questions", json=body, headers=headers)
+        assert repeat.status_code == 202
+        assert repeat.json()["data"]["id"] == queued.json()["data"]["id"]
+        client.cookies.set(auth.SESSION, tokens[1])
+        assert client.get(path + "/ai-questions").json()["data"] == []
+        assert client.post(path + "/ai-questions", json=body, headers={
+            "X-CSRF-Token": auth.csrf(tokens[1]), "Idempotency-Key": str(uuid4()),
+        }).status_code == 404
+
+    worker = Database(migrated("worker_runtime"))
+    try:
+        assert asyncio.run(process_one(worker, "practice-ai-test"))
+    finally:
+        asyncio.run(worker.close())
+    with TestClient(app) as client:
+        client.cookies.set(auth.SESSION, tokens[0])
+        history = client.get(path + "/ai-questions")
+        assert history.status_code == 200
+        result = history.json()["data"][0]
+        assert result["status"] == "succeeded"
+        assert result["result"]["sources"][0]["section_ids"] == ["SOC-003"]
 
 
 @pytest.mark.integration

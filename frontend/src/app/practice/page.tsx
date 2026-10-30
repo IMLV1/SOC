@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, read, write } from "../../lib/api";
-import { blankDraft, categories, type CaseSummary, type PracticeCase, type PracticeDraft, type PracticeResult } from "../../lib/practice";
+import { blankDraft, categories, type CaseSummary, type PracticeAIQuestion, type PracticeCase, type PracticeDraft, type PracticeResult } from "../../lib/practice";
 import { useSession } from "../session-provider";
 
 function errorMessage(error: unknown) {
@@ -13,6 +13,8 @@ function errorMessage(error: unknown) {
   if (error.status === 409) return "ข้อมูลเปลี่ยนจากอีกหน้าต่าง ร่างของคุณยังอยู่ กดโหลดเคสล่าสุดเมื่อต้องการใช้ร่างจาก server";
   if (error.status === 404) return "เคสนี้ยังไม่เปิดให้บัญชีคุณ หรือไม่มีเคสนี้";
   if (error.status === 429) return "ส่งคำขอถี่เกินไป กรุณารอสักครู่";
+  if (error.code === "DIFY_PRACTICE_NOT_APPROVED") return "ผู้ช่วย AI สำหรับเคสฝึกยังไม่เปิดใช้งาน";
+  if (error.status === 503) return "ผู้ช่วย AI ไม่พร้อมใช้งานในขณะนี้ กรุณาลองใหม่ภายหลัง";
   return "โหลดหรือบันทึกไม่สำเร็จ กรุณาลองใหม่ ร่างของคุณยังอยู่";
 }
 
@@ -23,6 +25,11 @@ export default function PracticePage() {
   const [item, setItem] = useState<PracticeCase | null>(null);
   const [draft, setDraft] = useState<PracticeDraft>(blankDraft);
   const [history, setHistory] = useState<PracticeResult[]>([]);
+  const [aiHistory, setAiHistory] = useState<PracticeAIQuestion[]>([]);
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiAvailable, setAiAvailable] = useState(false);
   const [level, setLevel] = useState("all");
   const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(false);
@@ -50,16 +57,27 @@ export default function PracticePage() {
     if (!session || !caseId) return;
     let active = true;
     Promise.resolve().then(() => { if (active) { setLoading(true); setError(""); } });
-    Promise.all([read<PracticeCase>(`/practice/cases/${caseId}`), read<PracticeResult[]>(`/practice/cases/${caseId}/answers`)])
-      .then(([data, answers]) => {
+    Promise.all([read<PracticeCase>(`/practice/cases/${caseId}`), read<PracticeResult[]>(`/practice/cases/${caseId}/answers`), read<PracticeAIQuestion[]>(`/practice/cases/${caseId}/ai-questions`), read<{ available: boolean }>("/practice/ai-availability")])
+      .then(([data, answers, questions, availability]) => {
         if (!active) return;
         const latestIsNewer = answers[0] && (!data.draft_saved_at || Date.parse(answers[0].created_at) > Date.parse(data.draft_saved_at));
-        setItem(data); setDraft(latestIsNewer ? answers[0].answer : data.draft ?? blankDraft()); setHistory(answers); setDirty(false); setNotice(""); requestKey.current = null;
+        setItem(data); setDraft(latestIsNewer ? answers[0].answer : data.draft ?? blankDraft()); setHistory(answers); setAiHistory(questions); setAiAvailable(availability.available); setAiQuestion(""); setAiError(""); setDirty(false); setNotice(""); requestKey.current = null;
         window.history.replaceState(null, "", `/practice?case=${caseId}`);
-      }).catch((cause) => { if (active) { setItem(null); setError(errorMessage(cause)); } })
+      }).catch((cause) => { if (active) { setItem(null); setAiAvailable(false); setError(errorMessage(cause)); } })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [caseId, session, retry]);
+
+  useEffect(() => {
+    if (!session || !caseId || !aiHistory.some((entry) => entry.status === "queued" || entry.status === "running")) return;
+    let active = true;
+    const timer = window.setTimeout(() => {
+      read<PracticeAIQuestion[]>(`/practice/cases/${caseId}/ai-questions`)
+        .then((items) => { if (active) setAiHistory(items); })
+        .catch((cause) => { if (active) setAiError(errorMessage(cause)); });
+    }, 3000);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [session, caseId, aiHistory]);
 
   useEffect(() => {
     if (!dirty) return;
@@ -90,6 +108,17 @@ export default function PracticePage() {
       setDirty(false); setNotice("บันทึกคำตอบและผลตรวจในฐานข้อมูลแล้ว");
     } catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(false); }
+  }
+  async function askAI() {
+    if (!item || !history[0] || !aiAvailable || aiBusy || !aiQuestion.trim()) return;
+    setAiBusy(true); setAiError("");
+    try {
+      const data = await write<PracticeAIQuestion>(`/practice/cases/${item.id}/ai-questions`,
+        { answer_id: history[0].id, question: aiQuestion.trim() },
+        { idempotencyKey: crypto.randomUUID() });
+      setAiHistory((items) => [data, ...items]); setAiQuestion("");
+    } catch (cause) { setAiError(errorMessage(cause)); }
+    finally { setAiBusy(false); }
   }
   const filtered = catalog.filter((entry) => (level === "all" || entry.level === Number(level)) && (category === "all" || entry.category === category));
   const latest = history[0];
@@ -123,7 +152,29 @@ export default function PracticePage() {
         <p>ข้อสรุปอ้างอิง: {latest.feedback.expected_severity} · {latest.feedback.expected_disposition}</p><p>{latest.feedback.explanation}</p><p>ข้อจำกัด: {latest.feedback.limitation}</p><p>{latest.feedback.reason_review_message} ผลนี้ไม่ใช่คะแนนสอบ</p>
       </section>}
       <h3>ประวัติคำตอบ · {history.length}</h3>{history.length === 0 ? <p>ยังไม่เคยส่งคำตอบในเคสนี้</p> : history.map((entry) => <details key={entry.id}><summary>{new Date(entry.created_at).toLocaleString("th-TH")} · {entry.feedback.classification_correct ? "ข้อสรุปตรง" : "ทบทวนข้อสรุป"}</summary><p>{entry.answer.reason}</p><p>{entry.feedback.explanation}</p></details>)}
-      <p>ผู้ช่วย AI ยังไม่เชื่อม Dify ไม่ได้นำคำตอบนี้ไปเรียก provider</p><button disabled>ถาม AI — ยังไม่เชื่อม Dify</button>
+      <section className="practice-feedback" aria-label="ถาม AI เกี่ยวกับเคส">
+        <h3>ถาม AI เกี่ยวกับหลักฐาน</h3>
+        <p>ถามได้หลังส่งคำตอบแล้ว AI ช่วยอธิบายหลักการจากคู่มือ ไม่เปลี่ยนผลตรวจหรือคะแนนสอบ</p>
+        {!aiAvailable && <p>ผู้ช่วย AI สำหรับเคสฝึกยังไม่พร้อมใช้งาน</p>}
+        <label>คำถามของคุณ<textarea value={aiQuestion} maxLength={2000} rows={3}
+          onChange={(event) => setAiQuestion(event.target.value)}
+          disabled={!latest || !aiAvailable || aiBusy} /></label>
+        <button type="button" disabled={!latest || !aiAvailable || aiBusy || !aiQuestion.trim()}
+          onClick={() => void askAI()}>{aiBusy ? "กำลังส่งคำถาม…" : "ถาม AI"}</button>
+        {!latest && <p>ส่งคำตอบเคสก่อนจึงถาม AI ได้</p>}
+        {aiError && <p role="alert">{aiError}</p>}
+        {aiHistory.map((entry) => <article key={entry.id} className="practice-event">
+          <h4>{entry.question}</h4>
+          {entry.status === "succeeded" && entry.result ? <>
+            <p style={{ whiteSpace: "pre-wrap" }}>{entry.result.answer}</p>
+            <details><summary>คู่มือที่ใช้อ้างอิง · {entry.result.sources.length} ส่วน</summary>
+              {entry.result.sources.map((source, index) => <p key={`${source.document_id}-${index}`}>
+                {source.title} · {source.section_ids.join(", ") || "ไม่พบรหัสหัวข้อ"}</p>)}
+            </details>
+          </> : <p role="status">{entry.status === "queued" || entry.status === "running"
+            ? "กำลังค้นคู่มือและจัดทำคำตอบ…" : "AI ยังตอบคำถามนี้ไม่ได้ กรุณาลองใหม่ภายหลัง"}</p>}
+        </article>)}
+      </section>
       </section></div>}
     </>}
   </main>;

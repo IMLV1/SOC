@@ -50,7 +50,8 @@ async def claim(database: Database, worker_id: str) -> dict[str, Any] | None:
                 await session.execute(
                     text("""SELECT id FROM app.jobs
             WHERE type IN ('release_events','detect_events','analyze_evidence',
-                          'ingest_knowledge','tutor_question','written_feedback')
+                          'ingest_knowledge','tutor_question','written_feedback',
+                          'practice_ai_question')
               AND attempts < 3 AND
               ((status='queued' AND available_at<=clock_timestamp())
                OR (status='running' AND lease_expires_at<=clock_timestamp()))
@@ -264,6 +265,10 @@ async def process_one(database: Database, worker_id: str) -> bool:
     try:
         if job["type"] == "tutor_question":
             await process_question(database, job)
+        elif job["type"] == "practice_ai_question":
+            from app.learning.practice_ai_worker import process_practice_question
+
+            await process_practice_question(database, job)
         elif job["type"] == "written_feedback":
             await process_feedback(database, job)
         elif job["type"] == "ingest_knowledge":

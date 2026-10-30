@@ -7,6 +7,7 @@ from pydantic import Field, StrictInt, field_validator
 from app.http_models import Meta, StrictModel
 from app.input_validation import InputModel
 from app.investigation.models import Disposition, Severity
+from app.tutor.models import TutorResult
 
 
 class PracticeAnswer(InputModel):
@@ -112,6 +113,39 @@ class AnswerEnvelope(StrictModel):
 
 class HistoryEnvelope(StrictModel):
     data: list[AnswerView]
+    meta: Meta
+
+
+class PracticeAIInput(InputModel):
+    answer_id: UUID
+    question: str = Field(min_length=1, max_length=2000)
+
+    @field_validator("question")
+    @classmethod
+    def nonblank_question(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Question required")
+        return value.strip()
+
+
+class PracticeAIView(StrictModel):
+    id: UUID
+    case_id: UUID
+    answer_id: UUID
+    question: str
+    status: Literal["queued", "running", "succeeded", "needs_review", "unavailable", "withdrawn"]
+    result: TutorResult | None
+    error_code: str | None
+    created_at: datetime
+
+
+class PracticeAIEnvelope(StrictModel):
+    data: PracticeAIView
+    meta: Meta
+
+
+class PracticeAIHistory(StrictModel):
+    data: list[PracticeAIView]
     meta: Meta
 
 

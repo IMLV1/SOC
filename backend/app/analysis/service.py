@@ -28,6 +28,30 @@ async def analysis_view(session: AsyncSession, row: Mapping[Any, Any]) -> dict[s
     from app.knowledge.rag import retrieval_view
 
     retrieval, withdrawn = await retrieval_view(session, row)
+    if row["mode"] == "real" and row["knowledge_release_id"] is None:
+        release = (
+            (
+                await session.execute(
+                    text("""SELECT rv.config_snapshot->'analysis_release' AS pinned,
+                    p.version,p.enabled,p.analysis_enabled,p.workflow_id,p.corpus_revision
+                    FROM app.run_versions rv CROSS JOIN app.tutor_policy p
+                    WHERE rv.run_id=:run AND p.id=1"""),
+                    {"run": row["run_id"]},
+                )
+            )
+            .mappings()
+            .first()
+        )
+        pinned = release["pinned"] if release else None
+        withdrawn = withdrawn or not (
+            release
+            and isinstance(pinned, dict)
+            and release["enabled"]
+            and release["analysis_enabled"]
+            and pinned.get("policy_version") == release["version"]
+            and pinned.get("workflow_id") == release["workflow_id"]
+            and pinned.get("corpus_revision") == release["corpus_revision"]
+        )
     return {
         key: row[key]
         for key in (

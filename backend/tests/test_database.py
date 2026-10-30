@@ -82,6 +82,7 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "demo_events",
             "practice_drafts",
             "practice_answers",
+            "practice_ai_questions",
             "written_questions",
             "written_submissions",
             "written_feedback",
