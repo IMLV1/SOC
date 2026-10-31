@@ -8,7 +8,7 @@ from sqlalchemy import text
 from app.auth import service as auth
 from app.auth.routes import json_only
 from app.http_models import ErrorEnvelope, Meta
-from app.learning.access import require_level
+from app.learning.access import materialize_level_unlock, require_level
 from app.learning.models import (
     LessonEnvelope,
     LessonView,
@@ -67,6 +67,11 @@ async def learning_path(request: Request) -> PathEnvelope:
 async def my_learning_path(request: Request) -> MePathEnvelope:
     async with auth.database(request).sessions() as session, session.begin():
         user = await auth.require_user(session, request)
+        level_ids = await session.scalars(
+            text("SELECT id FROM app.learning_levels WHERE enabled AND ordinal>1 ORDER BY ordinal")
+        )
+        for level_id in level_ids:
+            await materialize_level_unlock(session, user["id"], level_id)
         result = await session.execute(
             text(
                 """SELECT lesson_id,lesson_version,CAST(completed_steps AS text) AS completed_steps,
@@ -101,10 +106,11 @@ async def my_learning_path(request: Request) -> MePathEnvelope:
                         AS all_lessons_completed,
                     (SELECT count(*) FROM app.exam_cases c WHERE c.level_id=l.id
                         AND c.enabled) AS exam_case_count,
-                    (SELECT count(DISTINCT a.case_id) FROM app.exam_attempts a
+                    (SELECT count(DISTINCT a.id) FROM app.exam_attempts a
                         JOIN app.exam_cases c ON c.id=a.case_id AND c.enabled
                         JOIN app.grading_revisions g ON g.attempt_id=a.id
-                        WHERE a.owner_user_id=:user AND a.level_id=l.id AND g.status='passed'
+                        WHERE a.owner_user_id=:user AND a.level_id=l.id AND a.status='passed'
+                        AND g.status='passed'
                         AND g.revision=(SELECT max(g2.revision)
                             FROM app.grading_revisions g2 WHERE g2.attempt_id=a.id))
                         AS passed_case_count

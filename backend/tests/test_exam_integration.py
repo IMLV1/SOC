@@ -496,7 +496,7 @@ def test_learning_progress_persists_across_refresh_and_is_owner_scoped(migrated,
 
 
 @pytest.mark.integration
-def test_retake_rotates_cases_and_caps_three_attempts_per_case(migrated, monkeypatch):
+def test_retake_allows_unlimited_attempts_and_rotates_cases(migrated, monkeypatch):
     users, tokens = asyncio.run(prepare_exam(migrated))
     analyst, analyst_token = users[0], tokens[0]
     monkeypatch.setattr("app.main.database_url", lambda role: migrated(role))
@@ -532,7 +532,7 @@ def test_retake_rotates_cases_and_caps_three_attempts_per_case(migrated, monkeyp
     with TestClient(app, headers={"Origin": "http://testserver"}) as learner:
         learner.cookies.set(auth.SESSION, analyst_token)
         headers = {"X-CSRF-Token": auth.csrf(analyst_token)}
-        for _ in range(9):
+        for _ in range(10):
             response = learner.post(
                 f"/api/v1/learning/levels/{LEVEL_ID}/attempts",
                 json={"expected_progress_version": 1},
@@ -541,14 +541,9 @@ def test_retake_rotates_cases_and_caps_three_attempts_per_case(migrated, monkeyp
             assert response.status_code == 201, response.text
             case_id = asyncio.run(fail_attempt(UUID(response.json()["data"]["id"])))
             started_case_ids.append(str(case_id))
+        assert response.status_code == 201
+        assert len(started_case_ids) == 10
         assert len(set(started_case_ids)) == 3
-        capped = learner.post(
-            f"/api/v1/learning/levels/{LEVEL_ID}/attempts",
-            json={"expected_progress_version": 1},
-            headers={**headers, "Idempotency-Key": str(uuid4())},
-        )
-        assert capped.status_code == 429
-        assert capped.json()["error"]["code"] == "EXAM_ATTEMPT_QUOTA_EXCEEDED"
 
         latest = learner.get("/api/v1/exam/attempts/latest/result")
         assert latest.status_code == 200, latest.text
@@ -572,8 +567,7 @@ def test_concurrent_retake_start_creates_only_one_active_attempt(migrated, monke
         learner.cookies.set(auth.SESSION, analyst_token)
         csrf = auth.csrf(analyst_token)
 
-        # Establish a genuine retake state: a previous attempt has failed and
-        # the policy cooldown has elapsed before the two new starts race.
+        # Establish a genuine retake state after a failed attempt.
         first = learner.post(
             f"/api/v1/learning/levels/{LEVEL_ID}/attempts",
             json={"expected_progress_version": 1},
@@ -581,7 +575,7 @@ def test_concurrent_retake_start_creates_only_one_active_attempt(migrated, monke
         )
         assert first.status_code == 201, first.text
 
-        async def expire_cooldown():
+        async def fail_previous_attempt():
             database = Database(migrated("migration_owner"))
             try:
                 async with database.sessions() as session, session.begin():
@@ -600,7 +594,7 @@ def test_concurrent_retake_start_creates_only_one_active_attempt(migrated, monke
             finally:
                 await database.close()
 
-        asyncio.run(expire_cooldown())
+        asyncio.run(fail_previous_attempt())
         latest = learner.get("/api/v1/exam/attempts/latest/result")
         assert latest.status_code == 200
         assert latest.json()["data"]["status"] == "failed"

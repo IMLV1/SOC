@@ -1,4 +1,3 @@
-from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -12,59 +11,14 @@ from app.grading.exam_policy import (
 )
 
 
-def test_exam_admission_enforces_active_attempt_daily_cap_and_cooldown():
-    now = datetime(2026, 10, 18, 12, tzinfo=UTC)
+def test_exam_admission_allows_unlimited_retakes_but_only_one_active_attempt():
     active = check_admission(
-        active_statuses=["needs_review"], started_at=[], last_failed_at=None, now=now
+        active_statuses=["needs_review"]
     )
     assert active.code == "EXAM_ATTEMPT_ACTIVE"
 
-    capped = check_admission(
-        active_statuses=[],
-        started_at=[now - timedelta(hours=index) for index in range(1, 10)],
-        last_failed_at=None,
-        now=now,
-    )
-    assert capped.code == "EXAM_ATTEMPT_QUOTA_EXCEEDED"
-
-    cooldown = check_admission(
-        active_statuses=[], started_at=[], last_failed_at=now - timedelta(minutes=30), now=now
-    )
-    assert cooldown.code == "EXAM_COOLDOWN_ACTIVE"
-
-    allowed = check_admission(
-        active_statuses=["passed"],
-        started_at=[now - timedelta(hours=25)],
-        last_failed_at=now - timedelta(hours=2),
-        now=now,
-    )
+    allowed = check_admission(active_statuses=["failed"] * 100)
     assert allowed.allowed
-
-
-def test_exam_level_window_allows_three_cases_with_three_attempts_each():
-    now = datetime(2026, 10, 18, 12, tzinfo=UTC)
-    allowed = check_admission(
-        active_statuses=[],
-        started_at=[now - timedelta(hours=index) for index in range(1, 9)],
-        last_failed_at=None,
-        now=now,
-    )
-    capped = check_admission(
-        active_statuses=[],
-        started_at=[now - timedelta(hours=index) for index in range(1, 10)],
-        last_failed_at=None,
-        now=now,
-    )
-    assert allowed.allowed
-    assert capped.code == "EXAM_ATTEMPT_QUOTA_EXCEEDED"
-
-
-def test_admission_rejects_naive_database_timestamps():
-    now = datetime(2026, 10, 18, 12, tzinfo=UTC)
-    with pytest.raises(ValueError, match="timezone-aware"):
-        check_admission(
-            active_statuses=[], started_at=[datetime(2026, 10, 18)], last_failed_at=None, now=now
-        )
 
 
 def test_submission_requires_unique_nonempty_evidence_and_strict_answer_fields():

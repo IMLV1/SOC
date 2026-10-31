@@ -142,7 +142,11 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
     await expect(page.getByText("จบบทเรียนแล้ว")).toBeVisible();
   }
 
+  const firstAttemptResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/v1/learning/levels/") && response.url().endsWith("/attempts") && response.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "เริ่มข้อสอบระดับนี้" }).click();
+  const firstAttemptBody = await (await firstAttemptResponse).json();
   await expect(page.getByRole("heading", { name: "Investigation case" })).toBeVisible();
   await page.getByRole("checkbox").first().check();
   await page.getByLabel("เหตุผลและการวิเคราะห์").fill(
@@ -165,20 +169,18 @@ test("lesson progress is saved on the server, resumes after refresh, and stays u
       route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data: { attempt_id: "16000000-0000-4000-8000-000000000001", status: "failed", score: 4, maximum: 10, criteria: [] } }) }),
     );
     await page.route("**/api/v1/learning/levels/*/attempts", (route) =>
-      route.fulfill({ status: 429, contentType: "application/json", body: JSON.stringify({ error: { code: "EXAM_COOLDOWN_ACTIVE", message: "Retake cooldown is active" } }) }),
+      route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(firstAttemptBody) }),
     );
   }
 
-  // An immediate retry must respect the server-enforced one-hour cooldown.
+  // A failed attempt can be retried immediately when no other attempt is active.
   if (!reviewedAgainstLiveApi) {
     await page.reload();
     await expect(page.getByText("ผลข้อสอบ: failed")).toBeVisible();
   }
   await expect(page.getByRole("button", { name: "เริ่ม attempt ถัดไป" })).toBeVisible();
   await page.getByRole("button", { name: "เริ่ม attempt ถัดไป" }).click();
-  await expect(page.locator("p[role='alert']")).toContainText("หลังสอบตก ต้องรอ 1 ชั่วโมง");
-  await expect(page.getByText("ผลข้อสอบ: failed")).toBeVisible();
-  await expect(page.getByRole("button", { name: "เริ่ม attempt ถัดไป" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Investigation case" })).toBeVisible();
 
   const path = await (await page.request.get("/api/v1/me/learning-path")).json();
   expect(path.data.lessons).toHaveLength(3);

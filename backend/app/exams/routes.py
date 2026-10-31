@@ -27,13 +27,13 @@ from app.exams.models import (
     SubmitInput,
 )
 from app.grading.exam_policy import (
-    MAX_ATTEMPTS_PER_CASE_PER_WINDOW,
     check_admission,
     validate_submission_evidence,
 )
 from app.grading.rubric import FOUNDATIONS_RUBRIC, score_rubric
 from app.http_models import ErrorEnvelope, Meta
 from app.learning.catalog import LEVEL_ID
+from app.learning.access import require_level
 from app.runs.service import effective_ms, server_time, start_run
 from app.scenarios.models import ScenarioView, TrainingSelection
 from app.tutor.quota import reserve_logical_request
@@ -250,12 +250,7 @@ async def start_attempt(
             )
 
         if level_id != LEVEL_ID:
-            unlocked = await session.scalar(
-                text("SELECT 1 FROM app.level_unlocks WHERE user_id=:owner AND level_id=:level"),
-                {"owner": owner, "level": level_id},
-            )
-            if not unlocked:
-                raise auth.AuthError(404, "NOT_FOUND")
+            await require_level(session, owner, level_id)
 
         progress = (
             (
@@ -311,31 +306,8 @@ async def start_attempt(
             .scalars()
             .all()
         )
-        history = (
-            (
-                await session.execute(
-                    text("""SELECT status,started_at,coalesce(finalized_at,expires_at) AS failed_at
-                       FROM app.exam_attempts
-                       WHERE owner_user_id=:owner AND level_id=:level
-                         AND started_at>:cutoff ORDER BY started_at"""),
-                    {
-                        "owner": owner,
-                        "level": level_id,
-                        "cutoff": now - timedelta(hours=24),
-                    },
-                )
-            )
-            .mappings()
-            .all()
-        )
         decision = check_admission(
             active_statuses=active_statuses,
-            started_at=[row["started_at"] for row in history],
-            last_failed_at=max(
-                (row["failed_at"] for row in history if row["status"] in {"failed", "expired"}),
-                default=None,
-            ),
-            now=now,
         )
         if not decision.allowed:
             code = decision.code or "EXAM_UNAVAILABLE"
@@ -344,8 +316,9 @@ async def start_attempt(
                 code,
             )
 
-        # Prefer eligible cases with fewer recent attempts for this learner so
-        # repeated exam starts do not keep drawing the same case unnecessarily.
+        # Prefer cases the learner has not passed; then balance by attempt count.
+        # This prevents retakes from repeatedly selecting an already-cleared case
+        # while other cases are still required to unlock the next level.
         selected = (
             (
                 await session.execute(
@@ -353,18 +326,16 @@ async def start_attempt(
                        c.duration_ms,s.learning_objectives,c.id AS exam_case_id
                        FROM app.exam_cases c JOIN app.scenarios s ON s.id=c.scenario_id
                        WHERE c.level_id=:level AND c.enabled AND s.enabled AND s.purpose='exam'
-                       AND (SELECT count(*) FROM app.exam_attempts a
+                       ORDER BY EXISTS(SELECT 1 FROM app.exam_attempts pa
+                         JOIN app.grading_revisions pg ON pg.attempt_id=pa.id
+                         WHERE pa.owner_user_id=:owner AND pa.level_id=:level
+                           AND pa.case_id=c.id AND pa.status='passed' AND pg.status='passed'
+                           AND pg.revision=(SELECT max(pg2.revision)
+                             FROM app.grading_revisions pg2 WHERE pg2.attempt_id=pa.id)) ASC,
+                         (SELECT count(*) FROM app.exam_attempts a
                          WHERE a.owner_user_id=:owner AND a.case_id=c.id
-                           AND a.started_at>:cutoff) < :case_limit
-                       ORDER BY (SELECT count(*) FROM app.exam_attempts a
-                         WHERE a.owner_user_id=:owner AND a.case_id=c.id
-                           AND a.started_at>:cutoff), random() LIMIT 1"""),
-                    {
-                        "level": level_id,
-                        "owner": owner,
-                        "cutoff": now - timedelta(hours=24),
-                        "case_limit": MAX_ATTEMPTS_PER_CASE_PER_WINDOW,
-                    },
+                           AND a.status <> 'reset'), random() LIMIT 1"""),
+                    {"level": level_id, "owner": owner},
                 )
             )
             .mappings()
@@ -956,18 +927,19 @@ async def review_attempt(attempt_id: UUID, body: ReviewInput, request: Request) 
                 )
                 or 0
             )
-            passed_cases = int(
+            passed_attempts = int(
                 await session.scalar(
-                    text("""SELECT count(DISTINCT a.case_id) FROM app.exam_attempts a
+                    text("""SELECT count(DISTINCT a.id) FROM app.exam_attempts a
                        JOIN app.grading_revisions g ON g.attempt_id=a.id
-                       WHERE a.owner_user_id=:owner AND a.level_id=:level AND g.status='passed'
+                       WHERE a.owner_user_id=:owner AND a.level_id=:level AND a.status='passed'
+                         AND g.status='passed'
                          AND g.revision=(SELECT max(g2.revision) FROM app.grading_revisions g2
                            WHERE g2.attempt_id=a.id)"""),
                     {"owner": owner, "level": attempt["level_id"]},
                 )
                 or 0
             )
-            if cases > 0 and cases == passed_cases:
+            if cases > 0 and cases == passed_attempts:
                 next_level = (
                     await session.execute(
                         text("""SELECT id FROM app.learning_levels

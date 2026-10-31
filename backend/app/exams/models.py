@@ -43,7 +43,9 @@ class AttemptView(Strict):
     id: UUID
     run_id: UUID
     level_id: UUID
-    status: Literal["in_progress", "submitted", "needs_review", "passed", "failed", "expired"]
+    status: Literal[
+        "in_progress", "submitted", "needs_review", "passed", "failed", "expired", "reset"
+    ]
     version: int
     started_at: datetime
     expires_at: datetime
@@ -69,7 +71,7 @@ class ResultCriterion(Strict):
 
 class ResultData(Strict):
     attempt_id: UUID
-    status: Literal["submitted", "needs_review", "passed", "failed", "expired"]
+    status: Literal["submitted", "needs_review", "passed", "failed", "expired", "reset"]
     score: int | None = None
     maximum: int = 8
     criteria: list[ResultCriterion] = Field(default_factory=list)

@@ -8,6 +8,10 @@ services:
     environment:
       DIFY_APP_KEY_FILE: /run/secrets/dify_app_key
     secrets: [dify_app_key]
+  evaluator:
+    environment:
+      DIFY_APP_KEY_FILE: /run/secrets/dify_app_key
+    secrets: [dify_app_key]
 
 secrets:
   dify_app_key:

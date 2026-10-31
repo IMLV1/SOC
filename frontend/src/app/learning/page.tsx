@@ -22,6 +22,8 @@ type Level = { id: string; ordinal: number; title: string; lessons: { id: string
 type LevelStatus = { level_id: string; unlocked: boolean; all_lessons_completed: boolean; exam_case_count: number; passed_case_count: number };
 type LearningPath = { lessons: Progress[]; next_action: string; level_statuses?: LevelStatus[] };
 
+const activeTrainingRunMessage = "ยังเริ่มข้อสอบไม่ได้: มีรอบฝึกที่ยังไม่จบ ไปที่ “รอบฝึกของฉัน” แล้วกดจบรอบก่อน";
+
 export default function LearningPage() {
   const { session } = useSession();
   // Preserve drafts across refreshes of the same identity, never across accounts.
@@ -37,6 +39,7 @@ function LearningWorkspace() {
   const userId = session?.user.id;
   const lessonGeneration = useRef(0);
   const examGeneration = useRef(0);
+  const syncedPassedAttempt = useRef<string | null>(null);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [active, setActive] = useState(0);
@@ -132,6 +135,27 @@ function LearningWorkspace() {
     };
   }, [refreshExam, sessionLoading, examResult?.status]);
 
+  // The grading result and the learning-path counters are separate API reads.
+  // Refresh the authoritative path as soon as this attempt becomes passed.
+  useEffect(() => {
+    const passedAttemptId = examResult?.status === "passed" ? examResult.attempt_id : null;
+    if (!userId || !passedAttemptId || syncedPassedAttempt.current === passedAttemptId) return;
+    syncedPassedAttempt.current = passedAttemptId;
+    let active = true;
+    void read<LearningPath>("/me/learning-path").then((path) => {
+      if (!active) return;
+      setAllProgress(path.lessons);
+      setLevelStatuses(path.level_statuses ?? []);
+    }).catch(() => {
+      if (syncedPassedAttempt.current === passedAttemptId) syncedPassedAttempt.current = null;
+      setError("ผลสอบผ่านแล้ว แต่โหลดสถานะระดับล่าสุดไม่สำเร็จ กด ‘ตรวจผลและสิทธิ์ล่าสุด’ เพื่อลองอีกครั้ง");
+    });
+    return () => {
+      active = false;
+      if (syncedPassedAttempt.current === passedAttemptId) syncedPassedAttempt.current = null;
+    };
+  }, [userId, examResult?.attempt_id, examResult?.status]);
+
   const attemptId = attempt?.id;
   const attemptStatus = attempt?.status;
   useEffect(() => {
@@ -194,19 +218,58 @@ function LearningWorkspace() {
     if (!progress || saving || loading || !examReady || examRefreshing || examError) return;
     setSaving(true); setError("");
     try {
-      const firstLesson = levels.find((level) => level.id === lesson?.level_id)?.lessons[0]?.id;
-      const firstProgress = allProgress.find((item) => item.lesson_id === firstLesson);
-      const result = await write<Attempt>(`/learning/levels/${lesson?.level_id}/attempts`, { expected_progress_version: firstProgress?.version ?? progress.version }, { idempotencyKey: crypto.randomUUID() });
+      const levelId = lesson?.level_id;
+      const level = levels.find((item) => item.id === levelId);
+      const firstLesson = level?.lessons[0]?.id;
+      if (!levelId || !firstLesson) throw new Error("LESSON_REQUIRED");
+
+      // Progress may have changed in another tab or while this page was open.
+      // Read the server's current version immediately before attempting admission.
+      const readAdmission = async () => {
+        const path = await read<LearningPath>("/me/learning-path");
+        setAllProgress(path.lessons);
+        setLevelStatuses(path.level_statuses ?? []);
+        const firstProgress = path.lessons.find((item) => item.lesson_id === firstLesson);
+        const levelStatus = path.level_statuses?.find((item) => item.level_id === levelId);
+        return {
+          version: firstProgress?.version,
+          eligible: levelStatus?.all_lessons_completed === true,
+        };
+      };
+      const startWithVersion = (version: number) => write<Attempt>(
+        `/learning/levels/${levelId}/attempts`,
+        { expected_progress_version: version },
+        { idempotencyKey: crypto.randomUUID() },
+      );
+
+      let admission = await readAdmission();
+      if (!admission.eligible || admission.version === undefined) {
+        setError("ยังเริ่มข้อสอบไม่ได้ กรุณาตรวจว่าบทเรียนทุกบทของระดับนี้เรียนจบแล้ว");
+        return;
+      }
+      let result: Attempt;
+      try {
+        result = await startWithVersion(admission.version);
+      } catch (cause) {
+        // A concurrent save can make the just-read version stale. Refresh once
+        // and retry only that conflict; the API still enforces all exam gates.
+        if (!(cause instanceof ApiError) || cause.code !== "VERSION_CONFLICT") throw cause;
+        admission = await readAdmission();
+        if (!admission.eligible || admission.version === undefined) throw new ApiError(409, "LESSON_REQUIRED");
+        result = await startWithVersion(admission.version);
+      }
       ++examGeneration.current; setExamRefreshing(false); setExamError("");
       setExamResult(null); setAttempt(result); setEvidence([]); setReason("");
     } catch (cause) {
       const code = cause instanceof ApiError ? cause.code : "";
-      setError(code === "EXAM_COOLDOWN_ACTIVE"
-        ? "หลังสอบตก ต้องรอ 1 ชั่วโมงก่อนเริ่ม attempt ถัดไป"
-        : code === "EXAM_ATTEMPT_QUOTA_EXCEEDED"
-          ? "ใช้โควตาของ case นี้ครบ 3 ครั้งใน 24 ชั่วโมงแล้ว"
+      setError(code === "LESSON_REQUIRED"
+        ? "ยังเริ่มข้อสอบไม่ได้ กรุณาจบบทเรียนทุกบทของระดับนี้ก่อน"
+        : code === "EXAM_ATTEMPT_ACTIVE"
+          ? "มีข้อสอบที่กำลังทำอยู่ กรุณาทำข้อสอบเดิมให้เสร็จก่อน"
+          : code === "RUN_ALREADY_RUNNING"
+            ? activeTrainingRunMessage
           : cause instanceof ApiError && cause.status === 409
-            ? "ยังเริ่มข้อสอบไม่ได้ ตรวจว่าบทเรียนเสร็จและไม่มี attempt อื่นค้างอยู่"
+            ? "สถานะการสอบเปลี่ยนแล้ว กด ‘ตรวจผลและสิทธิ์ล่าสุด’ แล้วลองอีกครั้ง"
             : "เริ่มข้อสอบไม่สำเร็จ กรุณาลองใหม่");
     } finally { setSaving(false); }
   }
@@ -253,9 +316,9 @@ function LearningWorkspace() {
       {session && examError && <p role="alert">{examError}</p>}
       {!session ? <p>เข้าสู่ระบบและเรียนให้ครบก่อนเริ่มสอบ</p> : !lesson ? <p>เลือกบทเรียนที่เปิดให้บัญชีคุณเพื่อดูสถานะระดับ</p> : <>
         <p>ระดับที่เลือก: {currentLevel?.title ?? "กำลังโหลด"}</p>
-        {currentLevelStatus && <p>ผ่านเคสสอบ {currentLevelStatus.passed_case_count} / {currentLevelStatus.exam_case_count} เคส</p>}
+        {currentLevelStatus && <p>สอบผ่าน {currentLevelStatus.passed_case_count} / {currentLevelStatus.exam_case_count} ครั้ง</p>}
         <p>ต้องจบบทเรียนทุกบทของระดับก่อนเริ่ม ผลข้อเขียนและแบบฝึกไม่ใช่การสอบผ่าน ระหว่างสอบไม่มีผู้ช่วย AI</p>
-        {levelExamComplete ? <p>ผ่านเคสสอบครบระดับนี้แล้ว</p> : <><button disabled={!canStartExam} onClick={() => void startExam()}>{saving ? "กำลังเตรียมข้อสอบ…" : examResult?.status === "passed" ? "เริ่มเคสสอบถัดไป" : examResult ? "เริ่ม attempt ถัดไป" : "เริ่มข้อสอบระดับนี้"}</button>
+        {levelExamComplete ? <p>ผ่านข้อสอบครบตามจำนวนครั้งของระดับนี้แล้ว</p> : <><button disabled={!canStartExam} onClick={() => void startExam()}>{saving ? "กำลังเตรียมข้อสอบ…" : examResult ? "เริ่ม attempt ถัดไป" : "เริ่มข้อสอบระดับนี้"}</button>
           {!allLessonsCompleted && <p>ยังเริ่มไม่ได้: ต้องจบบทเรียนทุกบทของระดับนี้ก่อน</p>}
           {waitingForReview && <p>{examResult?.status === "submitted" ? "ส่งข้อสอบแล้ว AI กำลังตรวจผล" : "AI ตรวจไม่สำเร็จหรือผลยังไม่ชัดเจน ต้องตรวจสอบก่อนเริ่มเคสถัดไป"}</p>}
           {attempt && <p>มีข้อสอบที่กำลังทำอยู่ อ่านหลักฐานและส่งคำตอบด้านล่างก่อน</p>}
@@ -268,7 +331,7 @@ function LearningWorkspace() {
     </select></label><p>ต้องเรียนตามลำดับ ระดับกลาง/ชำนาญเปิดเมื่อสอบผ่านระดับก่อนหน้าตามสิทธิ์ฝั่ง server</p></section>}
     {!sessionLoading && !session && <section className="learning-card" aria-labelledby="login-required"><h2 id="login-required">เข้าสู่ระบบเพื่ออ่านบทเรียน</h2><p>ยังไม่มีบัญชีใช่ไหม? ลองอ่าน request ตัวอย่างได้ก่อนโดยไม่บันทึกคะแนน บทเรียนและความคืบหน้าจริงต้องใช้บัญชี</p><div className="demo-actions"><Link className="button" href="/demo">ลองข้อมูลตัวอย่าง</Link><Link className="button button-secondary" href="/login">เข้าสู่ระบบ</Link></div></section>}
     {session && loading && <p role="status">{lesson ? "กำลังอัปเดตความคืบหน้า…" : "กำลังโหลดบทเรียนและความคืบหน้า…"}</p>}
-    {session && error && <p role="alert">{error} <button className="button-secondary" onClick={() => void load()}>โหลดใหม่</button></p>}
+    {session && error && <p role="alert">{error} {error === activeTrainingRunMessage && <Link className="button-secondary" href="/runs">เปิดรอบฝึก</Link>} <button className="button-secondary" onClick={() => void load()}>โหลดใหม่</button></p>}
     {session && lesson && progress && <>
       {missingPrerequisite && <section className="learning-card" role="status">
         <h2>ต้องจบบทเรียนก่อนหน้า</h2>
@@ -304,7 +367,7 @@ function LearningWorkspace() {
         <label>เหตุผลและการวิเคราะห์<textarea value={reason} maxLength={2000} onChange={(event) => setReason(event.target.value)} rows={5} /></label>
         <button disabled={saving || !reason.trim() || evidence.length === 0} onClick={() => void submitExam()}>{saving ? "กำลังส่ง…" : "ส่งข้อสอบ"}</button>
       </section>}
-      {examResult && <section className="learning-card" aria-live="polite"><h2>ผลข้อสอบ: {examResult.status}</h2>{examResult.score !== null && <p>คะแนน {examResult.score}/{examResult.maximum}</p>}{examResult.status === "submitted" && <p>ส่งคำตอบแล้ว AI กำลังตรวจผล ข้อมูลจะอัปเดตอัตโนมัติ</p>}{examResult.status === "needs_review" && <p>AI ตรวจไม่สำเร็จหรือผลไม่ชัดเจน ระบบยังไม่ตัดสินผ่าน โปรดแจ้งผู้ดูแลระบบ</p>}{examResult.criteria.map((item) => <p key={item.key}><strong>{item.key}:</strong> {item.feedback}</p>)}</section>}
+      {examResult && <section className="learning-card" aria-live="polite"><h2>ผลข้อสอบ: {examResult.status}</h2>{examResult.status === "passed" && <p>ผ่านแล้ว เพราะจับประเด็นหลักและมีหลักฐานรองรับ คะแนนรายข้อด้านล่างช่วยบอกสิ่งที่ควรเสริม ไม่ได้แปลว่าคำตอบผิดทั้งหมด</p>}{examResult.status === "failed" && <p>ยังไม่ผ่าน เพราะหลักฐานหรือข้อสรุปหลักยังไม่ชัดหรือไม่สอดคล้องกับข้อมูล ลองดู feedback แล้วสอบใหม่ได้</p>}{examResult.score !== null && <p>คะแนนประกอบการฝึก {examResult.score}/{examResult.maximum}</p>}{examResult.status === "submitted" && <p>ส่งคำตอบแล้ว AI กำลังตรวจผล ข้อมูลจะอัปเดตอัตโนมัติ</p>}{examResult.status === "needs_review" && <p>AI ตรวจไม่สำเร็จหรือผลไม่ชัดเจน ระบบยังไม่ตัดสินผ่าน โปรดแจ้งผู้ดูแลระบบ</p>}{examResult.criteria.map((item) => <p key={item.key}><strong>{item.key}:</strong> {item.feedback}</p>)}</section>}
     </>}
     {session && levels.length > 0 && <LessonTutor lessonId={lessonId}
       examActive={Boolean(attempt) || waitingForReview}

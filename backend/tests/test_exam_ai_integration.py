@@ -60,16 +60,17 @@ def test_submitted_exam_is_graded_and_finalized_without_instructor(migrated, mon
         assert workflow_id == workflow and mode == "exam_grade"
         data = json.loads(question)
         assert "private_truth" not in question and "expected_evidence_keys" not in question
+        assert "concise" in data["task"] and "without revealing the case answer" in data["task"]
         event_ids = [item["id"] for item in data["events"]]
         assert event_ids
         return WorkflowReply(
             {
                 "answer": json.dumps(
                     {
-                        "analysis_score": 2,
-                        "reasoning_score": 2,
-                        "analysis_feedback": "อธิบายหลักฐานและข้อจำกัดได้ชัดเจน",
-                        "reasoning_feedback": "เชื่อมเหตุผลกับ event ที่พบ",
+                        "analysis_score": 1,
+                        "reasoning_score": 0,
+                        "analysis_feedback": "จับประเด็นหลักได้ถูกต้องแล้ว; เสริมข้อจำกัดที่ยังยืนยันไม่ได้",
+                        "reasoning_feedback": "ลองเชื่อมเหตุผลกับ event ที่เลือกให้ชัดขึ้น",
                         "evidence_refs": [event_ids[0]],
                         "section_ids": [],
                     }
@@ -164,7 +165,7 @@ def test_submitted_exam_is_graded_and_finalized_without_instructor(migrated, mon
             json={
                 "expected_version": attempt["version"],
                 "evidence_event_ids": evidence,
-                "severity": severity,
+                "severity": "low" if severity != "low" else "medium",
                 "disposition": disposition,
                 "reason": "ตอบ 401 จึงยังยืนยัน login สำเร็จไม่ได้ ควรตรวจ event ถัดไป",
             },
@@ -182,4 +183,100 @@ def test_submitted_exam_is_graded_and_finalized_without_instructor(migrated, mon
         result = learner.get(f"/api/v1/exam/attempts/{attempt_id}/result")
         assert result.status_code == 200, result.text
         assert result.json()["data"]["status"] == "passed"
-        assert result.json()["data"]["score"] == 8
+        assert result.json()["data"]["score"] == 3
+        criteria = {item["key"]: item for item in result.json()["data"]["criteria"]}
+        assert criteria["classification"]["score"] == 0
+        assert "ทบทวน" in criteria["classification"]["feedback"]
+        assert criteria["reasoning"]["score"] == 0
+
+
+@pytest.mark.integration
+def test_retention_can_reset_only_dify_configuration_failure(migrated, monkeypatch):
+    users, tokens = asyncio.run(prepare_exam(migrated))
+    owner_id, analyst_token = users[0], tokens[0]
+    monkeypatch.setattr("app.main.database_url", lambda role: migrated(role))
+    monkeypatch.setenv("AUTH_ORIGINS", "http://testserver")
+    monkeypatch.setenv("AUTH_COOKIE_SECURE", "false")
+
+    with TestClient(app, headers={"Origin": "http://testserver"}) as learner:
+        learner.cookies.set(auth.SESSION, analyst_token)
+        started = learner.post(
+            f"/api/v1/learning/levels/{LEVEL_ID}/attempts",
+            json={"expected_progress_version": 1},
+            headers={"X-CSRF-Token": auth.csrf(analyst_token), "Idempotency-Key": str(uuid4())},
+        )
+        assert started.status_code == 201, started.text
+        attempt_id = UUID(started.json()["data"]["id"])
+        run_id = UUID(started.json()["data"]["run_id"])
+
+    async def set_failed_grading():
+        database = Database(migrated("migration_owner"))
+        try:
+            async with database.sessions() as session, session.begin():
+                await session.execute(
+                    text("""UPDATE app.exam_attempts SET status='needs_review',
+                       submitted_at=clock_timestamp() WHERE id=:attempt"""),
+                    {"attempt": attempt_id},
+                )
+                await session.execute(
+                    text("""INSERT INTO app.exam_ai_grades
+                       (attempt_id,owner_user_id,policy_version,workflow_id,corpus_revision,
+                        reserved_usd,status,error_code,dispatch_started_at,usage_status,finished_at)
+                       VALUES (:attempt,:owner,1,'workflow-test','corpus-test',0.001,
+                         'needs_review','DIFY_CONFIGURATION_INVALID',clock_timestamp(),'unknown',
+                         clock_timestamp())"""),
+                    {"attempt": attempt_id, "owner": owner_id},
+                )
+                await session.execute(
+                    text("""INSERT INTO app.exam_answers
+                      (attempt_id,evidence_event_ids,severity,disposition,reason,release_cutoff,
+                       assessment_cutoff,dataset_hash,content_hash)
+                      VALUES (:attempt,'[]'::jsonb,'medium','undetermined','test answer',0,
+                       clock_timestamp(),repeat('a',64),repeat('b',64))"""),
+                    {"attempt": attempt_id},
+                )
+                await session.execute(
+                    text("""INSERT INTO app.jobs(id,run_id,type,dedupe_key,payload,status,finished_at)
+                       VALUES (:id,:run,'exam_grade',:dedupe,
+                         jsonb_build_object('attempt_id',:attempt),'succeeded',clock_timestamp())"""),
+                    {"id": uuid4(), "run": run_id, "dedupe": f"exam-grade:{attempt_id}",
+                     "attempt": str(attempt_id)},
+                )
+        finally:
+            await database.close()
+
+    asyncio.run(set_failed_grading())
+    async def reset_and_verify():
+        retention = Database(migrated("retention_runtime"))
+        database = Database(migrated("migration_owner"))
+        try:
+            async with retention.sessions() as session, session.begin():
+                reset = await session.scalar(
+                    text("SELECT private.reset_exam_attempt(:owner,:attempt)"),
+                    {"owner": owner_id, "attempt": attempt_id},
+                )
+                assert reset is True
+                assert (
+                    await session.scalar(
+                        text("SELECT private.reset_exam_attempt(:owner,:attempt)"),
+                        {"owner": owner_id, "attempt": attempt_id},
+                    )
+                    is False
+                )
+            async with database.sessions() as session:
+                row = (
+                    await session.execute(
+                        text("""SELECT a.status,a.reset_at IS NOT NULL,
+                          EXISTS(SELECT 1 FROM app.exam_answers x WHERE x.attempt_id=a.id),
+                          g.usage_status FROM app.exam_attempts a
+                          JOIN app.exam_ai_grades g ON g.attempt_id=a.id WHERE a.id=:attempt"""),
+                        {"attempt": attempt_id},
+                    )
+                ).one()
+                return row
+        finally:
+            await retention.close()
+            await database.close()
+
+    status, has_reset_at, has_answer, usage_status = asyncio.run(reset_and_verify())
+    assert (status, has_reset_at, has_answer, usage_status) == ("reset", True, True, "unknown")

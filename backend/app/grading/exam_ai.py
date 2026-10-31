@@ -187,8 +187,14 @@ async def process_exam_grade(database: Database, job: dict[str, Any]) -> None:
         question = json.dumps(
             {
                 "task": (
-                    "Assess submitted reasoning against frozen released evidence; "
-                    "do not grade classification or select correct evidence."
+                    "Assess whether the learner's main conclusion is relevant and supported "
+                    "by the frozen released evidence. Be encouraging and lenient: a concise, "
+                    "on-point answer earns analysis_score at least 1 even if it omits secondary "
+                    "checks or extra details. Give score 0 only when the conclusion is off-topic, "
+                    "unsupported, or contradicted by the evidence. Treat reasoning_score as "
+                    "coaching detail, not a pass requirement. Feedback should acknowledge what is "
+                    "right first, then suggest one or two useful additions without revealing the "
+                    "case answer. Do not grade severity/disposition or select evidence."
                 ),
                 "answer": {
                     "evidence_event_ids": answer["evidence_event_ids"],
@@ -345,8 +351,18 @@ async def process_exam_grade(database: Database, job: dict[str, Any]) -> None:
         feedback = {
             "analysis": ai.analysis_feedback,
             "reasoning": ai.reasoning_feedback,
-            "evidence": "ตรวจหลักฐานที่เลือกแล้ว",
-            "classification": "ตรวจการจัดประเภทแล้ว",
+            "evidence": (
+                "เลือกหลักฐานที่เกี่ยวข้องกับประเด็นหลักได้แล้ว"
+                if evidence_score == 2
+                else "มีหลักฐานที่เกี่ยวข้องแล้ว; ลองเสริม event ที่เชื่อมกับข้อสรุปให้ชัดขึ้น"
+                if evidence_score == 1
+                else "ลองเทียบ event ที่เลือกกับข้อสรุปอีกครั้ง แล้วเลือกหลักฐานที่รองรับประเด็นหลัก"
+            ),
+            "classification": (
+                "การจัดประเภทสอดคล้องกับหลักฐาน"
+                if classification_score == 2
+                else "ลองทบทวน severity/disposition และเพิ่มเหตุผลที่เชื่อมกับหลักฐาน"
+            ),
         }
         criteria = [
             {
@@ -390,15 +406,16 @@ async def process_exam_grade(database: Database, job: dict[str, Any]) -> None:
               WHERE level_id=:level AND enabled"""),
                 {"level": attempt["level_id"]},
             )
-            passed = await session.scalar(
-                text("""SELECT count(DISTINCT a.case_id)
+            passed_attempts = await session.scalar(
+                text("""SELECT count(DISTINCT a.id)
               FROM app.exam_attempts a JOIN app.grading_revisions g ON g.attempt_id=a.id
-              WHERE a.owner_user_id=:owner AND a.level_id=:level AND g.status='passed'
+              WHERE a.owner_user_id=:owner AND a.level_id=:level AND a.status='passed'
+                AND g.status='passed'
               AND g.revision=(SELECT max(g2.revision) FROM app.grading_revisions g2
                 WHERE g2.attempt_id=a.id)"""),
                 {"owner": attempt["owner_user_id"], "level": attempt["level_id"]},
             )
-            if cases and cases == passed:
+            if cases and cases == passed_attempts:
                 next_level = await session.scalar(
                     text("""SELECT id FROM app.learning_levels
                   WHERE ordinal=(SELECT ordinal+1 FROM app.learning_levels WHERE id=:level)

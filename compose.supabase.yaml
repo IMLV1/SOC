@@ -63,13 +63,14 @@ services:
       SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:?Set publishable key}
       SUPABASE_TOKEN_KEY_FILE: /run/secrets/token_key
       SUPABASE_AUTH_CALLBACK_URL: ${SUPABASE_AUTH_CALLBACK_URL:?Set callback URL}
-      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
+      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-dify}
       DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
-      SOC_KB_ENABLED: "false"
+      SOC_KB_ENABLED: ${SOC_KB_ENABLED:-true}
     volumes:
       - ${SUPABASE_SECRETS_DIR:?Set private secret directory}/api_runtime.txt:/run/secrets/database:ro
       - ${SUPABASE_SECRETS_DIR}/tokens.key:/run/secrets/token_key:ro
       - ${SUPABASE_CA_FILE:?Set downloaded CA file}:/run/certs/supabase.crt:ro
+    depends_on: !override []
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=6)"]
       interval: 20s
@@ -84,12 +85,13 @@ services:
     environment:
       <<: *db
       DB_PASSWORD_FILE: /run/secrets/database
-      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-mock}
+      SOC_AI_PROVIDER: ${SOC_AI_PROVIDER:-dify}
       DIFY_API_BASE_URL: ${DIFY_API_BASE_URL:-https://api.dify.ai/v1}
-      SOC_KB_ENABLED: "false"
+      SOC_KB_ENABLED: ${SOC_KB_ENABLED:-true}
     volumes:
       - ${SUPABASE_SECRETS_DIR}/worker_runtime.txt:/run/secrets/database:ro
       - ${SUPABASE_CA_FILE}:/run/certs/supabase.crt:ro
+    depends_on: !override []
     healthcheck:
       test: [CMD, python, -m, app.worker, --check]
       interval: 30s
@@ -107,6 +109,7 @@ services:
     volumes:
       - ${SUPABASE_SECRETS_DIR}/evaluator_runtime.txt:/run/secrets/database:ro
       - ${SUPABASE_CA_FILE}:/run/certs/supabase.crt:ro
+    depends_on: !override []
     healthcheck:
       test: [CMD, python, -m, app.evaluation, --check]
       interval: 30s

@@ -3,9 +3,10 @@
 from dataclasses import dataclass
 from typing import Literal
 
-RUBRIC_VERSION = "soc-foundations-v1"
+RUBRIC_VERSION = "soc-foundations-v2"
 MAX_SCORE_PER_CRITERION = 2
-PASS_SCORE = 6
+# A learner passes by meeting the two core criteria. Other points guide practice.
+PASS_SCORE = 2
 
 
 @dataclass(frozen=True)
@@ -44,7 +45,7 @@ FOUNDATIONS_RUBRIC = Rubric(
 
 
 def score_rubric(scores: dict[str, int | None], rubric: Rubric = FOUNDATIONS_RUBRIC) -> Grade:
-    """Score a complete criterion map; missing/invalid values must be reviewed.
+    """Pass on the core evidence and analysis; optional criteria guide feedback.
 
     This function does not inspect private case truth or learner prose. Its caller
     must validate evidence references and obtain authorized criterion results.
@@ -61,7 +62,9 @@ def score_rubric(scores: dict[str, int | None], rubric: Rubric = FOUNDATIONS_RUB
 
     complete_scores = {key: value for key, value in scores.items() if value is not None}
     total = sum(complete_scores.values())
-    critical_met = all(complete_scores[item.key] >= 1 for item in rubric.criteria if item.critical)
+    critical_met = all(
+        complete_scores[item.key] >= 1 for item in rubric.criteria if item.critical
+    )
     status: Literal["passed", "failed"] = (
         "passed" if total >= rubric.pass_score and critical_met else "failed"
     )

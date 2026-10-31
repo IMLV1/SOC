@@ -332,6 +332,8 @@ Guest อ่าน demo ได้ ทบทวนบทเรียนได้ 
 
 สถานะปัจจุบัน: migration/seed, server-selected attempt, blind DTO, atomic submit/replay และ browser flow เริ่มข้อสอบ/ส่งคำตอบ/needs_review ผ่าน. Retake policy: 3 ครั้งต่อ case/24 ชม. (สูงสุด 9 ต่อ level เมื่อมี 3 cases), cooldown หลังตก 1 ชม.; PostgreSQL integration ยืนยัน case rotation/cap, concurrent starts ได้ active attempt เดียว และ latest-result จำกัดตามเจ้าของ. Disposable Compose ล่าสุด 21 ต.ค. 2026 บน branch `codex/retake-browser-acceptance` ผ่าน: integration 77 passed/82 deselected, smoke 3, browser 26 passed/1 skipped; browser journey Instructor review/feedback และเริ่ม retake ใหม่หลัง cooldown หมดผ่าน. GitHub CI run 39494965944 ผ่านครบทุก job บน `5bfcdb2`. ดู [ผลตรวจข้อ 16](step-16-verification.md)
 
+**นโยบาย retake ปัจจุบัน (31 ต.ค. 2026):** ผู้ใช้ขอสอบซ้ำได้ไม่จำกัดและไม่รอ cooldown; implementation ล่าสุดเอา attempt cap/cooldown ออกแล้ว แต่ยังไม่ได้รัน PostgreSQL integration/browser tests บน revision นี้ หลักฐานเก่าด้านบนเป็นของ policy เดิม
+
 ```text
 ทำข้อ 16: implement exam bank, server-selected attempts, one-active-exam/quota checks และ blind serializers
 ทำหน้า exam กับ submit คำตอบ/evidence/severity/disposition/reason แบบ atomic และ idempotent
