@@ -54,6 +54,11 @@ test("Instructor reviews a submitted exam and learner sees the saved feedback", 
   await expect(page.getByText("คะแนน 7/8")).toBeVisible();
 
   const learnerPage = await page.context().newPage();
+  await learnerPage.route("**/api/v1/learning-path", (route) => route.fulfill(envelope({
+    levels: [{ id: levelId, ordinal: 1, title: "พื้นฐาน", lessons: [{
+      id: "15000000-0000-4000-8000-000000000101", version: 1, title: "พื้นฐานการสืบสวน",
+    }] }],
+  })));
   await learnerPage.route("**/api/v1/auth/session", (route) =>
     route.fulfill(envelope({ csrf_token: "learner-csrf", user: { ...user, id: "26000000-0000-4000-8000-000000000003", display_name: "Learner One", email: "learner@example.test", role: "analyst" }, expires_at: new Date(Date.now() + 3600000).toISOString() })),
   );
@@ -74,6 +79,6 @@ test("Instructor reviews a submitted exam and learner sees the saved feedback", 
   })));
   await learnerPage.goto("/learning");
   await expect(learnerPage.getByText("ผลข้อสอบ: passed")).toBeVisible();
-  await expect(learnerPage.getByText("คะแนน 7/8")).toBeVisible();
+  await expect(learnerPage.getByText("คะแนนประกอบการฝึก 7/8", { exact: true })).toBeVisible();
   await expect(learnerPage.getByText("มีส่วนที่ทำได้ ควรทบทวนเกณฑ์นี้")).toBeVisible();
 });

@@ -62,9 +62,7 @@ def score_rubric(scores: dict[str, int | None], rubric: Rubric = FOUNDATIONS_RUB
 
     complete_scores = {key: value for key, value in scores.items() if value is not None}
     total = sum(complete_scores.values())
-    critical_met = all(
-        complete_scores[item.key] >= 1 for item in rubric.criteria if item.critical
-    )
+    critical_met = all(complete_scores[item.key] >= 1 for item in rubric.criteria if item.critical)
     status: Literal["passed", "failed"] = (
         "passed" if total >= rubric.pass_score and critical_met else "failed"
     )

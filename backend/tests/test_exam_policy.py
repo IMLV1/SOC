@@ -12,9 +12,7 @@ from app.grading.exam_policy import (
 
 
 def test_exam_admission_allows_unlimited_retakes_but_only_one_active_attempt():
-    active = check_admission(
-        active_statuses=["needs_review"]
-    )
+    active = check_admission(active_statuses=["needs_review"])
     assert active.code == "EXAM_ATTEMPT_ACTIVE"
 
     allowed = check_admission(active_statuses=["failed"] * 100)

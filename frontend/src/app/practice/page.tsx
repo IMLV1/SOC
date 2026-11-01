@@ -19,7 +19,14 @@ function errorMessage(error: unknown) {
 }
 
 export default function PracticePage() {
+  const { session } = useSession();
+  // Keep drafts for session refreshes, but never carry them across identities.
+  return <PracticeWorkspace key={session ? `${session.user.id}:${session.user.role}:${session.user.status}` : "guest"} />;
+}
+
+function PracticeWorkspace() {
   const { session, loading: sessionLoading } = useSession();
+  const userId = session?.user.id;
   const [catalog, setCatalog] = useState<CaseSummary[]>([]);
   const [caseId, setCaseId] = useState("");
   const [item, setItem] = useState<PracticeCase | null>(null);
@@ -41,7 +48,7 @@ export default function PracticePage() {
   const requestKey = useRef<{ body: string; key: string } | null>(null);
 
   useEffect(() => {
-    if (!session) return;
+    if (!userId) return;
     let active = true;
     read<CaseSummary[]>("/practice/cases").then((data) => {
       if (!active) return;
@@ -51,10 +58,10 @@ export default function PracticePage() {
       setError("");
     }).catch((cause) => { if (active) setError(errorMessage(cause)); });
     return () => { active = false; };
-  }, [session, retry]);
+  }, [userId, retry]);
 
   useEffect(() => {
-    if (!session || !caseId) return;
+    if (!userId || !caseId) return;
     let active = true;
     Promise.resolve().then(() => { if (active) { setLoading(true); setError(""); } });
     Promise.all([read<PracticeCase>(`/practice/cases/${caseId}`), read<PracticeResult[]>(`/practice/cases/${caseId}/answers`), read<PracticeAIQuestion[]>(`/practice/cases/${caseId}/ai-questions`), read<{ available: boolean }>("/practice/ai-availability")])
@@ -66,10 +73,10 @@ export default function PracticePage() {
       }).catch((cause) => { if (active) { setItem(null); setAiAvailable(false); setError(errorMessage(cause)); } })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [caseId, session, retry]);
+  }, [caseId, userId, retry]);
 
   useEffect(() => {
-    if (!session || !caseId || !aiHistory.some((entry) => entry.status === "queued" || entry.status === "running")) return;
+    if (!userId || !caseId || !aiHistory.some((entry) => entry.status === "queued" || entry.status === "running")) return;
     let active = true;
     const timer = window.setTimeout(() => {
       read<PracticeAIQuestion[]>(`/practice/cases/${caseId}/ai-questions`)
@@ -77,7 +84,7 @@ export default function PracticePage() {
         .catch((cause) => { if (active) setAiError(errorMessage(cause)); });
     }, 3000);
     return () => { active = false; window.clearTimeout(timer); };
-  }, [session, caseId, aiHistory]);
+  }, [userId, caseId, aiHistory]);
 
   useEffect(() => {
     if (!dirty) return;

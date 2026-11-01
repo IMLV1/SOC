@@ -135,6 +135,7 @@ def test_concurrent_repeat_migrations_have_one_row_per_revision(pg):
             "exam_cases",
             "exam_attempts",
             "exam_answers",
+            "exam_ai_grades",
             "grading_revisions",
             "level_unlocks",
         }
