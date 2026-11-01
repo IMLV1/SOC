@@ -236,16 +236,22 @@ def test_retention_can_reset_only_dify_configuration_failure(migrated, monkeypat
                     {"attempt": attempt_id},
                 )
                 await session.execute(
-                    text("""INSERT INTO app.jobs(id,run_id,type,dedupe_key,payload,status,finished_at)
+                    text("""INSERT INTO app.jobs
+                       (id,run_id,type,dedupe_key,payload,status,finished_at)
                        VALUES (:id,:run,'exam_grade',:dedupe,
                          jsonb_build_object('attempt_id',:attempt),'succeeded',clock_timestamp())"""),
-                    {"id": uuid4(), "run": run_id, "dedupe": f"exam-grade:{attempt_id}",
-                     "attempt": str(attempt_id)},
+                    {
+                        "id": uuid4(),
+                        "run": run_id,
+                        "dedupe": f"exam-grade:{attempt_id}",
+                        "attempt": str(attempt_id),
+                    },
                 )
         finally:
             await database.close()
 
     asyncio.run(set_failed_grading())
+
     async def reset_and_verify():
         retention = Database(migrated("retention_runtime"))
         database = Database(migrated("migration_owner"))

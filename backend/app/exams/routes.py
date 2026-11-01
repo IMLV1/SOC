@@ -32,8 +32,8 @@ from app.grading.exam_policy import (
 )
 from app.grading.rubric import FOUNDATIONS_RUBRIC, score_rubric
 from app.http_models import ErrorEnvelope, Meta
-from app.learning.catalog import LEVEL_ID
 from app.learning.access import require_level
+from app.learning.catalog import LEVEL_ID
 from app.runs.service import effective_ms, server_time, start_run
 from app.scenarios.models import ScenarioView, TrainingSelection
 from app.tutor.quota import reserve_logical_request

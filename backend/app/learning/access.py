@@ -8,14 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth import service as auth
 
 
-async def materialize_level_unlock(
-    session: AsyncSession, user_id: UUID, level_id: UUID
-) -> bool:
+async def materialize_level_unlock(session: AsyncSession, user_id: UUID, level_id: UUID) -> bool:
     """Backfill an earned unlock from authoritative lesson and grading rows."""
     row = (
-        await session.execute(
-            text(
-                """SELECT l.ordinal,
+        (
+            await session.execute(
+                text(
+                    """SELECT l.ordinal,
                     (SELECT count(*) FROM app.exam_cases c
                      WHERE c.level_id=previous.id AND c.enabled) AS case_count,
                     (SELECT count(DISTINCT a.id) FROM app.exam_attempts a
@@ -46,10 +45,13 @@ async def materialize_level_unlock(
                    FROM app.learning_levels l
                    JOIN app.learning_levels previous ON previous.ordinal=l.ordinal-1
                    WHERE l.id=:level AND l.enabled AND previous.enabled"""
-            ),
-            {"user": user_id, "level": level_id},
+                ),
+                {"user": user_id, "level": level_id},
+            )
         )
-    ).mappings().first()
+        .mappings()
+        .first()
+    )
     if (
         row is None
         or row["case_count"] == 0

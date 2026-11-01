@@ -46,6 +46,12 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
 "migrations/versions/0009_real_analysis_mode.py" = ["E501"]
+# Applied revision: keep its source checksum stable, including long SQL strings.
+"migrations/versions/0027_reset_exam_attempt.py" = ["E501"]
+
+[tool.ruff.format]
+# Formatting this applied revision would cause migration-ledger drift.
+exclude = ["migrations/versions/0027_reset_exam_attempt.py"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
