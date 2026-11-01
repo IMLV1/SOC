@@ -4,7 +4,7 @@ const levelId = "15000000-0000-4000-8000-000000000001";
 const lessonId = "15000000-0000-4000-8000-000000000101";
 
 for (const passed of [1, 3]) {
-  test(`passed ${passed}/3 cases: show remaining exam or completed level truthfully`, async ({ page }) => {
+  test(`passed ${passed}/3 attempts: show remaining exam or completed level truthfully`, async ({ page }) => {
     await page.route("**/api/v1/**", (route) => {
       const path = new URL(route.request().url()).pathname;
       let data: unknown;
@@ -17,11 +17,11 @@ for (const passed of [1, 3]) {
       return route.fulfill({ json: { data } });
     });
     await page.goto("/learning");
-    await expect(page.getByText(`ผ่านเคสสอบ ${passed} / 3 เคส`, { exact: true })).toBeVisible();
-    if (passed === 1) await expect(page.getByRole("button", { name: "เริ่มเคสสอบถัดไป", exact: true })).toBeEnabled();
+    await expect(page.getByText(`สอบผ่าน ${passed} / 3 ครั้ง`, { exact: true })).toBeVisible();
+    if (passed === 1) await expect(page.getByRole("button", { name: "เริ่ม attempt ถัดไป", exact: true })).toBeEnabled();
     else {
-      await expect(page.getByText("ผ่านเคสสอบครบระดับนี้แล้ว", { exact: true })).toBeVisible();
-      await expect(page.getByRole("button", { name: "เริ่มเคสสอบถัดไป", exact: true })).toHaveCount(0);
+      await expect(page.getByText("ผ่านข้อสอบครบตามจำนวนครั้งของระดับนี้แล้ว", { exact: true })).toBeVisible();
+      await expect(page.getByRole("button", { name: "เริ่ม attempt ถัดไป", exact: true })).toHaveCount(0);
     }
     for (const width of [375, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
