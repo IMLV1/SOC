@@ -17,6 +17,10 @@ ER ภาพรวมสำหรับนำเสนอ รวม practice/wri
 
 ## 1. ฐานข้อมูลและขอบเขต
 
+Migration `0028_dify_ticket_questions` ปรับเฉพาะ `question_fields` ของ `app.analyses`: คำถามยังต้องมีข้อความ/hash/ticket แต่ยอมให้ `mode=real, model_id=dify-app` ใช้ frozen `analysis_release` ใน `run_versions.config_snapshot` แทน FK ของ legacy local KB. API/worker ตรวจ policy/workflow/corpus ก่อนรับและส่งงาน; การถอน policy ซ่อนผลอ่าน. ไม่มีการแก้ snapshot หรือ backfill รอบเก่า. Downgrade ปฏิเสธหากยังมีคำถาม Dify ที่ไม่เข้า constraint เดิม โดยไม่ลบประวัติ.
+
+เมื่อ operator ไม่มี direct credential แต่มี Supabase SQL Editor ที่มีสิทธิ์เดิม ใช้ `python scripts/export-migration-sql.py --release <40-character-source-sha> --from-revision 0027_reset_exam_attempt --output <ignored-local-file.sql>` จาก root เพื่อ export ผ่าน `app.db.migrate.sql_editor_upgrade`. รองรับเฉพาะ revision สุดท้ายหนึ่งขั้น; สร้าง DDL จาก revision จริงและฝัง checksum ของ source ทุก revision พร้อม `SET LOCAL ROLE migration_owner`, lock timeout, advisory lock, head/contiguous-ledger guards และ ledger write ใน transaction เดียว. Replay ไม่ทำซ้ำเมื่อทั้ง head/ledger ตรงแล้ว; mismatch ต้อง rollback. การ export ไม่ต่อ DB และไม่อ่าน secret. ต้องทดสอบ generated SQL บนฐานทิ้งได้ก่อน operator นำไปใช้จริง และไม่ให้สิทธิ์ role ใหม่เพื่อหลบการตรวจ.
+
 เลือก PostgreSQL เป็นฐานข้อมูลหลัก เก็บบัญชี รอบฝึก หลักฐาน ผลตรวจ ticket ประวัติคำตอบ งานเบื้องหลังและโควตาใน transaction เดียวกันตาม modular monolith ใช้ SQLAlchemy async + asyncpg ใน Python/FastAPI และ Alembic migrations ไม่มี Redis/Elasticsearch ใน MVP
 
 ใช้ AsyncSession แยกต่อ request/job ไม่แชร์ session ระหว่าง concurrent tasks และปิด transaction ก่อนเรียก AI สำหรับ locking/queue ใช้ SQLAlchemy หรือ parameterized SQL ที่ให้ semantics เดิม ตัวอย่าง `$1` ในเอกสารเป็น PostgreSQL notation; เมื่อรันผ่าน SQLAlchemy text ให้ใช้ named bind parameters Alembic ใช้ async engine ผ่าน migration env ที่รองรับตาม [Alembic asyncio cookbook](https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic)

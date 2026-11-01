@@ -2,11 +2,16 @@
 
 import asyncio
 import hashlib
+import io
+import json
 import os
+import re
 from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
 from alembic.script import ScriptDirectory
 from sqlalchemy import URL, Connection, text
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -37,6 +42,68 @@ def expected_head() -> str:
     if head is None:
         raise RuntimeError("Migration head missing.")
     return head
+
+
+def sql_editor_upgrade(release: str, previous: str) -> str:
+    """Export one reviewed revision with the same role, lock and ledger guards.
+
+    Intended for an authenticated SQL editor when a direct operator connection
+    is unavailable. Replay is a no-op only when the entire ledger still matches.
+    """
+    if re.fullmatch(r"[0-9a-f]{40}", release) is None:
+        raise ValueError("An exact release SHA is required")
+    hashes = revision_hashes()
+    versions = list(hashes)
+    if len(versions) < 2 or previous != versions[-2]:
+        raise ValueError("SQL editor export supports exactly the final pending revision")
+    head = versions[-1]
+    revision = ScriptDirectory.from_config(migration_config()).get_revision(head)
+    if revision is None or revision.down_revision != previous:
+        raise ValueError("A linear single revision upgrade is required")
+    output = io.StringIO()
+    context = MigrationContext.configure(
+        dialect_name="postgresql", opts={"as_sql": True, "output_buffer": output}
+    )
+    with Operations.context(context):
+        revision.module.upgrade()
+    expected = json.dumps(hashes).replace("'", "''")
+    return f"""BEGIN;
+SET LOCAL ROLE migration_owner;
+SET LOCAL lock_timeout = '10s';
+SELECT pg_advisory_xact_lock({MIGRATION_LOCK});
+DO $soc_migration$
+DECLARE expected jsonb := '{expected}'::jsonb;
+        applied_count integer;
+        current_head text;
+BEGIN
+  IF current_user <> 'migration_owner' THEN
+    RAISE EXCEPTION 'Migrations require migration_owner';
+  END IF;
+  IF EXISTS (SELECT 1 FROM ops.schema_migrations m
+      WHERE expected->>m.version IS DISTINCT FROM m.checksum) THEN
+    RAISE EXCEPTION 'Migration checksum mismatch or unknown revision';
+  END IF;
+  SELECT count(*) INTO applied_count FROM ops.schema_migrations;
+  IF (SELECT count(*) FROM ops.alembic_version) <> 1 THEN
+    RAISE EXCEPTION 'Invalid Alembic head count';
+  END IF;
+  SELECT version_num INTO current_head FROM ops.alembic_version;
+  IF applied_count = {len(versions)} AND current_head = '{head}' THEN
+    RETURN;
+  END IF;
+  IF applied_count <> {len(versions) - 1} OR current_head <> '{previous}'
+     OR EXISTS (SELECT 1 FROM jsonb_object_keys(expected - '{head}') v(version)
+        WHERE NOT EXISTS (SELECT 1 FROM ops.schema_migrations m WHERE m.version=v.version))
+     OR EXISTS (SELECT 1 FROM ops.schema_migrations WHERE version='{head}') THEN
+    RAISE EXCEPTION 'Migration ledger is not the expected contiguous previous release';
+  END IF;
+  {output.getvalue()}
+  UPDATE ops.alembic_version SET version_num='{head}' WHERE version_num='{previous}';
+  INSERT INTO ops.schema_migrations(version,checksum,release_sha)
+    VALUES ('{head}','{hashes[head]}','{release}');
+END $soc_migration$;
+COMMIT;
+"""
 
 
 def upgrade(connection: Connection, release: str) -> None:

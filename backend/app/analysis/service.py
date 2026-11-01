@@ -11,6 +11,39 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.service import AuthError
 
 
+async def require_dify_question_release(session: AsyncSession, run_id: UUID) -> None:
+    """Admit questions only against the run's original approved Dify release."""
+    from app.tutor.service import readiness, release_drift
+
+    run = (
+        (
+            await session.execute(
+                text("""SELECT r.analysis_mode,rv.config_snapshot FROM app.runs r
+            JOIN app.run_versions rv ON rv.run_id=r.id WHERE r.id=:run"""),
+                {"run": run_id},
+            )
+        )
+        .mappings()
+        .one()
+    )
+    if run["analysis_mode"] != "real":
+        raise AuthError(503, "DIFY_QUESTION_REQUIRES_REAL_RUN")
+    policy = (
+        (await session.execute(text("SELECT * FROM app.tutor_policy WHERE id=1"))).mappings().one()
+    )
+    pinned = run["config_snapshot"].get("analysis_release")
+    if (
+        not policy["analysis_enabled"]
+        or readiness(policy)
+        or await release_drift(session, policy["version"])
+        or not isinstance(pinned, dict)
+        or pinned.get("policy_version") != policy["version"]
+        or pinned.get("workflow_id") != policy["workflow_id"]
+        or pinned.get("corpus_revision") != policy["corpus_revision"]
+    ):
+        raise AuthError(503, "DIFY_ANALYSIS_NOT_APPROVED")
+
+
 async def analysis_view(session: AsyncSession, row: Mapping[Any, Any]) -> dict[str, Any]:
     # Project an explicit response shape and ask the shared RAG layer whether
     # stored citations/results must be hidden after a release is withdrawn.
@@ -220,7 +253,7 @@ async def enqueue_analysis(
             (run_id,ticket_id,analysis_id) VALUES (:run,:ticket,:analysis)"""),
             {"run": run_id, "ticket": ticket_id, "analysis": analysis_id},
         )
-    if retry_of is not None:
+    if retry_of is not None and pinned["knowledge_release_id"] is not None:
         # A retry reuses the original retrieval snapshot rather than querying a
         # newer corpus and comparing answers against different source material.
         from app.knowledge.rag import copy_retrieval

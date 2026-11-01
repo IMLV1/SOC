@@ -286,6 +286,8 @@ body 1–2,000 chars; evidence_ids 0–50 UUID ที่อยู่ใน ticke
 
 ## 9. Analysis API
 
+Ask AI ใน ticket รองรับ Dify Workflow โหมด `analyze` โดยส่ง `question` และเฉพาะ frozen evidence ของ ticket หลังตรวจ owner, CSRF/Origin, version, idempotency และโควตาเดิม คำตอบใช้ `AnalysisResult` แบบ advisory (รวม `summary` และ `recommended_checks`) ภายใต้ union เดิม ไม่แก้ human assessment. รอบ `real` ต้องมี `analysis_release` ที่ pin policy/workflow/corpus ตรงกับ policy ที่ยังอนุมัติและพร้อม ณ admission และ worker dispatch; ผลถูกซ่อนเมื่อ policy ถูกถอน/เปลี่ยน. ไม่ใช้ local KB release หรือเปลี่ยน snapshot ของรอบเก่าโดยเงียบ ๆ. รอบ `mock` ที่ไม่มี legacy KB คืน 503 `DIFY_QUESTION_REQUIRES_REAL_RUN`; policy ไม่พร้อมคืน 503 `DIFY_ANALYSIS_NOT_APPROVED`. Retry ใช้คำถาม/หลักฐาน/release เดิมและจองโควตาใหม่; replay เดิมไม่จองซ้ำและยังตรวจ withdrawal. Migration `0028_dify_ticket_questions` เพิ่มทางรองรับคำถาม real/Dify โดยไม่เปลี่ยน migrations เก่า.
+
 ข้อ 12 เพิ่ม provider controls โดยไม่เพิ่ม public endpoint:
 global 100 dispatches/วัน UTC, 200,000 tokens/วัน, rolling 5/minute,
 Free Tier/no billing และ cost cap 0. Analysis error codes เพิ่ม

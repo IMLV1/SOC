@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy import text
 
 from app.analysis.models import AnalysisEnvelope, AnalysisList, AnalysisView, RetryInput
-from app.analysis.service import analysis_view, enqueue_analysis
+from app.analysis.service import analysis_view, enqueue_analysis, require_dify_question_release
 from app.auth import service as auth
 from app.auth.models import AuthMeta, PageMeta
 from app.http_models import ErrorEnvelope
@@ -184,6 +184,8 @@ async def retry(
         )
         if old["kind"] == "question" and ticket_id is None:
             raise auth.AuthError(409, "TICKET_DELETED")
+        if old["kind"] == "question" and old["knowledge_release_id"] is None:
+            await require_dify_question_release(session, run_id)
         new_id = await enqueue_analysis(
             session,
             run_id,
