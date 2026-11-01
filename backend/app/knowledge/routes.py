@@ -14,7 +14,7 @@ from app.analysis.models import (
     SourceEnvelope,
     SourceView,
 )
-from app.analysis.service import analysis_view, enqueue_analysis
+from app.analysis.service import analysis_view, enqueue_analysis, require_dify_question_release
 from app.auth import service as auth
 from app.auth.models import AuthMeta
 from app.evaluation.routes import assigned_run
@@ -89,8 +89,8 @@ async def question(
             {"run": run_id},
         )
         if release is None:
-            raise auth.AuthError(503, "KNOWLEDGE_UNAVAILABLE")
-        if await revoked(session, release):
+            await require_dify_question_release(session, run_id)
+        elif await revoked(session, release):
             raise auth.AuthError(409, "KNOWLEDGE_REVOKED")
         ids = list(
             (

@@ -66,9 +66,10 @@ class DifyAnalysisProvider:
                 return {key: clean(item) for key, item in value.items()}
             return value
 
-        question = json.dumps(
-            {"evidence": clean(evidence)}, ensure_ascii=False, separators=(",", ":")
-        )
+        payload = {"evidence": clean(evidence)}
+        if data.question is not None:
+            payload["question"] = clean(data.question)
+        question = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
         reply = await run_workflow(
             DifyConfig.from_env(),
             self.policy["workflow_id"],

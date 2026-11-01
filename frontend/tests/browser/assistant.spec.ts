@@ -7,7 +7,8 @@ test("Ask AI keeps conflict draft, escapes source and hides withdrawn projection
   const ticket = "22222222-2222-4222-8222-222222222222";
   const analysis = "33333333-3333-4333-8333-333333333333";
   const item = "44444444-4444-4444-8444-444444444444";
-  let conflict = true,
+  let unavailable = true,
+    conflict = true,
     withdrawn = false,
     posted = false;
   const citation = {
@@ -66,6 +67,14 @@ test("Ask AI keeps conflict draft, escapes source and hides withdrawn projection
       };
     else if (path.endsWith("/auth/csrf")) data = { csrf_token: "test" };
     else if (path.endsWith("/questions")) {
+      if (unavailable) {
+        unavailable = false;
+        await route.fulfill({
+          status: 503,
+          json: { error: { code: "DIFY_QUESTION_REQUIRES_REAL_RUN" } },
+        });
+        return;
+      }
       if (conflict) {
         conflict = false;
         await route.fulfill({
@@ -113,6 +122,9 @@ test("Ask AI keeps conflict draft, escapes source and hides withdrawn projection
   });
   await page.goto(`/runs/${run}/tickets/${ticket}`);
   await page.getByLabel("คำถามเกี่ยวกับ ticket").fill("Keep my draft");
+  await page.getByRole("button", { name: "ถาม AI", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("รอบนี้ใช้ AI จำลอง");
+  await expect(page.getByLabel("คำถามเกี่ยวกับ ticket")).toHaveValue("Keep my draft");
   await page.getByRole("button", { name: "ถาม AI", exact: true }).click();
   await expect(
     page.getByText("ข้อมูลเปลี่ยนหรือแหล่งถูกถอน ร่างคำถามยังอยู่"),

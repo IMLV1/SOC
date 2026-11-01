@@ -71,6 +71,10 @@ export function Assistant({
       if (error.status === 409)
         return "ข้อมูลเปลี่ยนหรือแหล่งถูกถอน ร่างคำถามยังอยู่";
       if (error.status === 429) return "โควตา AI ไม่พอ";
+      if (error.code === "DIFY_QUESTION_REQUIRES_REAL_RUN")
+        return "รอบนี้ใช้ AI จำลอง หากต้องการถาม Dify ให้เริ่มรอบใหม่ที่เปิด AI จริง ประวัติรอบเดิมยังอยู่";
+      if (error.code === "DIFY_ANALYSIS_NOT_APPROVED")
+        return "Dify หรือคู่มือของรอบนี้ไม่พร้อม หรือเปลี่ยนเวอร์ชันแล้ว ร่างคำถามยังอยู่";
       if (error.status === 503)
         return "Knowledge/provider ยังไม่พร้อมสำหรับรอบนี้";
       if (error.status === 410) return "แหล่งถูกถอนแล้ว (withdrawn)";
@@ -133,8 +137,9 @@ export function Assistant({
     <section className="run-panel" style={{ overflowWrap: "anywhere" }}>
       <h2>Ask AI / Triage</h2>
       <p>
-        คู่มือช่วยตีความ ไม่ใช่หลักฐานยืนยันผลกระทบหรือคะแนน ต้องมี knowledge
-        release ที่พร้อมในรอบนี้จึงถามได้
+        ถามเกี่ยวกับหลักฐานใน ticket นี้ เช่น “หลักฐานยังขาดอะไร?” หรือ
+        “ควรตรวจ log อะไรเพิ่ม?” AI ช่วยตีความ ไม่ใช่หลักฐานยืนยันผลกระทบหรือคะแนน
+        รอบที่ใช้ AI จริงต้องมี Dify และคู่มือเวอร์ชันที่อนุมัติไว้พร้อมใช้งาน
       </p>
       <label>
         คำถามเกี่ยวกับ ticket
@@ -161,7 +166,11 @@ export function Assistant({
           </h3>
           {item.question_text && <p>{item.question_text}</p>}
           <p>
-            retrieval={item.retrieval?.status ?? "disabled"} ·{" "}
+            {item.retrieval
+              ? `retrieval=${item.retrieval.status}`
+              : item.mode === "real"
+                ? "คู่มือผ่าน Dify · ตรวจแหล่งอ้างอิงก่อนแสดงผล"
+                : "ผลจำลอง · ไม่ได้ค้นคู่มือ"} ·{" "}
             {item.response_visibility}
           </p>
           {item.response_visibility === "withdrawn" ? (

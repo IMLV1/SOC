@@ -17,6 +17,8 @@ ER ภาพรวมสำหรับนำเสนอ รวม practice/wri
 
 ## 1. ฐานข้อมูลและขอบเขต
 
+Migration `0028_dify_ticket_questions` ปรับเฉพาะ `question_fields` ของ `app.analyses`: คำถามยังต้องมีข้อความ/hash/ticket แต่ยอมให้ `mode=real, model_id=dify-app` ใช้ frozen `analysis_release` ใน `run_versions.config_snapshot` แทน FK ของ legacy local KB. API/worker ตรวจ policy/workflow/corpus ก่อนรับและส่งงาน; การถอน policy ซ่อนผลอ่าน. ไม่มีการแก้ snapshot หรือ backfill รอบเก่า. Downgrade ปฏิเสธหากยังมีคำถาม Dify ที่ไม่เข้า constraint เดิม โดยไม่ลบประวัติ.
+
 เลือก PostgreSQL เป็นฐานข้อมูลหลัก เก็บบัญชี รอบฝึก หลักฐาน ผลตรวจ ticket ประวัติคำตอบ งานเบื้องหลังและโควตาใน transaction เดียวกันตาม modular monolith ใช้ SQLAlchemy async + asyncpg ใน Python/FastAPI และ Alembic migrations ไม่มี Redis/Elasticsearch ใน MVP
 
 ใช้ AsyncSession แยกต่อ request/job ไม่แชร์ session ระหว่าง concurrent tasks และปิด transaction ก่อนเรียก AI สำหรับ locking/queue ใช้ SQLAlchemy หรือ parameterized SQL ที่ให้ semantics เดิม ตัวอย่าง `$1` ในเอกสารเป็น PostgreSQL notation; เมื่อรันผ่าน SQLAlchemy text ให้ใช้ named bind parameters Alembic ใช้ async engine ผ่าน migration env ที่รองรับตาม [Alembic asyncio cookbook](https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic)

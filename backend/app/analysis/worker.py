@@ -180,6 +180,7 @@ async def analyze_job(
                 "evidence": [dict(item) for item in evidence],
                 "prompt_version": row["prompt_version"],
                 "max_output_tokens": 2048,
+                "question": row["question_text"] if row["kind"] == "question" else None,
             }
         )
         if row["mode"] == "real":

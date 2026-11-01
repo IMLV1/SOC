@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 from uuid import uuid4
@@ -79,3 +80,29 @@ def test_analysis_rejects_missing_or_unapproved_retrieval():
     ):
         with pytest.raises(ValueError):
             validate_analysis_outputs(outputs | {"sources": sources}, data, policy)
+
+
+def test_ticket_question_reaches_dify_with_only_frozen_redacted_evidence(monkeypatch):
+    from app.analysis.dify_provider import DifyAnalysisProvider
+    from app.knowledge.dify_workflow import WorkflowReply
+
+    data, outputs, policy, _ = sample()
+    data.question = "403 หมายถึงอะไร? user@example.com"
+    data.evidence[0].log["message"] = "user@example.com"
+
+    async def workflow(config, workflow_id, question, user, mode):
+        payload = json.loads(question)
+        assert mode == "analyze" and workflow_id == "approved-workflow"
+        assert "403 หมายถึงอะไร?" in payload["question"]
+        assert "user@example.com" not in question
+        assert set(payload) == {"question", "evidence"}
+        assert payload["evidence"][0]["id"] == str(data.evidence[0].id)
+        return WorkflowReply(outputs, 42, "synthetic-run")
+
+    monkeypatch.setattr("app.analysis.dify_provider.run_workflow", workflow)
+    monkeypatch.setenv("DIFY_APP_KEY_FILE", "unused-test-key")
+    result = asyncio.run(
+        DifyAnalysisProvider(policy | {"workflow_id": "approved-workflow"}).analyze(data)
+    )
+    assert result.usage.total_tokens == 42
+    assert result.result.evidence_refs == [data.evidence[0].id]

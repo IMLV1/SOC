@@ -23,6 +23,7 @@ class AnalysisInput(Strict):
     evidence: list[EvidenceItem] = Field(min_length=1)
     prompt_version: str
     max_output_tokens: int = Field(ge=1, le=2048)
+    question: str | None = Field(default=None, min_length=1, max_length=2000)
 
 
 class AnalysisProvider(Protocol):
