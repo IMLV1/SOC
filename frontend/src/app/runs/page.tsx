@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, read, readPage, write } from "../../lib/api";
 import type { ScenarioView } from "../../lib/api-types";
@@ -8,57 +8,79 @@ import type { Run } from "../../lib/run-types";
 import { useSession } from "../session-provider";
 
 export default function RunsPage() {
+  const { session } = useSession();
+  return <RunsWorkspace key={session ? `${session.user.id}:${session.user.role}:${session.user.status}` : "guest"} />;
+}
+
+function RunsWorkspace() {
   const router = useRouter();
   const { session, loading: sessionLoading, preview } = useSession();
+  const userId = session?.user.id;
+  const mounted = useRef(false);
+  const generation = useRef(0);
   const [cursor, setCursor] = useState<string | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioView[]>([]);
   const [selected, setSelected] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [startError, setStartError] = useState("");
   const [startErrorCode, setStartErrorCode] = useState("");
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const load = useCallback(async () => {
+    if (!userId) return;
+    const request = ++generation.current;
+    const current = () => mounted.current && request === generation.current;
+    setRefreshing(true);
     try {
       const [page, catalog] = await Promise.all([
         readPage<Run[]>("/runs"),
         read<ScenarioView[]>("/scenarios"),
       ]);
+      if (!current()) return;
       const items = page.data;
       setCursor(page.meta.next_cursor ?? null);
       setRuns(items);
       setScenarios(catalog);
       setSelected(
         (current) =>
-          current ||
+          (catalog.some((item) => item.id === current) ? current : "") ||
           catalog.find((item) => item.title.includes("S02"))?.id ||
           catalog[0]?.id ||
           "",
       );
       setMessage("");
     } catch (error) {
+      if (!current()) return;
       setMessage(
         error instanceof ApiError && error.status === 401
           ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
           : "โหลดรอบฝึกไม่สำเร็จ",
       );
     } finally {
-      setLoading(false);
+      if (current()) { setLoading(false); setRefreshing(false); }
     }
-  }, []);
+  }, [userId]);
   useEffect(() => {
-    if (!session) return;
+    if (!userId) return;
     const timer = setTimeout(() => void load(), 0);
     return () => clearTimeout(timer);
-  }, [session, load]);
+  }, [userId, load]);
   async function more() {
-    if (!cursor || busy) return;
+    if (!cursor || busy || refreshing) return;
+    const request = generation.current;
+    const current = () => mounted.current && request === generation.current;
     setBusy(true);
     try {
       const page = await readPage<Run[]>(
         `/runs?cursor=${encodeURIComponent(cursor)}`,
       );
+      if (!current()) return;
       setRuns((current) => [
         ...current,
         ...page.data.filter(
@@ -67,17 +89,18 @@ export default function RunsPage() {
       ]);
       setCursor(page.meta.next_cursor ?? null);
     } catch (error) {
+      if (!current()) return;
       setMessage(
         error instanceof ApiError && error.status === 401
           ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
           : "โหลดหน้าถัดไปไม่สำเร็จ",
       );
     } finally {
-      setBusy(false);
+      if (current()) setBusy(false);
     }
   }
   async function start() {
-    if (!selected || preview || busy || loading) return;
+    if (!selected || preview || busy || loading || refreshing) return;
     setBusy(true);
     setStartError("");
     setStartErrorCode("");
@@ -87,8 +110,9 @@ export default function RunsPage() {
         { scenario_ids: [selected] },
         { idempotencyKey: crypto.randomUUID() },
       );
-      router.push(`/runs/${run.id}`);
+      if (mounted.current) router.push(`/runs/${run.id}`);
     } catch (error) {
+      if (!mounted.current) return;
       const code = error instanceof ApiError ? error.code : "";
       setStartErrorCode(code);
       setStartError(
@@ -107,7 +131,7 @@ export default function RunsPage() {
       // Reload domain state without erasing the failure that explains this action.
       void load();
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   }
   return (
@@ -137,7 +161,7 @@ export default function RunsPage() {
               <select
                 value={selected}
                 onChange={(event) => setSelected(event.target.value)}
-                disabled={busy || loading}
+                disabled={busy || loading || refreshing}
               >
                 {scenarios.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -148,7 +172,7 @@ export default function RunsPage() {
             </label>
             <button
               onClick={() => void start()}
-              disabled={preview || busy || loading || !selected}
+              disabled={preview || busy || loading || refreshing || !selected}
             >
               {preview
                 ? "Runner ยังไม่พร้อมบน preview"
@@ -170,20 +194,19 @@ export default function RunsPage() {
               {startErrorCode === "RUN_ALREADY_RUNNING" && <><Link href="/learning">ตรวจสถานะข้อสอบ</Link>{" "}</>}
               {startError && <Link href="/login">ตรวจการเข้าสู่ระบบ</Link>}{" "}
               <button
-                onClick={() => {
-                  setLoading(true);
-                  void load();
-                }}
+                disabled={busy || refreshing}
+                onClick={() => void load()}
               >
                 โหลดรายการใหม่
               </button>
             </p>
           )}
-          <section className="run-panel" aria-labelledby="list-title">
+          <section className="run-panel" aria-labelledby="list-title" aria-busy={refreshing}>
             <div className="run-section-head">
               <h2 id="list-title">ประวัติรอบฝึก</h2>
-              <button onClick={() => void load()}>รีเฟรช</button>
+              <button disabled={busy || refreshing} onClick={() => void load()}>รีเฟรช</button>
             </div>
+            {refreshing && !loading && <p role="status">กำลังอัปเดตรายการ…</p>}
             {loading ? (
               <p role="status">กำลังโหลด…</p>
             ) : runs.length === 0 ? (
@@ -208,7 +231,7 @@ export default function RunsPage() {
               </ol>
             )}
             {cursor && (
-              <button disabled={busy} onClick={() => void more()}>
+              <button disabled={busy || refreshing} onClick={() => void more()}>
                 โหลดรอบเพิ่มเติม
               </button>
             )}
