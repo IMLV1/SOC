@@ -123,7 +123,7 @@ test("Ask AI keeps conflict draft, escapes source and hides withdrawn projection
   await page.goto(`/runs/${run}/tickets/${ticket}`);
   await page.getByLabel("คำถามเกี่ยวกับ ticket").fill("Keep my draft");
   await page.getByRole("button", { name: "ถาม AI", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("รอบนี้ใช้ AI จำลอง");
+  await expect(page.getByRole("alert").filter({ hasText: "รอบนี้ใช้ AI จำลอง" })).toBeVisible();
   await expect(page.getByLabel("คำถามเกี่ยวกับ ticket")).toHaveValue("Keep my draft");
   await page.getByRole("button", { name: "ถาม AI", exact: true }).click();
   await expect(
