@@ -132,7 +132,10 @@ def test_dify_ticket_questions_freeze_question_evidence_and_reject_drift(
         assert len(calls) == 1 and calls[0]["question"] == body["question"]
         assert {e["id"] for e in calls[0]["evidence"]} == set(item["evidence_ids"])
         client.cookies.set(auth.SESSION, str(uuid4()))
-        assert client.post(path, json=body, headers=headers).status_code == 401
+        # Mutations check CSRF before require_user; a stale token cannot pass either boundary.
+        rejected = client.post(path, json=body, headers=headers)
+        assert rejected.status_code == 403 and rejected.json()["error"]["code"] == "CSRF_INVALID"
+        assert client.get(f"/api/v1/runs/{run_id}/analyses/{item['id']}").status_code == 401
         client.cookies.set(auth.SESSION, token)
 
         async def revoke():
